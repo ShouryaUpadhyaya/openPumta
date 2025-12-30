@@ -11,29 +11,38 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useCounterStore } from "@/store/useStore";
 
 function Subjects() {
+  const { addSubject, updateSubjectWorkSecs, Subjects } = useCounterStore();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [runningSubjectId, setRunningSubjectId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
+    let lastRecordedWorkTime: number;
     if (runningSubjectId) {
       interval = setInterval(() => {
         setSubjects((prevSubjects) =>
-          prevSubjects.map((subject) =>
-            subject.id === runningSubjectId
+          prevSubjects.map((subject) => {
+            lastRecordedWorkTime = subject.workSecs;
+            return subject.id === runningSubjectId
               ? { ...subject, workSecs: subject.workSecs + 1 }
-              : subject
-          )
+              : subject;
+          })
         );
       }, 1000);
     }
-    return () => clearInterval(interval);
+    return () => {
+      runningSubjectId
+        ? updateSubjectWorkSecs(runningSubjectId, lastRecordedWorkTime)
+        : console.log("no runningSubjectId");
+      clearInterval(interval);
+    };
   }, [runningSubjectId]);
 
-  const addSubject = (name: string, goalWorkSecs: number) => {
+  const addsubject = (name: string, goalWorkSecs: number) => {
     const newSubject: Subject = {
       id: crypto.randomUUID(),
       name,
@@ -42,6 +51,7 @@ function Subjects() {
       status: "not Started",
       date: new Date().toLocaleDateString(),
     };
+    addSubject(newSubject);
     setSubjects((prev) => [...prev, newSubject]);
     setIsDialogOpen(false);
   };
@@ -61,7 +71,7 @@ function Subjects() {
       </div>
       <DataTable
         columns={columns({ toggleTimer, runningSubjectId })}
-        data={subjects}
+        data={Subjects}
       />
       <div className="flex justify-end mt-6">
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -86,7 +96,7 @@ function Subjects() {
                 const seconds =
                   Number((form.elements[3] as HTMLInputElement).value) || 0;
                 const goalWorkSecs = hours * 3600 + minutes * 60 + seconds;
-                addSubject(name, goalWorkSecs);
+                addsubject(name, goalWorkSecs);
                 form.reset();
               }}
               className="flex flex-col gap-4"

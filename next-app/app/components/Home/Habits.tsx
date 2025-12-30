@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 
-type Habit = {
+export type Habit = {
   id: string;
   name: string;
   completed: boolean;

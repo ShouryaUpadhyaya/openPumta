@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -29,9 +29,28 @@ const dummyHabits = [
   { name: "Code", completed: true },
 ];
 
-const COLORS = ["#0088FE", "#FF8042"];
-
 function Stats() {
+  const [chartColors, setChartColors] = useState<string[]>([]);
+  const FALLBACK_COLORS = [
+    "#0088FE",
+    "#FF8042",
+    "#00C49F",
+    "#FFBB28",
+    "#FF8042",
+  ];
+
+  useEffect(() => {
+    const rootStyles = getComputedStyle(document.documentElement);
+    const colors = [
+      rootStyles.getPropertyValue("--chart-1").trim(),
+      rootStyles.getPropertyValue("--chart-2").trim(),
+      rootStyles.getPropertyValue("--chart-3").trim(),
+      rootStyles.getPropertyValue("--chart-4").trim(),
+      rootStyles.getPropertyValue("--chart-5").trim(),
+    ].filter((color) => color); // Filter out empty strings if CSS variables are not found
+    setChartColors(colors.length > 0 ? colors : FALLBACK_COLORS);
+  }, []);
+
   const completedHabits = dummyHabits.filter((habit) => habit.completed).length;
   const totalHabits = dummyHabits.length;
   const habitsData = [
@@ -40,7 +59,7 @@ function Stats() {
   ];
 
   return (
-    <section className="container mx-auto py-10">
+    <section className="container mr-10 py-10">
       <h1 className="text-2xl font-bold mb-4">Statistics</h1>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
@@ -49,14 +68,28 @@ function Stats() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={dummySubjects.map(s => ({...s, workHrs: s.workSecs/3600, goalHrs: s.goalWorkSecs/3600}))}>
+              <BarChart
+                data={dummySubjects.map((s) => ({
+                  ...s,
+                  workHrs: s.workSecs / 3600,
+                  goalHrs: s.goalWorkSecs / 3600,
+                }))}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="workHrs" fill="#8884d8" name="Worked Hours" />
-                <Bar dataKey="goalHrs" fill="#82ca9d" name="Goal Hours" />
+                <Bar
+                  dataKey="workHrs"
+                  fill={chartColors[0]}
+                  name="Worked Hours"
+                />
+                <Bar
+                  dataKey="goalHrs"
+                  fill={chartColors[1]}
+                  name="Goal Hours"
+                />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -74,7 +107,7 @@ function Stats() {
                   cy="50%"
                   labelLine={false}
                   outerRadius={80}
-                  fill="#8884d8"
+                  fill={chartColors[0]}
                   dataKey="value"
                   label={({ name, percent }) =>
                     `${name} ${(percent * 100).toFixed(0)}%`
@@ -83,7 +116,7 @@ function Stats() {
                   {habitsData.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
+                      fill={chartColors[index % chartColors.length]}
                     />
                   ))}
                 </Pie>
