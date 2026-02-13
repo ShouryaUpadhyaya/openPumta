@@ -1,21 +1,29 @@
 import express from "express";
-import { prisma } from "../prisma/prismaClient.ts";
+import { prisma } from "../prisma/prismaClient";
+import userRoute from "./routes/user.route";
+import cors from "cors";
 import "dotenv/config";
 let app = express();
 
+app.use(express.json());
+app.use(cors());
+
 async function seed() {
-  await prisma.subject.create({
-    data: {
-      name: "coding",
-      userId: 1,
-      intervals: {},
-    },
-  });
+  const user = await prisma.user.findUnique({ where: { id: 1 } });
+  if (user) {
+    await prisma.subject.create({
+      data: {
+        name: "coding",
+        userId: 1,
+      },
+    });
+  }
 }
 
-app.listen(process.env.PORT, () => {
+app.listen(process.env.PORT || 4000, () => {
   console.log(`Running on http://localhost:${process.env.PORT}`);
   seed();
 });
 // app.routere;
 app.get("/", async (req, res) => res.send(await prisma.user.findMany()));
+app.use("/api/users", userRoute);
