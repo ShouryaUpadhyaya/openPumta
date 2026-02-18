@@ -3,6 +3,7 @@ import { prisma } from "../prisma/prismaClient";
 import userRoute from "./routes/user.route";
 import cors from "cors";
 import "dotenv/config";
+import { errorHandler } from "./middlewares/error.middleware";
 let app = express();
 
 app.use(express.json());
@@ -24,6 +25,8 @@ app.listen(process.env.PORT || 4000, () => {
   console.log(`Running on http://localhost:${process.env.PORT}`);
   seed();
 });
-// app.routere;
+// app.route;
 app.get("/", async (req, res) => res.send(await prisma.user.findMany()));
 app.use("/api/users", userRoute);
+
+app.use(errorHandler);
