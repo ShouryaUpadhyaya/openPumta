@@ -14,21 +14,29 @@ datasource db {
 }
 
 model User {
-  id       Int       @id @default(autoincrement())
-  email    String    @unique
-  name     String?
-  subjects Subject[]
-  habits   Habit[]
-  deleted  Boolean   @default(false)
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  name      String?
+  subjects  Subject[]
+  habits    Habit[]
+  deleted   Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model Subject {
-  id        Int        @id @default(autoincrement())
-  name      String
-  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    Int
-  intervals Interval[]
-  habits    Habit[]
+  id          Int          @id @default(autoincrement())
+  name        String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int
+  habits      Habit[]
+  deleted     Boolean      @default(false)
+  subjectLogs SubjectLog[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([userId, name])
+  @@index([userId])
 }
 
 model Habit {
@@ -40,16 +48,26 @@ model Habit {
   subject     Subject?       @relation(fields: [subjectId], references: [id])
   description String         @default("")
   difficulty  difficulty     @default(MID)
-  deleted     Boolean
+  deleted     Boolean        @default(false)
   log         HabitTimeLog[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@unique([userId, name])
+  @@index([userId])
 }
 
-model Interval {
-  id        Int      @id @default(autoincrement())
-  startTime DateTime
-  endTime   DateTime
+model SubjectLog {
+  id        Int       @id @default(autoincrement())
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
   subjectId Int
-  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subject   Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  deleted   Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([subjectId])
 }
 
 enum difficulty {
@@ -59,9 +77,14 @@ enum difficulty {
 }
 
 model HabitTimeLog {
-  id      Int      @id @default(autoincrement())
-  startAt DateTime @default(now())
-  endTime DateTime @updatedAt
-  habit   Habit?   @relation(fields: [habitId], references: [id])
-  habitId Int?
+  id        Int       @id @default(autoincrement())
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  habit     Habit     @relation(fields: [habitId], references: [id])
+  habitId   Int
+  deleted   Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([habitId])
 }
