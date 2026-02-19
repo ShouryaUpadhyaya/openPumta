@@ -1,6 +1,7 @@
 import express from "express";
 import { prisma } from "../prisma/prismaClient";
 import userRoute from "./routes/user.route";
+import habitRoute from "./routes/habit.route";
 import cors from "cors";
 import "dotenv/config";
 import { errorHandler } from "./middlewares/error.middleware";
@@ -28,5 +29,6 @@ app.listen(process.env.PORT || 4000, () => {
 // app.route;
 app.get("/", async (req, res) => res.send(await prisma.user.findMany()));
 app.use("/api/users", userRoute);
+app.use("/api/habits", habitRoute);
 
 app.use(errorHandler);

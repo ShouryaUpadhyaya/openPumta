@@ -32,15 +32,16 @@ model Subject {
 }
 
 model Habit {
-  id          Int        @id @default(autoincrement())
+  id          Int            @id @default(autoincrement())
   name        String
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      Int
   subjectId   Int?
-  subject     Subject?   @relation(fields: [subjectId], references: [id])
-  description String     @default("")
-  difficulty  Difficulty @default(MID)
+  subject     Subject?       @relation(fields: [subjectId], references: [id])
+  description String         @default("")
+  difficulty  difficulty     @default(MID)
   deleted     Boolean
+  log         HabitTimeLog[]
 }
 
 model Interval {
@@ -51,8 +52,16 @@ model Interval {
   subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 }
 
-enum Difficulty {
+enum difficulty {
   HIGH
   MID
   LOW
+}
+
+model HabitTimeLog {
+  id      Int      @id @default(autoincrement())
+  startAt DateTime @default(now())
+  endTime DateTime @updatedAt
+  habit   Habit?   @relation(fields: [habitId], references: [id])
+  habitId Int?
 }

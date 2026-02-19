@@ -11,10 +11,10 @@ const getAllHabits = asyncHandler(
       throw new ApiError(400, "UserId is required ");
     }
     const allHabits = await prisma.habit.findMany({
-      where: { userId: userId },
+      where: { userId: parseInt(userId) },
     });
     res
-      .sendStatus(200)
+      .status(200)
       .json(new ApiResponse(200, allHabits, "Got all habits for user"));
   },
 );
@@ -22,75 +22,57 @@ const getAllHabits = asyncHandler(
 const addHabit = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const { userId, habitName, description, difficulty } = req.body;
-    if (!(userId || habitName || description || difficulty)) {
+    if (!userId || !habitName || !description || !difficulty) {
       throw new ApiError(400, "Enter all the required feild");
     }
     const createdHabit = await prisma.habit.create({
       data: {
         name: habitName,
-        userId: userId,
+        userId: parseInt(userId),
         description: description,
         difficulty: difficulty,
         deleted: false,
       },
     });
     res
-      .sendStatus(200)
+      .status(200)
       .json(new ApiResponse(200, createdHabit, "Habit added successfully"));
   },
 );
 
-const updateHabit = asyncHandler(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const {
-      userId,
-      HabitId,
-      name,
-      SubjectId,
-      description,
-      difficulty,
-      deleted,
-    } = req.body;
-    if (
-      !(
-        userId ||
-        HabitId ||
-        name ||
-        SubjectId ||
-        description ||
-        difficulty ||
-        deleted
-      )
-    ) {
-      throw new ApiError(400, "All the required fields not present");
-    }
-    const updatedHabit = await prisma.habit.update({
-      where: {
-        id: HabitId,
-      },
-      data: {
-        id: HabitId,
-        userId: userId,
-        name: name,
-        subjectId: SubjectId,
-        description: description,
-        difficulty: difficulty,
-        deleted: deleted,
-      },
-    });
-    res
-      .sendStatus(200)
-      .json(new ApiResponse(200, updatedHabit, "updated habit"));
-  },
-);
+const updateHabit = asyncHandler(async (req: Request, res: Response) => {
+  const { HabitId, name, SubjectId, description, difficulty, deleted } =
+    req.body;
+
+  if (!HabitId) {
+    throw new ApiError(400, "HabitId is required");
+  }
+
+  const updatedHabit = await prisma.habit.update({
+    where: {
+      id: parseInt(HabitId),
+    },
+    data: {
+      ...(name !== undefined && { name }),
+      ...(SubjectId !== undefined && { subjectId: SubjectId }),
+      ...(description !== undefined && { description }),
+      ...(difficulty !== undefined && { difficulty }),
+      ...(deleted !== undefined && { deleted }),
+    },
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatedHabit, "Habit updated successfully"));
+});
 
 const deleteHabit = asyncHandler(async (req: Request, res: Response) => {
   const { habitId, userId } = req.body;
 
   const deletedHabit = await prisma.habit.update({
     where: {
-      id: habitId,
-      userId: userId,
+      id: parseInt(habitId),
+      userId: parseInt(userId),
     },
     data: {
       deleted: true,
