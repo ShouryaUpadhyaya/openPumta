@@ -39,6 +39,19 @@ model Subject {
   @@index([userId])
 }
 
+model SubjectLog {
+  id        Int       @id @default(autoincrement())
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  subjectId Int
+  subject   Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  deleted   Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([subjectId])
+}
+
 model Habit {
   id          Int            @id @default(autoincrement())
   name        String
@@ -55,19 +68,6 @@ model Habit {
 
   @@unique([userId, name])
   @@index([userId])
-}
-
-model SubjectLog {
-  id        Int       @id @default(autoincrement())
-  startedAt DateTime  @default(now())
-  endedAt   DateTime?
-  subjectId Int
-  subject   Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  deleted   Boolean   @default(false)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  @@index([subjectId])
 }
 
 enum difficulty {
