@@ -29,6 +29,7 @@ passport.use(
             data: {
               email,
               name: profile.displayName,
+              avatarUrl: profile.photos?.[0]?.value,
             },
           });
         }
