@@ -28,6 +28,9 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/passport": "^1.0.17",
+    "@types/passport-google-oauth20": "^2.0.17",
+    "@types/password": "^0.1.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

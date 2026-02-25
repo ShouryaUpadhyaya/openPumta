@@ -1,3 +1,4 @@
+"use client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,14 +10,63 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/auth/user`, {
+      credentials: "include",
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        setUser(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:4000/api/auth/google";
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+    window.location.href = `${backendUrl}/api/auth/google`;
   };
+
+  const handleLogout = () => {
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/auth/logout`, {
+      method: "POST",
+      credentials: "include",
+    }).then(() => {
+      window.location.reload();
+    });
+  };
+
+  if (loading) {
+    return <div className="text-center">Loading...</div>;
+  }
+
+  if (user) {
+    return (
+      <div className={cn("flex flex-col gap-6 text-center", className)}>
+        <h1 className="text-2xl font-bold">Welcome back, {user.name}!</h1>
+        <p className="text-muted-foreground text-sm">
+          You are already signed in as <strong>{user.email}</strong>
+        </p>
+        <div className="flex flex-col gap-2">
+          <Button asChild>
+            <Link href="/">Go to Dashboard</Link>
+          </Button>
+          <Button variant="outline" onClick={handleLogout}>
+            Logout
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form className={cn("flex flex-col gap-6", className)} {...props}>
@@ -71,7 +121,7 @@ export function LoginForm({
             Login with Google
           </Button>
           <FieldDescription className="text-center">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href={"/signup"} className="underline underline-offset-4">
               Sign up
             </Link>
