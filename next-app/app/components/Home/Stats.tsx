@@ -47,7 +47,7 @@ function Stats() {
       rootStyles.getPropertyValue("--chart-3").trim(),
       rootStyles.getPropertyValue("--chart-4").trim(),
       rootStyles.getPropertyValue("--chart-5").trim(),
-    ].filter((color) => color); // Filter out empty strings if CSS variables are not found
+    ].filter((color) => color);
     setChartColors(colors.length > 0 ? colors : FALLBACK_COLORS);
   }, []);
 
@@ -59,59 +59,58 @@ function Stats() {
   ];
 
   return (
-    <section className="container mr-10 py-10">
-      <h1 className="text-2xl font-bold mb-4">Statistics</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Subject Progress (in hours)</CardTitle>
+    <section className="flex flex-col h-full p-4 overflow-hidden">
+      <h1 className="text-2xl font-bold mb-4 shrink-0">Statistics</h1>
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
+        <Card className="bg-background border-border/40 overflow-hidden flex flex-col">
+          <CardHeader className="py-2 px-4">
+            <CardTitle className="text-sm font-medium">Subject Progress (hrs)</CardTitle>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+          <CardContent className="flex-1 p-0 pb-2">
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={dummySubjects.map((s) => ({
                   ...s,
                   workHrs: s.workSecs / 3600,
                   goalHrs: s.goalWorkSecs / 3600,
                 }))}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
               >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="name" fontSize={10} />
+                <YAxis fontSize={10} />
                 <Tooltip />
-                <Legend />
                 <Bar
                   dataKey="workHrs"
                   fill={chartColors[0]}
-                  name="Worked Hours"
+                  radius={[2, 2, 0, 0]}
+                  name="Worked"
                 />
                 <Bar
                   dataKey="goalHrs"
                   fill={chartColors[1]}
-                  name="Goal Hours"
+                  radius={[2, 2, 0, 0]}
+                  name="Goal"
                 />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Daily Habits Completion</CardTitle>
+        <Card className="bg-background border-border/40 overflow-hidden flex flex-col">
+          <CardHeader className="py-2 px-4">
+            <CardTitle className="text-sm font-medium">Habit Completion</CardTitle>
           </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+          <CardContent className="flex-1 p-0">
+            <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={habitsData}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  outerRadius={80}
+                  outerRadius="80%"
                   fill={chartColors[0]}
                   dataKey="value"
-                  label={({ name, percent }) =>
-                    `${name} ${(percent ? percent : 0 * 100).toFixed(0)}%`
-                  }
                 >
                   {habitsData.map((entry, index) => (
                     <Cell

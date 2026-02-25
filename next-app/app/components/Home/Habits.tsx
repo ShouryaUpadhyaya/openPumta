@@ -25,12 +25,12 @@ export default function Habits() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
-    <section className="min-w-5xl px-10 py-10">
-      <div className="flex justify-between mb-4">
+    <section className="flex flex-col h-full p-4 overflow-hidden">
+      <div className="flex justify-between items-center mb-4 shrink-0">
         <h1 className="text-2xl font-bold">Daily Habits</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>Add Habit</Button>
+            <Button size="sm">Add Habit</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -59,12 +59,12 @@ export default function Habits() {
           </DialogContent>
         </Dialog>
       </div>
-      <div className="grid gap-4">
+      <div className="flex-1 overflow-hidden grid gap-3 content-start">
         {Habits.length > 0 ? (
-          Habits.map((habit) => (
-            <Card key={habit.id} size="sm" className="">
-              <CardContent className="flex items-center justify-between p-4">
-                <span className={habit.completed ? "line-through" : ""}>
+          Habits.slice(0, 6).map((habit) => (
+            <Card key={habit.id} size="sm" className="bg-background border-border/40">
+              <CardContent className="flex items-center justify-between p-3">
+                <span className={`text-sm ${habit.completed ? "line-through text-muted-foreground" : ""}`}>
                   {habit.name}
                 </span>
                 <Checkbox
@@ -75,7 +75,7 @@ export default function Habits() {
             </Card>
           ))
         ) : (
-          <p>No habits yet. Add one to get started!</p>
+          <p className="text-sm text-muted-foreground">No habits yet. Add one to get started!</p>
         )}
       </div>
     </section>

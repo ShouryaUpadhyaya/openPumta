@@ -64,7 +64,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-svh items-center justify-center">
+      <div className="flex h-screen overflow-hidden items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -72,7 +72,7 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="flex min-h-svh flex-col items-center justify-center gap-4">
+      <div className="flex h-screen overflow-hidden flex-col items-center justify-center gap-4">
         <h1 className="text-2xl font-bold">Not Authenticated</h1>
         <Button asChild>
           <Link href="/login">Go to Login</Link>
@@ -82,7 +82,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col items-center p-6 md:p-10">
+    <div className="flex h-screen overflow-hidden flex-col items-center p-6 md:p-10">
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center gap-2 text-center">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted overflow-hidden border-2 border-primary">

@@ -12,9 +12,10 @@ export default function Home() {
   const { user, logout, loading } = useAuthStore();
 
   return (
-    <div className="flex flex-col gap-4 p-4 min-h-screen">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+    <div className="flex flex-col h-screen overflow-hidden p-4 bg-background text-foreground">
+      {/* Header */}
+      <header className="flex justify-between items-center mb-4 shrink-0">
+        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         <div className="flex gap-2">
           {!loading && !user ? (
             <Button asChild variant="default" size="sm" className="gap-2">
@@ -36,7 +37,7 @@ export default function Home() {
                   asChild
                   variant="outline"
                   size="icon"
-                  className="rounded-full"
+                  className="rounded-full shrink-0"
                 >
                   <Link href="/profile">
                     {user.avatarUrl ? (
@@ -63,18 +64,26 @@ export default function Home() {
             )
           )}
         </div>
-      </div>
+      </header>
 
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-row gap-4 flex-wrap lg:flex-nowrap">
+      {/* Main Content Area */}
+      <main className="flex-1 grid grid-cols-1 lg:grid-cols-12 grid-rows-2 gap-4 min-h-0 pb-4">
+        {/* Top Row */}
+        <div className="lg:col-span-4 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col items-center justify-center p-4">
           <Clock />
+        </div>
+        <div className="lg:col-span-8 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col">
           <Subjects />
         </div>
-        <div className="flex flex-row gap-4 flex-wrap lg:flex-nowrap">
+
+        {/* Bottom Row */}
+        <div className="lg:col-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col">
           <Habits />
+        </div>
+        <div className="lg:col-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col">
           <Stats />
         </div>
-      </div>
+      </main>
     </div>
   );
 }

@@ -41,23 +41,12 @@ function Subjects() {
   };
 
   return (
-    <section className="container mx-10 pt-20 min-h-[50vh] flex flex-col ">
-      <div className="flex justify-between mb-4">
-        <h1 className="text-4xl font-bold">Subjects</h1>
-      </div>
-      <DataTable
-        columns={columns({
-          toggleTimer: handlePlayClick,
-          runningSubjectId: timerRunningSubjectId,
-          deleteSubject: deleteSubject,
-          handleEdit: handleEdit,
-        })}
-        data={Subjects}
-      />
-      <div className="flex justify-end mt-6">
+    <section className="flex flex-col h-full p-4 overflow-hidden">
+      <div className="flex justify-between items-center mb-4 shrink-0">
+        <h1 className="text-2xl font-bold">Subjects</h1>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button size={"lg"} className=" font-bold">
+            <Button size={"sm"} className="font-bold">
               Add Subject
             </Button>
           </DialogTrigger>
@@ -95,6 +84,18 @@ function Subjects() {
             </form>
           </DialogContent>
         </Dialog>
+      </div>
+
+      <div className="flex-1 overflow-hidden">
+        <DataTable
+          columns={columns({
+            toggleTimer: handlePlayClick,
+            runningSubjectId: timerRunningSubjectId,
+            deleteSubject: deleteSubject,
+            handleEdit: handleEdit,
+          })}
+          data={Subjects}
+        />
       </div>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
