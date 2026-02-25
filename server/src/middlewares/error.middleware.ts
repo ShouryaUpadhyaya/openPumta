@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { ApiError } from "../utils/ApiError";
+import { Prisma } from "../../generated/prisma/client";
 
 const errorHandler = (
   err: any,
@@ -8,6 +9,21 @@ const errorHandler = (
   next: NextFunction,
 ) => {
   let error = err;
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    switch (err.code) {
+      case "P2002":
+        error = new ApiError(409, "Duplicate field value");
+        break;
+
+      case "P2025":
+        error = new ApiError(404, "Record not found");
+        break;
+
+      default:
+        error = new ApiError(400, "Database error");
+        break;
+    }
+  }
 
   if (!(error instanceof ApiError)) {
     const statusCode =
