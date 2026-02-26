@@ -80,25 +80,139 @@ const endSubjectLog = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const getSubjectLogs = asyncHandler(async (req: Request, res: Response) => {
-  // GET /subjects/:id/logs?from=2026-02-01&to=2026-02-28
-  const { subjectId, from, to } = req.params;
+  // GET /subjects/:subjectId/logs?from=2026-02-01&to=2026-02-28
+  const { subjectId } = req.params;
+  const { from, to } = req.query;
+
+  if (!subjectId) {
+    throw new ApiError(400, "Subject ID is required");
+  }
+
   const logs = await prisma.subjectLog.findMany({
-    where: {},
+    where: {
+      subjectId: parseInt(subjectId),
+      deleted: false,
+      ...(from || to
+        ? {
+            startedAt: {
+              ...(from && { gte: new Date(from as string) }),
+              ...(to && { lte: new Date(to as string) }),
+            },
+          }
+        : {}),
+    },
+    orderBy: {
+      startedAt: "desc",
+    },
   });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, logs, "Subject logs fetched successfully"));
 });
 
-// const getAllSubjectsWithLogs GET /subjects/stats?period=daily
+const getAllSubjectsWithLogs = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { userId } = req.params;
 
-// GET /dashboard
-// {
-//   subjects: [...],
-//   todayStats: [...],
-//   activeLog: {...}
-// }
+    if (!userId) {
+      throw new ApiError(400, "User ID is required");
+    }
+
+    const subjects = await prisma.subject.findMany({
+      where: {
+        userId: parseInt(userId),
+        deleted: false,
+      },
+      include: {
+        subjectLogs: {
+          where: {
+            deleted: false,
+          },
+          orderBy: {
+            startedAt: "desc",
+          },
+        },
+      },
+    });
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          subjects,
+          "Subjects with logs fetched successfully"
+        )
+      );
+  }
+);
+
+const getDashboardData = asyncHandler(async (req: Request, res: Response) => {
+  const { userId } = req.params;
+
+  if (!userId) {
+    throw new ApiError(400, "User ID is required");
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const subjects = await prisma.subject.findMany({
+    where: {
+      userId: parseInt(userId),
+      deleted: false,
+    },
+  });
+
+  const todayLogs = await prisma.subjectLog.findMany({
+    where: {
+      subject: {
+        userId: parseInt(userId),
+      },
+      startedAt: {
+        gte: today,
+      },
+      deleted: false,
+    },
+    include: {
+      subject: true,
+    },
+  });
+
+  const activeLog = await prisma.subjectLog.findFirst({
+    where: {
+      subject: {
+        userId: parseInt(userId),
+      },
+      endedAt: null,
+      deleted: false,
+    },
+    include: {
+      subject: true,
+    },
+  });
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        subjects,
+        todayStats: todayLogs,
+        activeLog,
+      },
+      "Dashboard data fetched successfully"
+    )
+  );
+});
+
 export {
   getAllSubject,
   createSubject,
   startSubjectLog,
   endSubjectLog,
   updateSubject,
+  getSubjectLogs,
+  getAllSubjectsWithLogs,
+  getDashboardData,
 };
