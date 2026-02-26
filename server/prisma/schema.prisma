@@ -56,7 +56,7 @@ model Subject {
   name        String
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      Int
-  habits      Habit[]
+  habits      Habit[] // SO that hatbis are automaticaly ticked after certain amount of time has been logged
   deleted     Boolean      @default(false)
   subjectLogs SubjectLog[]
   createdAt   DateTime     @default(now())

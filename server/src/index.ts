@@ -3,6 +3,7 @@ import { prisma } from "../prisma/prismaClient";
 import userRoute from "./routes/user.route";
 import habitRoute from "./routes/habit.route";
 import authRoute from "./routes/auth.route";
+import subjectRoute from "./routes/subject.route";
 import cors from "cors";
 import "dotenv/config";
 import session from "express-session";
@@ -16,7 +17,7 @@ app.use(
   cors({
     origin: process.env.FRONTEND_URL || "http://localhost:3000",
     credentials: true,
-  })
+  }),
 );
 
 app.use(
@@ -24,7 +25,7 @@ app.use(
     secret: process.env.SESSION_SECRET || "secret",
     resave: false,
     saveUninitialized: false,
-  })
+  }),
 );
 
 app.use(passport.initialize());
@@ -49,6 +50,7 @@ app.listen(process.env.PORT || 4000, () => {
 // app.route;
 app.get("/", async (req, res) => res.send(await prisma.user.findMany()));
 app.use("/api/users", userRoute);
+app.use("/api/subject", subjectRoute);
 app.use("/api/habits", habitRoute);
 app.use("/api/auth", authRoute);
 
