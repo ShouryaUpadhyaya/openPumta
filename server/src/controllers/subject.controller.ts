@@ -26,7 +26,24 @@ const createSubject = asyncHandler(async (req: Request, res: Response) => {
   });
   res
     .status(200)
-    .json(new ApiResponse(200, subject, "User Created successfully"));
+    .json(new ApiResponse(200, subject, "Subject Created successfully"));
+});
+
+const updateSubject = asyncHandler(async (req: Request, res: Response) => {
+  const { name } = req.body;
+  const { id } = req.params;
+  const subject = await prisma.subject.update({
+    where: {
+      id: parseInt(id),
+    },
+    data: {
+      name: name,
+    },
+  });
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, subject, "Subject Updated successfully"));
 });
 
 const startSubjectLog = asyncHandler(async (req: Request, res: Response) => {
@@ -62,7 +79,26 @@ const endSubjectLog = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json(new ApiResponse(200, updatedLog, "Ended Subject Timer"));
 });
 
-// const getSubjectLogs
+const getSubjectLogs = asyncHandler(async (req: Request, res: Response) => {
+  // GET /subjects/:id/logs?from=2026-02-01&to=2026-02-28
+  const { subjectId, from, to } = req.params;
+  const logs = await prisma.subjectLog.findMany({
+    where: {},
+  });
+});
 
-// const getAllSubjectsWithLogs
-export { getAllSubject, createSubject, startSubjectLog, endSubjectLog };
+// const getAllSubjectsWithLogs GET /subjects/stats?period=daily
+
+// GET /dashboard
+// {
+//   subjects: [...],
+//   todayStats: [...],
+//   activeLog: {...}
+// }
+export {
+  getAllSubject,
+  createSubject,
+  startSubjectLog,
+  endSubjectLog,
+  updateSubject,
+};
