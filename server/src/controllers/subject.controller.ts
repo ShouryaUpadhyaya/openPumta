@@ -130,6 +130,7 @@ const getSubjectLogs = asyncHandler(async (req: Request, res: Response) => {
 const getAllSubjectsWithLogs = asyncHandler(
   async (req: Request, res: Response) => {
     const { userId } = req.params;
+    const { from, to } = req.query;
     const userIdNum = Number(userId);
 
     if (!userId) {
@@ -145,6 +146,14 @@ const getAllSubjectsWithLogs = asyncHandler(
         subjectLogs: {
           where: {
             deleted: false,
+            ...(from || to
+              ? {
+                  startedAt: {
+                    ...(from && { gte: new Date(from as string) }),
+                    ...(to && { lte: new Date(to as string) }),
+                  },
+                }
+              : {}),
           },
           orderBy: {
             startedAt: "desc",
@@ -167,6 +176,7 @@ const getAllSubjectsWithLogs = asyncHandler(
 
 const getDashboardData = asyncHandler(async (req: Request, res: Response) => {
   const { userId } = req.params;
+  const { from, to } = req.query;
 
   if (!userId) {
     throw new ApiError(400, "User ID is required");
@@ -190,6 +200,14 @@ const getDashboardData = asyncHandler(async (req: Request, res: Response) => {
       startedAt: {
         gte: today,
       },
+      ...(from || to
+        ? {
+            startedAt: {
+              ...(from && { gte: new Date(from as string) }),
+              ...(to && { lte: new Date(to as string) }),
+            },
+          }
+        : {}),
       deleted: false,
     },
     include: {
@@ -202,6 +220,14 @@ const getDashboardData = asyncHandler(async (req: Request, res: Response) => {
       subject: {
         userId: userIdNum,
       },
+      ...(from || to
+        ? {
+            startSubjectLog: {
+              ...(from && { gte: new Date(from as string) }),
+              ...(to && { lte: new Date(to as string) }),
+            },
+          }
+        : {}),
       endedAt: null,
       deleted: false,
     },

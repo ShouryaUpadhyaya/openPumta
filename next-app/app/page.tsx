@@ -15,7 +15,7 @@ export default function Home() {
     <div className="flex flex-col h-screen overflow-hidden p-4 bg-background text-foreground">
       {/* Header */}
       <header className="flex justify-between items-center mb-4 shrink-0">
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl font-bold tracking-tight">OpenPumta</h1>
         <div className="flex gap-2">
           {!loading && !user ? (
             <Button asChild variant="default" size="sm" className="gap-2">
