@@ -4,6 +4,7 @@ import userRoute from "./routes/user.route";
 import habitRoute from "./routes/habit.route";
 import authRoute from "./routes/auth.route";
 import subjectRoute from "./routes/subject.route";
+import todoRoute from "./routes/todo.route";
 import cors from "cors";
 import "dotenv/config";
 import session from "express-session";
@@ -52,6 +53,7 @@ app.get("/", async (req, res) => res.send(await prisma.user.findMany()));
 app.use("/api/users", userRoute);
 app.use("/api/subject", subjectRoute);
 app.use("/api/habits", habitRoute);
+app.use("/api/todo", todoRoute);
 app.use("/api/auth", authRoute);
 
 app.use(errorHandler);
