@@ -15,11 +15,12 @@ const getAllUsers = asyncHandler(async (req: Request, res: Response) => {
 
 const updateUser = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
+  const idNum = Number(id);
   const { email, name, avatarUrl } = req.body;
 
   const updatedUser = await prisma.user.update({
     where: {
-      id: parseInt(id),
+      id: idNum,
     },
     data: {
       email,
@@ -35,10 +36,11 @@ const updateUser = asyncHandler(async (req: Request, res: Response) => {
 
 const deleteUser = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
+  const numId = Number(id);
 
   const deletedUser = await prisma.user.update({
     where: {
-      id: parseInt(id),
+      id: numId,
     },
     data: {
       deleted: true,
