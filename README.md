@@ -1,96 +1,128 @@
-# Habit & Focus Engine
+# openPumta
 
-A minimal, data-driven workspace that turns 25-minute focus blocks and 21-day habit streaks into measurable progress. Built for people who want to track without clutter and improve without guesswork.
+An open-source, desktop-first alternative to Yeolpumta.
+Built for students who want data ownership, serious analytics, and intelligent feedback loops.
 
-## Stack
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Status](https://img.shields.io/badge/status-active-development-green)
+![Stack](https://img.shields.io/badge/stack-Next.js%20%7C%20Express%20%7C%20Prisma-blue)
 
-**Backend**  
-- Express + Prisma + PostgreSQL  
-- JWT auth, rate-limited, WebSocket timer sync  
+## Live Demo (Frontend)
 
-**Frontend**  
-- Next.js 15 + Zustand + Tailwind + Recharts  
+[https://open-pumta.vercel.app/](https://open-pumta.vercel.app/)
 
-**AI layer**  
-- API for weekly insight reports and goal coaching  
+## Why openPumta?
 
-## Core Loops
+After using Yeolpumta for 2+ years, I realized:
 
-1. **Pomodoro subject timer**  
-   - Assign subjects, auto-rotate through blocks, pause/resume/sync across tabs.  
-2. **21-day habit board**  
-   - Six habits, four daily hits = perfect day. Heat-map and streak counter.  
-3. **Daily review**  
-   - One-click rating, delta vs yesterday, 7-day and 21-day averages.  
-4. **Data export**  
-   - JSON or human-readable txt, habits + focus minutes + ratings.  
+- No desktop-first workflow
+- No access to raw data
+- No intelligent weekly analysis
+- Limited habit modeling
+- No modular extensibility
+
+openPumta is built to fix that.
+
+## Design Goals
+
+### 1. Desktop-First Focus
+
+Built for the deep-work environment where your primary tool is a computer.
+
+- **Web-Based:** Accessible from any browser.
+- **Multi-Tab Sync:** WebSocket-powered Pomodoro timers that stay in sync across all open tabs.
+- **Subject Assignment:** Categorize your focus sessions by subject (e.g., DSA, Math, System Design).
+- **Auto-Rotate:** Seamlessly transition between work and break blocks without manual intervention.
+
+### 2. Data Ownership (No Black Boxes)
+
+Your productivity data belongs to you, not a proprietary platform.
+
+- **Full Export:** Export all your logs at any time.
+- **Formats:** Available as structured **JSON** for custom scripts or **Human-readable Text** for personal review.
+
+### 3. Weekly AI Reports
+
+Leverage LLMs to transform raw logs into actionable coaching.
+
+- **Focus Trend Analysis:** Deep dives into your concentration patterns.
+- **Habit Consistency Breakdown:** Visualizing where you succeed and where you friction exists.
+- **Risk Forecasts:** Identifying burnout patterns before they happen.
+- **Actionable Weekly Plan:** A roadmap for the next 7 days based on last week's performance.
+
+### 4. Huberman-Inspired Habits
+
+Implementing science-backed habit formation protocols.
+
+- **The 6-Habit Rule:** Maximize focus by limiting daily targets to 6 primary habits.
+- **Perfect Day Metric:** 4 completions = a "Perfect Day."
+- **Subject Snapping:** Habits can optionally link to subjects (e.g., "Deep Work" → DSA, "Revision" → Math).
+
+### 5. Immediate Feedback
+
+Small wins should be visible and celebrated to maintain momentum.
+
+- **Visual Rewards:** Confetti bursts and custom emoji reactions on completion.
+- **Streak Indicators:** Real-time feedback on your current focus momentum.
+
+### 6. Serious Stats
+
+Professional-grade analytics for personal growth.
+
+- **Time-Series Charts:** Track your focus minutes over weeks and months.
+- **Heatmaps:** Visualize your most productive hours and days.
+- **Rolling Averages:** 7-day and 21-day performance trends.
+- **Performance Deltas:** Automatic comparison vs. previous periods to measure real growth.
+
+### 7. Modular Future
+
+Moving towards a "Notion-like" block system where you model your own productivity engine.
+
+- **Blocks:** Timers, Habits, Stats, Reviews, and Notes can be rearranged and composed.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend:** Next.js 15 , TypeScript, Zustand, Tailwind CSS, Recharts
+- **Backend:** Express.js, TypeScript, Prisma ORM, PostgreSQL, JWT + OAuth2.0
+- **Infrastructure:** Docker
+- **AI:** Weekly insight engine + Goal coaching (OpenAI integration)
+
+---
 
 ## Getting Started
 
-```bash
-# 1. Clone and install
-git clone https://github.com/yourhandle//ProductivitySystemPersonalUse-.git
-cd 
-pnpm i
+1. **Clone the Repository**
 
-# 2. Env
-cp .env.example .env
-# Add PostgreSQL url, JWT secret, OpenAI key
+   ```bash
+   git clone https://github.com/yourhandle/openPumta
+   ```
 
-# 3. Migrate & seed
-npx prisma migrate deploy
-npx prisma db seed
+2. **Setup Backend**
 
-# 4. Run
-cd frontend
-pnpm run dev
+   ```bash
+   cd server
+   pnpm install
+   # Configure .env with DATABASE_URL, JWT_SECRET, etc.
+   npx prisma migrate dev
+   pnpm run dev
+   ```
 
-cd server        # frontend on :3000
-pnpm run deve # backend  on :4000
-```
+3. **Setup Frontend**
+   ```bash
+   cd next-app
+   pnpm install
+   pnpm run dev
+   ```
 
-## Project Structure
+## 🗺️ Roadmap
 
-```           – Shared Tailwind components
-```
+- [ ] WebSocket-based multi-device timer sync
+- [ ] Modular drag-and-drop dashboard blocks
+- [ ] AI forecasting engine (v1)
+- [ ] Mobile app site-blocking during focus sessions
 
-## Key Routes
-
-- `/timer` – Pomodoro dashboard  
-- `/habits` – 21-day board  
-- `/stats` – Trends, deltas, AI insight  
-- `/export` – Download data  
-
-## Env Vars
-
-```
-DATABASE_URL=
-JWT_SECRET=
-OPENAI_API_KEY=
-REDIS_URL=         (optional, for rate-limit)
-```
-
-## Scripts
-
-- `npm run build` – Production build  
-- `npm run lint` – ESLint + Prettier  
-- `npm run test` – Jest suites  
-
-## Deployment
-
-Dockerfile included. Fly.io one-click:
-
-```
-fly launch
-fly deploy
-```
-
-## Roadmap
-
-- Mobile app block during focus blocks  
-- GIF confetti packs for 2/4/6 habit completions  
-- Notion-style database views for advanced users  
-
-## License
+## 📄 License
 
 MIT

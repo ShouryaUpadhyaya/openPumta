@@ -6,8 +6,20 @@ import { ApiResponse } from "../utils/ApiResponse";
 
 const getAllSubject = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
+  const idNum = Number(id);
+  const { to, from } = req.query; // ?from=...&to=...
+
+  if (typeof to !== "string" || typeof from !== "string") {
+    throw new ApiError(400, "Invalid type of To/From");
+  }
   const subjects = await prisma.subject.findMany({
-    where: { userId: parseInt(id) },
+    where: {
+      userId: idNum,
+      createdAt: {
+        gte: from,
+        lte: to,
+      },
+    },
   });
   return res
     .status(200)
@@ -32,9 +44,10 @@ const createSubject = asyncHandler(async (req: Request, res: Response) => {
 const updateSubject = asyncHandler(async (req: Request, res: Response) => {
   const { name } = req.body;
   const { id } = req.params;
+  const idNum = Number(id);
   const subject = await prisma.subject.update({
     where: {
-      id: parseInt(id),
+      id: idNum,
     },
     data: {
       name: name,
@@ -48,9 +61,10 @@ const updateSubject = asyncHandler(async (req: Request, res: Response) => {
 
 const startSubjectLog = asyncHandler(async (req: Request, res: Response) => {
   const { subjectId } = req.params;
+  const subjectIdNum = Number(subjectId);
   const log = await prisma.subjectLog.create({
     data: {
-      subjectId: parseInt(subjectId),
+      subjectId: subjectIdNum,
       startedAt: new Date(),
     },
   });
@@ -59,9 +73,10 @@ const startSubjectLog = asyncHandler(async (req: Request, res: Response) => {
 
 const endSubjectLog = asyncHandler(async (req: Request, res: Response) => {
   const { subjectId } = req.params;
+  const subjectIdNum = Number(subjectId);
   const activeLog = await prisma.subjectLog.findFirst({
     where: {
-      subjectId: parseInt(subjectId),
+      subjectId: subjectIdNum,
       endedAt: null,
     },
   });
@@ -82,6 +97,7 @@ const endSubjectLog = asyncHandler(async (req: Request, res: Response) => {
 const getSubjectLogs = asyncHandler(async (req: Request, res: Response) => {
   // GET /subjects/:subjectId/logs?from=2026-02-01&to=2026-02-28
   const { subjectId } = req.params;
+  const subjectIdNum = Number(subjectId);
   const { from, to } = req.query;
 
   if (!subjectId) {
@@ -90,7 +106,7 @@ const getSubjectLogs = asyncHandler(async (req: Request, res: Response) => {
 
   const logs = await prisma.subjectLog.findMany({
     where: {
-      subjectId: parseInt(subjectId),
+      subjectId: subjectIdNum,
       deleted: false,
       ...(from || to
         ? {
@@ -114,6 +130,7 @@ const getSubjectLogs = asyncHandler(async (req: Request, res: Response) => {
 const getAllSubjectsWithLogs = asyncHandler(
   async (req: Request, res: Response) => {
     const { userId } = req.params;
+    const userIdNum = Number(userId);
 
     if (!userId) {
       throw new ApiError(400, "User ID is required");
@@ -121,7 +138,7 @@ const getAllSubjectsWithLogs = asyncHandler(
 
     const subjects = await prisma.subject.findMany({
       where: {
-        userId: parseInt(userId),
+        userId: userIdNum,
         deleted: false,
       },
       include: {
@@ -142,10 +159,10 @@ const getAllSubjectsWithLogs = asyncHandler(
         new ApiResponse(
           200,
           subjects,
-          "Subjects with logs fetched successfully"
-        )
+          "Subjects with logs fetched successfully",
+        ),
       );
-  }
+  },
 );
 
 const getDashboardData = asyncHandler(async (req: Request, res: Response) => {
@@ -154,13 +171,13 @@ const getDashboardData = asyncHandler(async (req: Request, res: Response) => {
   if (!userId) {
     throw new ApiError(400, "User ID is required");
   }
-
+  const userIdNum = Number(userId);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   const subjects = await prisma.subject.findMany({
     where: {
-      userId: parseInt(userId),
+      userId: userIdNum,
       deleted: false,
     },
   });
@@ -168,7 +185,7 @@ const getDashboardData = asyncHandler(async (req: Request, res: Response) => {
   const todayLogs = await prisma.subjectLog.findMany({
     where: {
       subject: {
-        userId: parseInt(userId),
+        userId: userIdNum,
       },
       startedAt: {
         gte: today,
@@ -183,7 +200,7 @@ const getDashboardData = asyncHandler(async (req: Request, res: Response) => {
   const activeLog = await prisma.subjectLog.findFirst({
     where: {
       subject: {
-        userId: parseInt(userId),
+        userId: userIdNum,
       },
       endedAt: null,
       deleted: false,
@@ -201,8 +218,8 @@ const getDashboardData = asyncHandler(async (req: Request, res: Response) => {
         todayStats: todayLogs,
         activeLog,
       },
-      "Dashboard data fetched successfully"
-    )
+      "Dashboard data fetched successfully",
+    ),
   );
 });
 
