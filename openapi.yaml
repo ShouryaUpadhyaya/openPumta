@@ -1,0 +1,267 @@
+openapi: 3.0.0
+info:
+  title: openPumta API
+  description: Backend API for the openPumta Habit & Focus Engine.
+  version: 1.0.0
+servers:
+  - url: http://localhost:4000/api
+    description: Local development server
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: connect.sid
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        data:
+          type: object
+        message:
+          type: string
+        success:
+          type: boolean
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        name:
+          type: string
+        avatarUrl:
+          type: string
+        deleted:
+          type: boolean
+
+    Subject:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        userId:
+          type: integer
+
+    Habit:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        userId:
+          type: integer
+        subjectId:
+          type: integer
+          nullable: true
+        description:
+          type: string
+        difficulty:
+          type: string
+          enum: [HIGH, MID, LOW]
+
+    ToDo:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        discription:
+          type: string
+        userId:
+          type: integer
+
+paths:
+  # Auth Routes
+  /auth/google:
+    get:
+      summary: Login with Google
+      tags: [Auth]
+      responses:
+        302:
+          description: Redirects to Google OAuth
+  /auth/user:
+    get:
+      summary: Get currently authenticated user
+      tags: [Auth]
+      security:
+        - cookieAuth: []
+      responses:
+        200:
+          description: Returns User object
+  /auth/logout:
+    post:
+      summary: Logout
+      tags: [Auth]
+      responses:
+        200:
+          description: Logged out successfully
+
+  # User Routes
+  /users:
+    get:
+      summary: Get all users
+      tags: [Users]
+      responses:
+        200:
+          description: List of users
+    post:
+      summary: Create a new user
+      tags: [Users]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                name:
+                  type: string
+      responses:
+        201:
+          description: User created
+
+  # Subject Routes
+  /subject/{userId}:
+    get:
+      summary: Get all subjects for a user
+      tags: [Subjects]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: List of subjects
+  /subject:
+    post:
+      summary: Create a subject
+      tags: [Subjects]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                name:
+                  type: string
+      responses:
+        200:
+          description: Subject created
+  /subject/{subjectId}/startTimer:
+    patch:
+      summary: Start a subject focus session
+      tags: [Subjects]
+      parameters:
+        - name: subjectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Timer started
+  /subject/{subjectId}/endTimer:
+    patch:
+      summary: End a subject focus session
+      tags: [Subjects]
+      parameters:
+        - name: subjectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Timer ended
+
+  # Habit Routes
+  /habits/user/{userId}:
+    get:
+      summary: Get all habits for a user
+      tags: [Habits]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: List of habits
+  /habits:
+    post:
+      summary: Create a habit
+      tags: [Habits]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                name:
+                  type: string
+                description:
+                  type: string
+                difficulty:
+                  type: string
+                  enum: [HIGH, MID, LOW]
+                subjectId:
+                  type: integer
+      responses:
+        200:
+          description: Habit created
+
+  # ToDo Routes
+  /todo/user/{userId}:
+    get:
+      summary: Get all ToDos for a user
+      tags: [ToDos]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: List of ToDos
+  /todo/create:
+    post:
+      summary: Create a ToDo
+      tags: [ToDos]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                title:
+                  type: string
+                description:
+                  type: string
+      responses:
+        200:
+          description: ToDo created
