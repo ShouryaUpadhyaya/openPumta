@@ -16,8 +16,8 @@ const getAllSubject = asyncHandler(async (req: Request, res: Response) => {
     where: {
       userId: idNum,
       createdAt: {
-        gte: from,
-        lte: to,
+        gte: new Date(from as string),
+        lte: new Date(to as string),
       },
     },
   });
@@ -222,7 +222,7 @@ const getDashboardData = asyncHandler(async (req: Request, res: Response) => {
       },
       ...(from || to
         ? {
-            startSubjectLog: {
+            startedAt: {
               ...(from && { gte: new Date(from as string) }),
               ...(to && { lte: new Date(to as string) }),
             },

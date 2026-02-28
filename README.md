@@ -123,6 +123,11 @@ Moving towards a "Notion-like" block system where you model your own productivit
 - [ ] AI forecasting engine (v1)
 - [ ] Mobile app site-blocking during focus sessions
 
+## Documentation
+
+- [Backend API Documentation](./BACKEND_API.md)
+- [OpenAPI Spec](./openapi.yaml)
+
 ## 📄 License
 
 MIT
