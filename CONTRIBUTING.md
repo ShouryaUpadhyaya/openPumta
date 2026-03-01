@@ -9,15 +9,18 @@ We are committed to providing a welcoming and inclusive experience for everyone.
 ## How to Contribute
 
 ### 1. Reporting Bugs
+
 - Search existing issues to see if the bug has already been reported.
 - If not, create a new issue with a clear title and description.
 - Include steps to reproduce the bug and any relevant error logs or screenshots.
 
 ### 2. Feature Requests
+
 - Check the [Roadmap](README.md#roadmap) and existing issues.
 - Open a new issue to discuss the feature idea before starting implementation.
 
 ### 3. Pull Request Process
+
 - Fork the repository and create your branch from `main`.
 - Ensure your code follows the project's style and passes linting.
 - Update documentation if necessary.
@@ -27,6 +30,7 @@ We are committed to providing a welcoming and inclusive experience for everyone.
 ## Development Environment Setup
 
 ### Prerequisites
+
 - [Node.js](https://nodejs.org/) (v18 or higher)
 - [pnpm](https://pnpm.io/)
 - [PostgreSQL](https://www.postgresql.org/)
@@ -34,21 +38,25 @@ We are committed to providing a welcoming and inclusive experience for everyone.
 ### Setting Up the Project
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/yourhandle/openPumta.git
    cd openPumta
    ```
 
 2. **Install dependencies:**
+
    ```bash
    pnpm install
    ```
 
 3. **Environment Variables:**
    - Copy the `.env.example` to `.env` in the root (or in each workspace if preferred).
+
    ```bash
    cp .env.example .env
    ```
+
    - Update the values in the `.env` file (Database URL, JWT secret, etc.).
 
 4. **Database Setup:**
@@ -72,6 +80,7 @@ We are committed to providing a welcoming and inclusive experience for everyone.
      ```
 
 ## Project Structure
+
 - `/next-app`: Next.js frontend (UI, Zustand store, components).
 - `/server`: Express.js backend (Prisma models, controllers, routes).
 
