@@ -1,12 +1,12 @@
-"use client";
-import Clock from "./components/Home/Clock";
-import Habits from "./components/Home/Habits";
-import Stats from "./components/Home/Stats";
-import Subjects from "./components/Home/Subjects";
-import { useAuthStore } from "@/store/useAuthStore";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { LogIn, LogOut, User } from "lucide-react";
+'use client';
+import Clock from './components/Home/Clock';
+import Habits from './components/Home/Habits';
+import Stats from './components/Home/Stats';
+import Subjects from './components/Home/Subjects';
+import { useAuthStore } from '@/store/useAuthStore';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { LogIn, LogOut, User } from 'lucide-react';
 
 export default function Home() {
   const { user, logout, loading } = useAuthStore();
@@ -29,16 +29,9 @@ export default function Home() {
               <div className="flex items-center gap-4">
                 <div className="hidden sm:flex flex-col items-end">
                   <span className="text-sm font-medium">{user.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {user.email}
-                  </span>
+                  <span className="text-xs text-muted-foreground">{user.email}</span>
                 </div>
-                <Button
-                  asChild
-                  variant="outline"
-                  size="icon"
-                  className="rounded-full shrink-0"
-                >
+                <Button asChild variant="outline" size="icon" className="rounded-full shrink-0">
                   <Link href="/profile">
                     {user.avatarUrl ? (
                       <img

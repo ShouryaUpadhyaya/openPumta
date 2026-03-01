@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { useCounterStore } from "@/store/useStore";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { useCounterStore } from '@/store/useStore';
 
 export type Habit = {
   id: string;
@@ -64,13 +64,12 @@ export default function Habits() {
           Habits.slice(0, 6).map((habit) => (
             <Card key={habit.id} size="sm" className="bg-background border-border/40">
               <CardContent className="flex items-center justify-between p-3">
-                <span className={`text-sm ${habit.completed ? "line-through text-muted-foreground" : ""}`}>
+                <span
+                  className={`text-sm ${habit.completed ? 'line-through text-muted-foreground' : ''}`}
+                >
                   {habit.name}
                 </span>
-                <Checkbox
-                  checked={habit.completed}
-                  onCheckedChange={() => toggleHabit(habit.id)}
-                />
+                <Checkbox checked={habit.completed} onCheckedChange={() => toggleHabit(habit.id)} />
               </CardContent>
             </Card>
           ))

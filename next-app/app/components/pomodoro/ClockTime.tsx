@@ -1,6 +1,6 @@
-"use client";
-import React from "react";
-import { pad } from "@/lib/utils";
+'use client';
+import React from 'react';
+import { pad } from '@/lib/utils';
 
 type ClockTimeProps = {
   hours: number;
@@ -10,7 +10,7 @@ type ClockTimeProps = {
 };
 
 function ClockTime({ hours, minutes, seconds, color }: ClockTimeProps) {
-  const Color = color ? "white" : "primary";
+  const Color = color ? 'white' : 'primary';
   return (
     <div className="relative text-4xl font-semibold">
       <h1 className={`font-bold  text-${Color}`}>

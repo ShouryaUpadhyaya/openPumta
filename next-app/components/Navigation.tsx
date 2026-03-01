@@ -1,16 +1,16 @@
-"use client";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Home, BarChart, Timer, ListChecks, User, LogIn } from "lucide-react";
-import { useEffect } from "react";
-import { useAuthStore } from "@/store/useAuthStore";
+'use client';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Home, BarChart, Timer, ListChecks, User, LogIn } from 'lucide-react';
+import { useEffect } from 'react';
+import { useAuthStore } from '@/store/useAuthStore';
 
 const navItems = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/pomodoro", label: "Pomodoro", icon: Timer },
-  { href: "/stats", label: "Stats", icon: BarChart },
-  { href: "/todo", label: "To-Do", icon: ListChecks },
-  { href: "/profile", label: "Profile", icon: User },
+  { href: '/', label: 'Home', icon: Home },
+  { href: '/pomodoro', label: 'Pomodoro', icon: Timer },
+  { href: '/stats', label: 'Stats', icon: BarChart },
+  { href: '/todo', label: 'To-Do', icon: ListChecks },
+  { href: '/profile', label: 'Profile', icon: User },
 ];
 
 export default function Navigation() {
@@ -30,9 +30,7 @@ export default function Navigation() {
             <Link key={item.href} href={item.href}>
               <div
                 className={`flex flex-col items-center gap-1 ${
-                  pathname === item.href
-                    ? "text-primary"
-                    : "text-muted-foreground"
+                  pathname === item.href ? 'text-primary' : 'text-muted-foreground'
                 } hover:text-primary transition-colors`}
               >
                 <item.icon className="h-6 w-6" />
@@ -44,9 +42,7 @@ export default function Navigation() {
             <Link href="/login">
               <div
                 className={`flex flex-col items-center gap-1 ${
-                  pathname === "/login"
-                    ? "text-primary"
-                    : "text-muted-foreground"
+                  pathname === '/login' ? 'text-primary' : 'text-muted-foreground'
                 } hover:text-primary transition-colors`}
               >
                 <LogIn className="h-6 w-6" />

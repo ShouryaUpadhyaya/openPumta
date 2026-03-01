@@ -1,29 +1,23 @@
-"use client";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Subject, columns } from "./Subjects/columbs";
-import { DataTable } from "./Subjects/data-table";
-import { Button } from "@/components/ui/button";
+'use client';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Subject, columns } from './Subjects/columbs';
+import { DataTable } from './Subjects/data-table';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { useCounterStore } from "@/store/useStore";
-import { ConvertSecsToTimer } from "@/lib/utils";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { useCounterStore } from '@/store/useStore';
+import { ConvertSecsToTimer } from '@/lib/utils';
 
 function Subjects() {
-  const {
-    addSubject,
-    Subjects,
-    toggleTimer,
-    timerRunningSubjectId,
-    deleteSubject,
-    updateSubject,
-  } = useCounterStore();
+  const { addSubject, Subjects, toggleTimer, timerRunningSubjectId, deleteSubject, updateSubject } =
+    useCounterStore();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
@@ -32,7 +26,7 @@ function Subjects() {
 
   const handlePlayClick = (subjectId: string) => {
     toggleTimer(subjectId);
-    router.push("/pomodoro");
+    router.push('/pomodoro');
   };
 
   const handleEdit = (subject: Subject) => {
@@ -46,7 +40,7 @@ function Subjects() {
         <h1 className="text-2xl font-bold">Subjects</h1>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button size={"sm"} className="font-bold">
+            <Button size={'sm'} className="font-bold">
               Add Subject
             </Button>
           </DialogTrigger>
@@ -59,12 +53,9 @@ function Subjects() {
                 e.preventDefault();
                 const form = e.currentTarget;
                 const name = (form.elements[0] as HTMLInputElement).value;
-                const hours =
-                  Number((form.elements[1] as HTMLInputElement).value) || 0;
-                const minutes =
-                  Number((form.elements[2] as HTMLInputElement).value) || 0;
-                const seconds =
-                  Number((form.elements[3] as HTMLInputElement).value) || 0;
+                const hours = Number((form.elements[1] as HTMLInputElement).value) || 0;
+                const minutes = Number((form.elements[2] as HTMLInputElement).value) || 0;
+                const seconds = Number((form.elements[3] as HTMLInputElement).value) || 0;
                 const goalWorkSecs = hours * 3600 + minutes * 60 + seconds;
                 addSubject(name, goalWorkSecs);
                 form.reset();
@@ -110,12 +101,9 @@ function Subjects() {
                 if (!editingSubject) return;
                 const form = e.currentTarget;
                 const name = (form.elements[0] as HTMLInputElement).value;
-                const hours =
-                  Number((form.elements[1] as HTMLInputElement).value) || 0;
-                const minutes =
-                  Number((form.elements[2] as HTMLInputElement).value) || 0;
-                const seconds =
-                  Number((form.elements[3] as HTMLInputElement).value) || 0;
+                const hours = Number((form.elements[1] as HTMLInputElement).value) || 0;
+                const minutes = Number((form.elements[2] as HTMLInputElement).value) || 0;
+                const seconds = Number((form.elements[3] as HTMLInputElement).value) || 0;
                 const goalWorkSecs = hours * 3600 + minutes * 60 + seconds;
                 updateSubject({
                   ...editingSubject,
@@ -127,34 +115,36 @@ function Subjects() {
               }}
               className="flex flex-col gap-4"
             >
-              <Input
-                placeholder="Subject Name"
-                required
-                defaultValue={editingSubject?.name}
-              />
+              <Input placeholder="Subject Name" required defaultValue={editingSubject?.name} />
               <div className="flex items-center gap-2">
                 <Input
                   placeholder="hh"
                   type="number"
-                  defaultValue={ConvertSecsToTimer({
-                    workSecs: editingSubject.goalWorkSecs,
-                  }).hours}
+                  defaultValue={
+                    ConvertSecsToTimer({
+                      workSecs: editingSubject.goalWorkSecs,
+                    }).hours
+                  }
                 />
                 <span>:</span>
                 <Input
                   placeholder="mm"
                   type="number"
-                  defaultValue={ConvertSecsToTimer({
-                    workSecs: editingSubject.goalWorkSecs,
-                  }).minutes}
+                  defaultValue={
+                    ConvertSecsToTimer({
+                      workSecs: editingSubject.goalWorkSecs,
+                    }).minutes
+                  }
                 />
                 <span>:</span>
                 <Input
                   placeholder="ss"
                   type="number"
-                  defaultValue={ConvertSecsToTimer({
-                    workSecs: editingSubject.goalWorkSecs,
-                  }).seconds}
+                  defaultValue={
+                    ConvertSecsToTimer({
+                      workSecs: editingSubject.goalWorkSecs,
+                    }).seconds
+                  }
                 />
               </div>
               <Button type="submit">Save</Button>

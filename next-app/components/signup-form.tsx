@@ -1,27 +1,25 @@
-"use client";
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+'use client';
+import React from 'react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import Link from "next/link"
-import { useEffect, useState } from "react"
+} from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
-export function SignupForm({
-  className,
-  ...props
-}: React.ComponentProps<"form">) {
-  const [user, setUser] = useState<any>(null);
+export function SignupForm({ className, ...props }: React.ComponentProps<'form'>) {
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/auth/user`, {
-      credentials: "include",
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000'}/api/auth/user`, {
+      credentials: 'include',
     })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
@@ -32,13 +30,13 @@ export function SignupForm({
   }, []);
 
   const handleGoogleSignup = () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/auth/google`;
+    window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000'}/api/auth/google`;
   };
 
   const handleLogout = () => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/auth/logout`, {
-      method: "POST",
-      credentials: "include",
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000'}/api/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
     }).then(() => {
       window.location.reload();
     });
@@ -50,7 +48,7 @@ export function SignupForm({
 
   if (user) {
     return (
-      <div className={cn("flex flex-col gap-6 text-center", className)}>
+      <div className={cn('flex flex-col gap-6 text-center', className)}>
         <h1 className="text-2xl font-bold">Welcome, {user.name}!</h1>
         <p className="text-muted-foreground text-sm">
           You already have an account and are signed in as <strong>{user.email}</strong>
@@ -68,7 +66,7 @@ export function SignupForm({
   }
 
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
+    <form className={cn('flex flex-col gap-6', className)} {...props}>
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">Create your account</h1>
@@ -78,13 +76,7 @@ export function SignupForm({
         </div>
         <Field>
           <FieldLabel htmlFor="name">Full Name</FieldLabel>
-          <Input
-            id="name"
-            type="text"
-            placeholder="John Doe"
-            required
-            className="bg-background"
-          />
+          <Input id="name" type="text" placeholder="John Doe" required className="bg-background" />
         </Field>
         <Field>
           <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -96,30 +88,17 @@ export function SignupForm({
             className="bg-background"
           />
           <FieldDescription>
-            We&apos;ll use this to contact you. We will not share your email
-            with anyone else.
+            We&apos;ll use this to contact you. We will not share your email with anyone else.
           </FieldDescription>
         </Field>
         <Field>
           <FieldLabel htmlFor="password">Password</FieldLabel>
-          <Input
-            id="password"
-            type="password"
-            required
-            className="bg-background"
-          />
-          <FieldDescription>
-            Must be at least 8 characters long.
-          </FieldDescription>
+          <Input id="password" type="password" required className="bg-background" />
+          <FieldDescription>Must be at least 8 characters long.</FieldDescription>
         </Field>
         <Field>
           <FieldLabel htmlFor="confirm-password">Confirm Password</FieldLabel>
-          <Input
-            id="confirm-password"
-            type="password"
-            required
-            className="bg-background"
-          />
+          <Input id="confirm-password" type="password" required className="bg-background" />
           <FieldDescription>Please confirm your password.</FieldDescription>
         </Field>
         <Field>
@@ -144,5 +123,5 @@ export function SignupForm({
         </Field>
       </FieldGroup>
     </form>
-  )
+  );
 }

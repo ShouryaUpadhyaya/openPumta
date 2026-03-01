@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
-import { IoIosPlay, IoIosPause } from "react-icons/io";
+import { ColumnDef } from '@tanstack/react-table';
+import { Button } from '@/components/ui/button';
+import { IoIosPlay, IoIosPause } from 'react-icons/io';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,15 +10,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
+} from '@/components/ui/dropdown-menu';
+import { MoreHorizontal } from 'lucide-react';
 
 export type Subject = {
   id: string;
   name: string;
   workSecs: number;
   goalWorkSecs: number;
-  status: "not Started" | "good progress" | "excelent" | "failed";
+  status: 'not Started' | 'good progress' | 'excelent' | 'failed';
   date: string;
   additionInfo?: string;
 };
@@ -35,7 +35,7 @@ export const columns = ({
   handleEdit: (subject: Subject) => void;
 }): ColumnDef<Subject>[] => [
   {
-    id: "actions",
+    id: 'actions',
     cell: ({ row }) => {
       const subject = row.original;
       const isRunning = runningSubjectId === subject.id;
@@ -53,13 +53,9 @@ export const columns = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => handleEdit(subject)}>
-                Edit
-              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleEdit(subject)}>Edit</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => deleteSubject(subject.id)}>
-                Delete
-              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => deleteSubject(subject.id)}>Delete</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -67,25 +63,24 @@ export const columns = ({
     },
   },
   {
-    accessorKey: "name",
-    header: "Subject",
+    accessorKey: 'name',
+    header: 'Subject',
   },
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: 'status',
+    header: 'Status',
   },
   {
-    header: "Progress",
+    header: 'Progress',
     cell: ({ row }) => {
       const { workSecs, goalWorkSecs } = row.original;
-      const percent =
-        goalWorkSecs > 0 ? Math.round((workSecs / goalWorkSecs) * 100) : 0;
+      const percent = goalWorkSecs > 0 ? Math.round((workSecs / goalWorkSecs) * 100) : 0;
       return `${percent}%`;
     },
   },
   {
-    accessorKey: "workSecs",
-    header: "Worked (hrs)",
+    accessorKey: 'workSecs',
+    header: 'Worked (hrs)',
     cell: ({ row }) => {
       const { workSecs, goalWorkSecs } = row.original;
 
@@ -93,8 +88,7 @@ export const columns = ({
       const minutes = Math.floor((workSecs % 3600) / 60);
       const seconds = Math.floor(workSecs % 60);
 
-      const percent =
-        goalWorkSecs > 0 ? Math.round((workSecs / goalWorkSecs) * 100) : 0;
+      const percent = goalWorkSecs > 0 ? Math.round((workSecs / goalWorkSecs) * 100) : 0;
 
       const hue = Math.min(120, (percent / 100) * 120);
       // 0   = red
@@ -105,25 +99,21 @@ export const columns = ({
         color: `hsl(${hue}, 80%, 45%)`,
       };
 
-      const pad = (n: number) => String(n).padStart(2, "0");
+      const pad = (n: number) => String(n).padStart(2, '0');
 
-      return (
-        <span style={style}>
-          {`${pad(hours)}:${pad(minutes)}:${pad(seconds)}`}
-        </span>
-      );
+      return <span style={style}>{`${pad(hours)}:${pad(minutes)}:${pad(seconds)}`}</span>;
     },
   },
   {
-    accessorKey: "goalWorkSecs",
-    header: "Goal (hrs)",
+    accessorKey: 'goalWorkSecs',
+    header: 'Goal (hrs)',
     cell: ({ row }) => {
       const { goalWorkSecs } = row.original;
       return (goalWorkSecs / 3600).toFixed(1);
     },
   },
   {
-    accessorKey: "date",
-    header: "Date",
+    accessorKey: 'date',
+    header: 'Date',
   },
 ];

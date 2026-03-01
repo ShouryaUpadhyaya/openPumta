@@ -1,10 +1,11 @@
-import passport from "passport";
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import { prisma } from "../../prisma/prismaClient";
-import { ApiError } from "../utils/ApiError";
-import "dotenv/config";
+import { Express } from 'express';
+import passport from 'passport';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import { prisma } from '../../prisma/prismaClient';
+import { ApiError } from '../utils/ApiError';
+import 'dotenv/config';
 
-const backendUrl = process.env.BACKEND_URL || "http://localhost:4000";
+const backendUrl = process.env.BACKEND_URL || 'http://localhost:4000';
 
 passport.use(
   new GoogleStrategy(
@@ -16,7 +17,7 @@ passport.use(
     async (accessToken, refreshToken, profile, done) => {
       const email = profile.emails?.[0].value;
       if (!email) {
-        return done(new ApiError(400, "No email found in Google profile"));
+        return done(new ApiError(400, 'No email found in Google profile'));
       }
 
       try {
@@ -42,8 +43,8 @@ passport.use(
   ),
 );
 
-passport.serializeUser((user: any, done) => {
-  done(null, user.id);
+passport.serializeUser((user: Express.User, done) => {
+  done(null, (user as { id: number }).id);
 });
 
 passport.deserializeUser(async (id: number, done) => {

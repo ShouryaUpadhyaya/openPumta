@@ -1,36 +1,40 @@
-"use client";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { GalleryVerticalEnd, Loader2 } from "lucide-react";
-import Link from "next/link";
+'use client';
+import React, { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { GalleryVerticalEnd, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl?: string;
+}
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    avatarUrl: "",
+    name: '',
+    email: '',
+    avatarUrl: '',
   });
 
   useEffect(() => {
-    fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/auth/user`,
-      {
-        credentials: "include",
-      },
-    )
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000'}/api/auth/user`, {
+      credentials: 'include',
+    })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data) {
           setUser(data);
           setFormData({
-            name: data.name || "",
-            email: data.email || "",
-            avatarUrl: data.avatarUrl || "",
+            name: data.name || '',
+            email: data.email || '',
+            avatarUrl: data.avatarUrl || '',
           });
         }
         setLoading(false);
@@ -40,23 +44,24 @@ export default function ProfilePage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
     setSaving(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/users/${user.id}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000'}/api/users/${user.id}`,
         {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData),
         },
       );
       if (res.ok) {
         const updated = await res.json();
         setUser(updated.data);
-        alert("Profile updated successfully!");
+        alert('Profile updated successfully!');
       }
-    } catch (error) {
-      alert("Failed to update profile");
+    } catch {
+      alert('Failed to update profile');
     } finally {
       setSaving(false);
     }
@@ -87,34 +92,23 @@ export default function ProfilePage() {
         <div className="flex flex-col items-center gap-2 text-center">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted overflow-hidden border-2 border-primary">
             {formData.avatarUrl ? (
-              <img
-                src={formData.avatarUrl}
-                alt="Avatar"
-                className="h-full w-full object-cover"
-              />
+              <img src={formData.avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
             ) : (
               <GalleryVerticalEnd className="h-10 w-10 text-muted-foreground" />
             )}
           </div>
           <h1 className="text-3xl font-bold">Your Profile</h1>
-          <p className="text-muted-foreground text-sm">
-            Update your personal information
-          </p>
+          <p className="text-muted-foreground text-sm">Update your personal information</p>
         </div>
 
-        <form
-          onSubmit={handleSave}
-          className="space-y-6 bg-card p-6 rounded-xl shadow-sm border"
-        >
+        <form onSubmit={handleSave} className="space-y-6 bg-card p-6 rounded-xl shadow-sm border">
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor="avatarUrl">Avatar URL</FieldLabel>
               <Input
                 id="avatarUrl"
                 value={formData.avatarUrl}
-                onChange={(e) =>
-                  setFormData({ ...formData, avatarUrl: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
                 placeholder="https://example.com/avatar.png"
                 className="bg-background"
               />
@@ -124,9 +118,7 @@ export default function ProfilePage() {
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Your Name"
                 required
                 className="bg-background"

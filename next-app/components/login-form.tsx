@@ -1,27 +1,25 @@
-"use client";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+'use client';
+import React from 'react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import Link from "next/link";
-import { useEffect, useState } from "react";
+} from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
-export function LoginForm({
-  className,
-  ...props
-}: React.ComponentProps<"form">) {
-  const [user, setUser] = useState<any>(null);
+export function LoginForm({ className, ...props }: React.ComponentProps<'form'>) {
+  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/auth/user`, {
-      credentials: "include",
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000'}/api/auth/user`, {
+      credentials: 'include',
     })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
@@ -32,14 +30,14 @@ export function LoginForm({
   }, []);
 
   const handleGoogleLogin = () => {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
     window.location.href = `${backendUrl}/api/auth/google`;
   };
 
   const handleLogout = () => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/auth/logout`, {
-      method: "POST",
-      credentials: "include",
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000'}/api/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
     }).then(() => {
       window.location.reload();
     });
@@ -51,7 +49,7 @@ export function LoginForm({
 
   if (user) {
     return (
-      <div className={cn("flex flex-col gap-6 text-center", className)}>
+      <div className={cn('flex flex-col gap-6 text-center', className)}>
         <h1 className="text-2xl font-bold">Welcome back, {user.name}!</h1>
         <p className="text-muted-foreground text-sm">
           You are already signed in as <strong>{user.email}</strong>
@@ -69,7 +67,7 @@ export function LoginForm({
   }
 
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
+    <form className={cn('flex flex-col gap-6', className)} {...props}>
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">Login to your account</h1>
@@ -90,19 +88,11 @@ export function LoginForm({
         <Field>
           <div className="flex items-center">
             <FieldLabel htmlFor="password">Password</FieldLabel>
-            <a
-              href="#"
-              className="ml-auto text-sm underline-offset-4 hover:underline"
-            >
+            <a href="#" className="ml-auto text-sm underline-offset-4 hover:underline">
               Forgot your password?
             </a>
           </div>
-          <Input
-            id="password"
-            type="password"
-            required
-            className="bg-background"
-          />
+          <Input id="password" type="password" required className="bg-background" />
         </Field>
         <Field>
           <Button type="submit">Login</Button>
@@ -121,8 +111,8 @@ export function LoginForm({
             Login with Google
           </Button>
           <FieldDescription className="text-center">
-            Don&apos;t have an account?{" "}
-            <Link href={"/signup"} className="underline underline-offset-4">
+            Don&apos;t have an account?{' '}
+            <Link href={'/signup'} className="underline underline-offset-4">
               Sign up
             </Link>
           </FieldDescription>

@@ -1,5 +1,5 @@
-"use client";
-import React, { useEffect, useState } from "react";
+'use client';
+import React, { useEffect, useState } from 'react';
 import {
   BarChart,
   Bar,
@@ -7,55 +7,54 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   PieChart,
   Pie,
   Cell,
-} from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const dummySubjects = [
-  { name: "Math", workSecs: 3600, goalWorkSecs: 7200 },
-  { name: "Science", workSecs: 1800, goalWorkSecs: 3600 },
-  { name: "History", workSecs: 5400, goalWorkSecs: 3600 },
-  { name: "English", workSecs: 2700, goalWorkSecs: 5400 },
+  { name: 'Math', workSecs: 3600, goalWorkSecs: 7200 },
+  { name: 'Science', workSecs: 1800, goalWorkSecs: 3600 },
+  { name: 'History', workSecs: 5400, goalWorkSecs: 3600 },
+  { name: 'English', workSecs: 2700, goalWorkSecs: 5400 },
 ];
 
 const dummyHabits = [
-  { name: "Read", completed: true },
-  { name: "Exercise", completed: false },
-  { name: "Meditate", completed: true },
-  { name: "Code", completed: true },
+  { name: 'Read', completed: true },
+  { name: 'Exercise', completed: false },
+  { name: 'Meditate', completed: true },
+  { name: 'Code', completed: true },
 ];
 
+const FALLBACK_COLORS = ['#0088FE', '#FF8042', '#00C49F', '#FFBB28', '#FF8042'];
+
 function Stats() {
-  const [chartColors, setChartColors] = useState<string[]>([]);
-  const FALLBACK_COLORS = [
-    "#0088FE",
-    "#FF8042",
-    "#00C49F",
-    "#FFBB28",
-    "#FF8042",
-  ];
+  const [chartColors, setChartColors] = useState<string[]>(FALLBACK_COLORS);
 
   useEffect(() => {
     const rootStyles = getComputedStyle(document.documentElement);
     const colors = [
-      rootStyles.getPropertyValue("--chart-1").trim(),
-      rootStyles.getPropertyValue("--chart-2").trim(),
-      rootStyles.getPropertyValue("--chart-3").trim(),
-      rootStyles.getPropertyValue("--chart-4").trim(),
-      rootStyles.getPropertyValue("--chart-5").trim(),
+      rootStyles.getPropertyValue('--chart-1').trim(),
+      rootStyles.getPropertyValue('--chart-2').trim(),
+      rootStyles.getPropertyValue('--chart-3').trim(),
+      rootStyles.getPropertyValue('--chart-4').trim(),
+      rootStyles.getPropertyValue('--chart-5').trim(),
     ].filter((color) => color);
-    setChartColors(colors.length > 0 ? colors : FALLBACK_COLORS);
+
+    if (colors.length > 0) {
+      requestAnimationFrame(() => {
+        setChartColors(colors);
+      });
+    }
   }, []);
 
   const completedHabits = dummyHabits.filter((habit) => habit.completed).length;
   const totalHabits = dummyHabits.length;
   const habitsData = [
-    { name: "Completed", value: completedHabits },
-    { name: "Pending", value: totalHabits - completedHabits },
+    { name: 'Completed', value: completedHabits },
+    { name: 'Pending', value: totalHabits - completedHabits },
   ];
 
   return (
@@ -80,18 +79,8 @@ function Stats() {
                 <XAxis dataKey="name" fontSize={10} />
                 <YAxis fontSize={10} />
                 <Tooltip />
-                <Bar
-                  dataKey="workHrs"
-                  fill={chartColors[0]}
-                  radius={[2, 2, 0, 0]}
-                  name="Worked"
-                />
-                <Bar
-                  dataKey="goalHrs"
-                  fill={chartColors[1]}
-                  radius={[2, 2, 0, 0]}
-                  name="Goal"
-                />
+                <Bar dataKey="workHrs" fill={chartColors[0]} radius={[2, 2, 0, 0]} name="Worked" />
+                <Bar dataKey="goalHrs" fill={chartColors[1]} radius={[2, 2, 0, 0]} name="Goal" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -113,10 +102,7 @@ function Stats() {
                   dataKey="value"
                 >
                   {habitsData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={chartColors[index % chartColors.length]}
-                    />
+                    <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
                   ))}
                 </Pie>
                 <Tooltip />

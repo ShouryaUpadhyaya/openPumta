@@ -1,7 +1,7 @@
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import { Subject } from "../app/components/Home/Subjects/columbs";
-import { Habit } from "../app/components/Home/Habits";
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { Subject } from '../app/components/Home/Subjects/columbs';
+import { Habit } from '../app/components/Home/Habits';
 
 export type Subtask = {
   id: string;
@@ -21,16 +21,10 @@ type Store = {
   Habits: Habit[];
   Todos: Todo[];
   timerRunningSubjectId: string | null;
-  timer: NodeJS.Timeout | null;
+  timer: ReturnType<typeof setInterval> | null;
   pomodoroTimer: number;
   BreakTimer: number;
-  changeTimerPomodoro: ({
-    workSecs,
-    breakSecs,
-  }: {
-    workSecs: number;
-    breakSecs: number;
-  }) => void;
+  changeTimerPomodoro: ({ workSecs, breakSecs }: { workSecs: number; breakSecs: number }) => void;
   addSubject: (name: string, goalWorkSecs: number) => void;
   deleteSubject: (id: string) => void;
   updateSubject: (subject: Subject) => void;
@@ -51,27 +45,21 @@ export const useCounterStore = create<Store>()(
     (set, get) => ({
       pomodoroTimer: 3600,
       BreakTimer: 600,
-      changeTimerPomodoro: ({
-        workSecs,
-        breakSecs,
-      }: {
-        workSecs: number;
-        breakSecs: number;
-      }) => {
-        set((state) => ({ pomodoroTimer: workSecs, BreakTimer: breakSecs }));
+      changeTimerPomodoro: ({ workSecs, breakSecs }: { workSecs: number; breakSecs: number }) => {
+        set({ pomodoroTimer: workSecs, BreakTimer: breakSecs });
       },
       Subjects: [
         {
-          id: "123",
-          name: "Maths",
+          id: '123',
+          name: 'Maths',
           workSecs: 1234,
           goalWorkSecs: 12345,
-          additionInfo: "a;dkfasdf",
-          status: "excelent",
-          date: "12/12/25",
+          additionInfo: 'a;dkfasdf',
+          status: 'excelent',
+          date: '12/12/25',
         },
       ],
-      Habits: [{ id: "123", name: "coding", completed: false }],
+      Habits: [{ id: '123', name: 'coding', completed: false }],
       Todos: [],
       timerRunningSubjectId: null,
       timer: null,
@@ -84,7 +72,7 @@ export const useCounterStore = create<Store>()(
               name,
               workSecs: 0,
               goalWorkSecs,
-              status: "not Started",
+              status: 'not Started',
               date: new Date().toLocaleDateString(),
             },
           ],
@@ -97,9 +85,7 @@ export const useCounterStore = create<Store>()(
       },
       updateSubject: (subject: Subject) => {
         set((state) => ({
-          Subjects: state.Subjects.map((s) =>
-            s.id === subject.id ? subject : s
-          ),
+          Subjects: state.Subjects.map((s) => (s.id === subject.id ? subject : s)),
         }));
       },
       addHabit: ({ id, name, completed }: Habit) => {
@@ -110,7 +96,7 @@ export const useCounterStore = create<Store>()(
       toggleHabit: (id: string) => {
         set((state) => ({
           Habits: state.Habits.map((habit) =>
-            habit.id === id ? { ...habit, completed: !habit.completed } : habit
+            habit.id === id ? { ...habit, completed: !habit.completed } : habit,
           ),
         }));
       },
@@ -125,7 +111,7 @@ export const useCounterStore = create<Store>()(
       toggleTodo: (id: string) => {
         set((state) => ({
           Todos: state.Todos.map((todo) =>
-            todo.id === id ? { ...todo, completed: !todo.completed } : todo
+            todo.id === id ? { ...todo, completed: !todo.completed } : todo,
           ),
         }));
       },
@@ -140,12 +126,9 @@ export const useCounterStore = create<Store>()(
             todo.id === todoId
               ? {
                   ...todo,
-                  subtasks: [
-                    ...todo.subtasks,
-                    { id: crypto.randomUUID(), text, completed: false },
-                  ],
+                  subtasks: [...todo.subtasks, { id: crypto.randomUUID(), text, completed: false }],
                 }
-              : todo
+              : todo,
           ),
         }));
       },
@@ -158,10 +141,10 @@ export const useCounterStore = create<Store>()(
                   subtasks: todo.subtasks.map((subtask) =>
                     subtask.id === subtaskId
                       ? { ...subtask, completed: !subtask.completed }
-                      : subtask
+                      : subtask,
                   ),
                 }
-              : todo
+              : todo,
           ),
         }));
       },
@@ -171,20 +154,16 @@ export const useCounterStore = create<Store>()(
             todo.id === todoId
               ? {
                   ...todo,
-                  subtasks: todo.subtasks.filter(
-                    (subtask) => subtask.id !== subtaskId
-                  ),
+                  subtasks: todo.subtasks.filter((subtask) => subtask.id !== subtaskId),
                 }
-              : todo
+              : todo,
           ),
         }));
       },
       incrementWorkSecs: (id: string, newWorkSecs: number) => {
         set((state) => ({
           Subjects: state.Subjects.map((subject) =>
-            subject.id === id
-              ? { ...subject, workSecs: subject.workSecs + newWorkSecs }
-              : subject
+            subject.id === id ? { ...subject, workSecs: subject.workSecs + newWorkSecs } : subject,
           ),
         }));
       },
@@ -205,8 +184,8 @@ export const useCounterStore = create<Store>()(
       },
     }),
     {
-      name: "store",
+      name: 'store',
       storage: createJSONStorage(() => localStorage),
-    }
-  )
+    },
+  ),
 );

@@ -1,33 +1,27 @@
-"use client";
-import React, { useState } from "react";
-import { useCounterStore, Todo, Subtask } from "@/store/useStore";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+'use client';
+import React, { useState } from 'react';
+import { useCounterStore, Todo, Subtask } from '@/store/useStore';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { TrashIcon, CornerDownRight, MoreVertical, Plus } from "lucide-react";
+} from '@/components/ui/dropdown-menu';
+import { CornerDownRight, MoreVertical, Plus } from 'lucide-react';
 
 // Small component for adding subtasks
-function SubtaskInput({
-  todoId,
-  onDone,
-}: {
-  todoId: string;
-  onDone: () => void;
-}) {
+function SubtaskInput({ todoId, onDone }: { todoId: string; onDone: () => void }) {
   const { addSubtask } = useCounterStore();
-  const [newSubtaskText, setNewSubtaskText] = useState("");
+  const [newSubtaskText, setNewSubtaskText] = useState('');
 
   const handleAddSubtask = () => {
     if (newSubtaskText.trim()) {
       addSubtask(todoId, newSubtaskText.trim());
-      setNewSubtaskText("");
+      setNewSubtaskText('');
       onDone();
     }
   };
@@ -38,15 +32,11 @@ function SubtaskInput({
         value={newSubtaskText}
         onChange={(e) => setNewSubtaskText(e.target.value)}
         placeholder="Add a new subtask"
-        onKeyDown={(e) => e.key === "Enter" && handleAddSubtask()}
+        onKeyDown={(e) => e.key === 'Enter' && handleAddSubtask()}
         className="h-8"
         autoFocus
       />
-      <Button
-        onClick={handleAddSubtask}
-        size="icon"
-        className="h-8 w-8 flex-shrink-0"
-      >
+      <Button onClick={handleAddSubtask} size="icon" className="h-8 w-8 flex-shrink-0">
         <Plus className="h-4 w-4" />
       </Button>
     </div>
@@ -54,8 +44,7 @@ function SubtaskInput({
 }
 
 function TodoItem({ todo }: { todo: Todo }) {
-  const { toggleTodo, deleteTodo, toggleSubtask, deleteSubtask } =
-    useCounterStore();
+  const { toggleTodo, deleteTodo, toggleSubtask, deleteSubtask } = useCounterStore();
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
 
   return (
@@ -68,7 +57,7 @@ function TodoItem({ todo }: { todo: Todo }) {
         />
         <span
           className={`flex-grow text-2xl ml-4 font-semibold cursor-pointer ${
-            todo.completed ? "line-through text-muted-foreground" : ""
+            todo.completed ? 'line-through text-muted-foreground' : ''
           }`}
           onClick={() => toggleTodo(todo.id)}
         >
@@ -91,10 +80,7 @@ function TodoItem({ todo }: { todo: Todo }) {
                 Add Subtask
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => deleteTodo(todo.id)}
-                className="text-red-500"
-              >
+              <DropdownMenuItem onClick={() => deleteTodo(todo.id)} className="text-red-500">
                 Delete Task
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -111,7 +97,7 @@ function TodoItem({ todo }: { todo: Todo }) {
             />
             <span
               className={`flex-grow cursor-pointer ${
-                subtask.completed ? "line-through text-muted-foreground" : ""
+                subtask.completed ? 'line-through text-muted-foreground' : ''
               }`}
               onClick={() => toggleSubtask(todo.id, subtask.id)}
             >
@@ -138,10 +124,7 @@ function TodoItem({ todo }: { todo: Todo }) {
         ))}
       </ul>
       {isAddingSubtask && (
-        <SubtaskInput
-          todoId={todo.id}
-          onDone={() => setIsAddingSubtask(false)}
-        />
+        <SubtaskInput todoId={todo.id} onDone={() => setIsAddingSubtask(false)} />
       )}
     </li>
   );
@@ -149,12 +132,12 @@ function TodoItem({ todo }: { todo: Todo }) {
 
 export default function TodoPage() {
   const { Todos, addTodo } = useCounterStore();
-  const [newTodoText, setNewTodoText] = useState("");
+  const [newTodoText, setNewTodoText] = useState('');
 
   const handleAddTodo = () => {
     if (newTodoText.trim()) {
       addTodo(newTodoText.trim());
-      setNewTodoText("");
+      setNewTodoText('');
     }
   };
 
@@ -172,7 +155,7 @@ export default function TodoPage() {
           value={newTodoText}
           onChange={(e) => setNewTodoText(e.target.value)}
           placeholder="Add a new to-do"
-          onKeyDown={(e) => e.key === "Enter" && handleAddTodo()}
+          onKeyDown={(e) => e.key === 'Enter' && handleAddTodo()}
           className="p-4 py-6"
         />
         <Button onClick={handleAddTodo} className="py-4 font-black! text-2xl">

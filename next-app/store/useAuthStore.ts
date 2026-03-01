@@ -1,5 +1,5 @@
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 interface User {
   id: number;
@@ -22,35 +22,41 @@ export const useAuthStore = create<AuthState>()(
       loading: true,
       fetchUser: async () => {
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/auth/user`, {
-            credentials: "include",
-          });
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000'}/api/auth/user`,
+            {
+              credentials: 'include',
+            },
+          );
           if (res.ok) {
             const data = await res.json();
             set({ user: data, loading: false });
           } else {
             set({ user: null, loading: false });
           }
-        } catch (error) {
+        } catch {
           set({ user: null, loading: false });
         }
       },
       logout: async () => {
         try {
-          await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/auth/logout`, {
-            method: "POST",
-            credentials: "include",
-          });
+          await fetch(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000'}/api/auth/logout`,
+            {
+              method: 'POST',
+              credentials: 'include',
+            },
+          );
           set({ user: null });
           window.location.reload();
         } catch (error) {
-          console.error("Logout failed", error);
+          console.error('Logout failed', error);
         }
       },
     }),
     {
-      name: "auth-storage",
+      name: 'auth-storage',
       storage: createJSONStorage(() => localStorage),
-    }
-  )
+    },
+  ),
 );

@@ -1,8 +1,8 @@
-import { Request, Response } from "express";
-import { prisma } from "../../prisma/prismaClient";
-import asyncHandler from "../utils/asyncHandler";
-import { ApiResponse } from "../utils/ApiResponse";
-import { ApiError } from "../utils/ApiError";
+import { Request, Response } from 'express';
+import { prisma } from '../../prisma/prismaClient';
+import asyncHandler from '../utils/asyncHandler';
+import { ApiResponse } from '../utils/ApiResponse';
+import { ApiError } from '../utils/ApiError';
 
 const getAllHabits = asyncHandler(async (req: Request, res: Response) => {
   const { userId } = req.params;
@@ -10,7 +10,7 @@ const getAllHabits = asyncHandler(async (req: Request, res: Response) => {
   const { from, to } = req.query;
 
   if (!userId) {
-    throw new ApiError(400, "User ID is required");
+    throw new ApiError(400, 'User ID is required');
   }
 
   const habits = await prisma.habit.findMany({
@@ -31,31 +31,27 @@ const getAllHabits = asyncHandler(async (req: Request, res: Response) => {
     },
   });
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, habits, "Habits fetched successfully"));
+  return res.status(200).json(new ApiResponse(200, habits, 'Habits fetched successfully'));
 });
 
 const createHabit = asyncHandler(async (req: Request, res: Response) => {
   const { userId, name, description, difficulty, subjectId } = req.body;
 
   if (!userId || !name) {
-    throw new ApiError(400, "User ID and Name are required");
+    throw new ApiError(400, 'User ID and Name are required');
   }
 
   const habit = await prisma.habit.create({
     data: {
       name,
       userId: parseInt(userId),
-      description: description || "",
-      difficulty: difficulty || "MID",
+      description: description || '',
+      difficulty: difficulty || 'MID',
       subjectId: subjectId ? parseInt(subjectId) : null,
     },
   });
 
-  res
-    .status(200)
-    .json(new ApiResponse(200, habit, "Habit created successfully"));
+  res.status(200).json(new ApiResponse(200, habit, 'Habit created successfully'));
 });
 
 const updateHabit = asyncHandler(async (req: Request, res: Response) => {
@@ -76,9 +72,7 @@ const updateHabit = asyncHandler(async (req: Request, res: Response) => {
     },
   });
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, updatedHabit, "Habit updated successfully"));
+  return res.status(200).json(new ApiResponse(200, updatedHabit, 'Habit updated successfully'));
 });
 
 const startHabitLog = asyncHandler(async (req: Request, res: Response) => {
@@ -92,7 +86,7 @@ const startHabitLog = asyncHandler(async (req: Request, res: Response) => {
     },
   });
 
-  res.status(200).json(new ApiResponse(200, log, "Started Habit Timer"));
+  res.status(200).json(new ApiResponse(200, log, 'Started Habit Timer'));
 });
 
 const endHabitLog = asyncHandler(async (req: Request, res: Response) => {
@@ -108,7 +102,7 @@ const endHabitLog = asyncHandler(async (req: Request, res: Response) => {
   });
 
   if (!activeLog) {
-    throw new ApiError(404, "Active habit timer not found");
+    throw new ApiError(404, 'Active habit timer not found');
   }
 
   const updatedLog = await prisma.habitTimeLog.update({
@@ -118,7 +112,7 @@ const endHabitLog = asyncHandler(async (req: Request, res: Response) => {
     },
   });
 
-  res.status(200).json(new ApiResponse(200, updatedLog, "Ended Habit Timer"));
+  res.status(200).json(new ApiResponse(200, updatedLog, 'Ended Habit Timer'));
 });
 
 const getHabitLogs = asyncHandler(async (req: Request, res: Response) => {
@@ -127,7 +121,7 @@ const getHabitLogs = asyncHandler(async (req: Request, res: Response) => {
   const { from, to } = req.query;
 
   if (!habitId) {
-    throw new ApiError(400, "Habit ID is required");
+    throw new ApiError(400, 'Habit ID is required');
   }
 
   const logs = await prisma.habitTimeLog.findMany({
@@ -144,13 +138,11 @@ const getHabitLogs = asyncHandler(async (req: Request, res: Response) => {
         : {}),
     },
     orderBy: {
-      startedAt: "desc",
+      startedAt: 'desc',
     },
   });
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, logs, "Habit logs fetched successfully"));
+  return res.status(200).json(new ApiResponse(200, logs, 'Habit logs fetched successfully'));
 });
 
 const getAllHabitsWithLogs = asyncHandler(async (req: Request, res: Response) => {
@@ -159,7 +151,7 @@ const getAllHabitsWithLogs = asyncHandler(async (req: Request, res: Response) =>
   const userIdNum = Number(userId);
 
   if (!userId) {
-    throw new ApiError(400, "User ID is required");
+    throw new ApiError(400, 'User ID is required');
   }
 
   const habits = await prisma.habit.findMany({
@@ -182,7 +174,7 @@ const getAllHabitsWithLogs = asyncHandler(async (req: Request, res: Response) =>
             : {}),
         },
         orderBy: {
-          startedAt: "desc",
+          startedAt: 'desc',
         },
       },
     },
@@ -190,7 +182,7 @@ const getAllHabitsWithLogs = asyncHandler(async (req: Request, res: Response) =>
 
   return res
     .status(200)
-    .json(new ApiResponse(200, habits, "Habits with logs fetched successfully"));
+    .json(new ApiResponse(200, habits, 'Habits with logs fetched successfully'));
 });
 
 const getHabitDashboardData = asyncHandler(async (req: Request, res: Response) => {
@@ -200,7 +192,7 @@ const getHabitDashboardData = asyncHandler(async (req: Request, res: Response) =
   today.setHours(0, 0, 0, 0);
 
   if (!userId) {
-    throw new ApiError(400, "User ID is required");
+    throw new ApiError(400, 'User ID is required');
   }
 
   const habits = await prisma.habit.findMany({
@@ -210,7 +202,7 @@ const getHabitDashboardData = asyncHandler(async (req: Request, res: Response) =
     },
     include: {
       subject: true,
-    }
+    },
   });
 
   const todayLogs = await prisma.habitTimeLog.findMany({
@@ -249,7 +241,7 @@ const getHabitDashboardData = asyncHandler(async (req: Request, res: Response) =
         todayStats: todayLogs,
         activeLog,
       },
-      "Habit dashboard data fetched successfully",
+      'Habit dashboard data fetched successfully',
     ),
   );
 });

@@ -1,5 +1,5 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -20,15 +20,7 @@ export function ConvertSecsToTimer({
   }
   return { hours, minutes, seconds, percent };
 }
-export function ConvertTimerToSecs({
-  hr,
-  min,
-  sec,
-}: {
-  hr: number;
-  min: number;
-  sec: number;
-}) {
+export function ConvertTimerToSecs({ hr, min, sec }: { hr: number; min: number; sec: number }) {
   return hr * 3600 + min * 60 + sec;
 }
-export const pad = (n: number) => String(n).padStart(2, "0");
+export const pad = (n: number) => String(n).padStart(2, '0');

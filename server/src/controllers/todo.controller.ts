@@ -1,15 +1,15 @@
-import { Request, Response } from "express";
-import { prisma } from "../../prisma/prismaClient";
-import asyncHandler from "../utils/asyncHandler";
-import { ApiResponse } from "../utils/ApiResponse";
-import { ApiError } from "../utils/ApiError";
+import { Request, Response } from 'express';
+import { prisma } from '../../prisma/prismaClient';
+import asyncHandler from '../utils/asyncHandler';
+import { ApiResponse } from '../utils/ApiResponse';
+import { ApiError } from '../utils/ApiError';
 
 const getAllToDos = asyncHandler(async (req: Request, res: Response) => {
   const { userId } = req.params;
   const userIdNum = Number(userId);
 
   if (!userId) {
-    throw new ApiError(400, "User ID is required");
+    throw new ApiError(400, 'User ID is required');
   }
 
   const toDos = await prisma.toDo.findMany({
@@ -20,33 +20,29 @@ const getAllToDos = asyncHandler(async (req: Request, res: Response) => {
       toDoLog: true,
     },
     orderBy: {
-      createdAt: "desc",
+      createdAt: 'desc',
     },
   });
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, toDos, "ToDos fetched successfully"));
+  return res.status(200).json(new ApiResponse(200, toDos, 'ToDos fetched successfully'));
 });
 
 const createToDo = asyncHandler(async (req: Request, res: Response) => {
   const { userId, title, description } = req.body;
 
   if (!userId || !title) {
-    throw new ApiError(400, "User ID and Title are required");
+    throw new ApiError(400, 'User ID and Title are required');
   }
 
   const toDo = await prisma.toDo.create({
     data: {
       title,
-      discription: description || "", // Matching schema's 'discription' spelling
+      discription: description || '', // Matching schema's 'discription' spelling
       userId: parseInt(userId),
     },
   });
 
-  res
-    .status(200)
-    .json(new ApiResponse(200, toDo, "ToDo created successfully"));
+  res.status(200).json(new ApiResponse(200, toDo, 'ToDo created successfully'));
 });
 
 const updateToDo = asyncHandler(async (req: Request, res: Response) => {
@@ -55,7 +51,7 @@ const updateToDo = asyncHandler(async (req: Request, res: Response) => {
   const idNum = Number(id);
 
   if (!id) {
-    throw new ApiError(400, "ToDo ID is required");
+    throw new ApiError(400, 'ToDo ID is required');
   }
 
   const updatedToDo = await prisma.toDo.update({
@@ -68,9 +64,7 @@ const updateToDo = asyncHandler(async (req: Request, res: Response) => {
     },
   });
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, updatedToDo, "ToDo updated successfully"));
+  return res.status(200).json(new ApiResponse(200, updatedToDo, 'ToDo updated successfully'));
 });
 
 const deleteToDo = asyncHandler(async (req: Request, res: Response) => {
@@ -78,7 +72,7 @@ const deleteToDo = asyncHandler(async (req: Request, res: Response) => {
   const idNum = Number(id);
 
   if (!id) {
-    throw new ApiError(400, "ToDo ID is required");
+    throw new ApiError(400, 'ToDo ID is required');
   }
 
   await prisma.toDo.delete({
@@ -87,9 +81,7 @@ const deleteToDo = asyncHandler(async (req: Request, res: Response) => {
     },
   });
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, null, "ToDo deleted successfully"));
+  return res.status(200).json(new ApiResponse(200, null, 'ToDo deleted successfully'));
 });
 
 const startToDoLog = asyncHandler(async (req: Request, res: Response) => {
@@ -97,7 +89,7 @@ const startToDoLog = asyncHandler(async (req: Request, res: Response) => {
   const toDoIdNum = Number(toDoId);
 
   if (!toDoId) {
-    throw new ApiError(400, "ToDo ID is required");
+    throw new ApiError(400, 'ToDo ID is required');
   }
 
   const log = await prisma.toDoLog.create({
@@ -107,7 +99,7 @@ const startToDoLog = asyncHandler(async (req: Request, res: Response) => {
     },
   });
 
-  res.status(200).json(new ApiResponse(200, log, "Started ToDo Timer"));
+  res.status(200).json(new ApiResponse(200, log, 'Started ToDo Timer'));
 });
 
 const endToDoLog = asyncHandler(async (req: Request, res: Response) => {
@@ -115,7 +107,7 @@ const endToDoLog = asyncHandler(async (req: Request, res: Response) => {
   const toDoIdNum = Number(toDoId);
 
   if (!toDoId) {
-    throw new ApiError(400, "ToDo ID is required");
+    throw new ApiError(400, 'ToDo ID is required');
   }
 
   const activeLog = await prisma.toDoLog.findFirst({
@@ -126,7 +118,7 @@ const endToDoLog = asyncHandler(async (req: Request, res: Response) => {
   });
 
   if (!activeLog) {
-    throw new ApiError(404, "Active ToDo timer not found");
+    throw new ApiError(404, 'Active ToDo timer not found');
   }
 
   const updatedLog = await prisma.toDoLog.update({
@@ -136,14 +128,7 @@ const endToDoLog = asyncHandler(async (req: Request, res: Response) => {
     },
   });
 
-  res.status(200).json(new ApiResponse(200, updatedLog, "Ended ToDo Timer"));
+  res.status(200).json(new ApiResponse(200, updatedLog, 'Ended ToDo Timer'));
 });
 
-export {
-  getAllToDos,
-  createToDo,
-  updateToDo,
-  deleteToDo,
-  startToDoLog,
-  endToDoLog,
-};
+export { getAllToDos, createToDo, updateToDo, deleteToDo, startToDoLog, endToDoLog };

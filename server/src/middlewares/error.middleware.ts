@@ -1,42 +1,41 @@
-import { Request, Response, NextFunction } from "express";
-import { ApiError } from "../utils/ApiError";
-import { Prisma } from "../../generated/prisma/client";
+import { Request, Response, NextFunction } from 'express';
+import { ApiError } from '../utils/ApiError';
+import { Prisma } from '../../generated/prisma/client';
 
 const errorHandler = (
-  err: any,
+  err: Error | ApiError | unknown,
   req: Request,
   res: Response,
-  next: NextFunction,
+  _next: NextFunction,
 ) => {
   let error = err;
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
     switch (err.code) {
-      case "P2002":
-        error = new ApiError(409, "Duplicate field value");
+      case 'P2002':
+        error = new ApiError(409, 'Duplicate field value');
         break;
 
-      case "P2025":
-        error = new ApiError(404, "Record not found");
+      case 'P2025':
+        error = new ApiError(404, 'Record not found');
         break;
 
       default:
-        error = new ApiError(400, "Database error");
+        error = new ApiError(400, 'Database error');
         break;
     }
   }
 
   if (!(error instanceof ApiError)) {
     const statusCode =
-      error.statusCode ||
-      (error.name === "PrismaClientKnownRequestError" ? 400 : 500);
-    const message = error.message || "Internal Server Error";
+      error.statusCode || (error.name === 'PrismaClientKnownRequestError' ? 400 : 500);
+    const message = error.message || 'Internal Server Error';
     error = new ApiError(statusCode, message, error?.errors || [], err.stack);
   }
 
   const response = {
     ...error,
     message: error.message,
-    ...(process.env.NODE_ENV === "development" ? { stack: error.stack } : {}),
+    ...(process.env.NODE_ENV === 'development' ? { stack: error.stack } : {}),
   };
 
   return res.status(error.statusCode).json(response);
