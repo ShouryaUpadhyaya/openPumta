@@ -1,10 +1,11 @@
 {
   "name": "Productivity_System",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
   "type": "module",
   "main": "index.js",
   "prepare": "husky",
+  "private": "true",
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
