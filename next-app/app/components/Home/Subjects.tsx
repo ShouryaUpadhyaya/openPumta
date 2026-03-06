@@ -14,28 +14,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { useCounterStore } from '@/store/useStore';
 import { ConvertSecsToTimer } from '@/lib/utils';
-import { useQuery } from '@tanstack/react-query';
-
-const getSubjects = () => {
-  const userId = 14;
-  const to = new Date();
-  return fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/subject/${userId}?to=${to}`)
-    .then((res) => res.json())
-    .catch((error) => {
-      console.error(error);
-      throw error;
-    });
-};
 
 function Subjects() {
   const { addSubject, Subjects, toggleTimer, timerRunningSubjectId, deleteSubject, updateSubject } =
     useCounterStore();
-  const { isPending, data, error } = useQuery({ queryKey: ['subject'], queryFn: getSubjects });
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
-
-  console.log(error, data, isPending);
 
   const router = useRouter();
 
