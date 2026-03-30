@@ -12,6 +12,7 @@
     "@base-ui/react": "^1.0.0",
     "@tanstack/react-query": "^5.90.21",
     "@tanstack/react-table": "^8.21.3",
+    "axios": "^1.14.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.562.0",
@@ -35,9 +36,11 @@
     "@types/password": "^0.1.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.27",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
-    "tailwindcss": "^4",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.1",
     "typescript": "^5"
   }
 }

@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { useCounterStore, Todo, Subtask } from '@/store/useStore';
+import { useTodoStore, Todo, Subtask } from '@/store/useTodoStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -15,7 +15,7 @@ import { CornerDownRight, MoreVertical, Plus } from 'lucide-react';
 
 // Small component for adding subtasks
 function SubtaskInput({ todoId, onDone }: { todoId: string; onDone: () => void }) {
-  const { addSubtask } = useCounterStore();
+  const { addSubtask } = useTodoStore();
   const [newSubtaskText, setNewSubtaskText] = useState('');
 
   const handleAddSubtask = () => {
@@ -44,7 +44,7 @@ function SubtaskInput({ todoId, onDone }: { todoId: string; onDone: () => void }
 }
 
 function TodoItem({ todo }: { todo: Todo }) {
-  const { toggleTodo, deleteTodo, toggleSubtask, deleteSubtask } = useCounterStore();
+  const { toggleTodo, deleteTodo, toggleSubtask, deleteSubtask } = useTodoStore();
   const [isAddingSubtask, setIsAddingSubtask] = useState(false);
 
   return (
@@ -131,7 +131,7 @@ function TodoItem({ todo }: { todo: Todo }) {
 }
 
 export default function TodoPage() {
-  const { Todos, addTodo } = useCounterStore();
+  const { Todos, addTodo } = useTodoStore();
   const [newTodoText, setNewTodoText] = useState('');
 
   const handleAddTodo = () => {

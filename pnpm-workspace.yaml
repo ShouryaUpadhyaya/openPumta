@@ -1,5 +1,6 @@
 packages:
-  - .
+  - 'next-app'
+  - 'server'
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver

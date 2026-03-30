@@ -84,8 +84,8 @@ Moving towards a "Notion-like" block system where you model your own productivit
 
 ## 🛠️ Tech Stack
 
-- **Frontend:** Next.js 15 , TypeScript, Zustand, Tailwind CSS, Recharts
-- **Backend:** Express.js, TypeScript, Prisma ORM, PostgreSQL, JWT + OAuth2.0
+- **Frontend:** Next.js 15 , TypeScript, Zustand, Tailwind CSS, Recharts, axios, tanstack query
+- **Backend:** Express.js, TypeScript, Prisma ORM, PostgreSQL, JWT + OAuth2.0, passportjs
 - **Infrastructure:** Docker
 - **AI:** Weekly insight engine + Goal coaching (OpenAI integration)
 

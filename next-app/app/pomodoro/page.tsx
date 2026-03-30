@@ -2,7 +2,8 @@
 // add a changing avatar in the middle of the pomodoro
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { useCounterStore } from '@/store/useStore';
+import { useSubjectStore } from '@/store/useSubjectStore';
+import { usePomodoroStore } from '@/store/usePomodoroStore';
 import ClockCircle from '../components/pomodoro/ClockCircle';
 import ClockTime from '../components/pomodoro/ClockTime';
 import { ConvertSecsToTimer, pad } from '@/lib/utils';
@@ -11,7 +12,8 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 function PomodoroPage() {
-  const { timerRunningSubjectId, toggleTimer, Subjects, pomodoroTimer } = useCounterStore();
+  const { timerRunningSubjectId, toggleTimer, Subjects } = useSubjectStore();
+  const { pomodoroTimer } = usePomodoroStore();
   const router = useRouter();
 
   const handlePauseClick = () => {

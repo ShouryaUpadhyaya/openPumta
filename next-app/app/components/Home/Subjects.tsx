@@ -12,12 +12,12 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { useCounterStore } from '@/store/useStore';
+import { useSubjectStore } from '@/store/useSubjectStore';
 import { ConvertSecsToTimer } from '@/lib/utils';
 
 function Subjects() {
   const { addSubject, Subjects, toggleTimer, timerRunningSubjectId, deleteSubject, updateSubject } =
-    useCounterStore();
+    useSubjectStore();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);

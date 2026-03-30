@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { useCounterStore } from '@/store/useStore';
+import { useHabitStore } from '@/store/useHabitStore';
 
 export type Habit = {
   id: string;
@@ -21,7 +21,7 @@ export type Habit = {
 };
 
 export default function Habits() {
-  const { Habits, addHabit, toggleHabit } = useCounterStore();
+  const { Habits, addHabit, toggleHabit } = useHabitStore();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
