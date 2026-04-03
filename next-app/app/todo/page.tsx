@@ -1,166 +1,155 @@
 'use client';
+
 import React, { useState } from 'react';
-import { useTodoStore, Todo, Subtask } from '@/store/useTodoStore';
-import { Button } from '@/components/ui/button';
+import { useTodos, useCreateTodo, useUpdateTodo, useDeleteTodo } from '@/hooks/useTodos';
+import { useAuthStore } from '@/store/useAuthStore';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { CornerDownRight, MoreVertical, Plus } from 'lucide-react';
-
-// Small component for adding subtasks
-function SubtaskInput({ todoId, onDone }: { todoId: string; onDone: () => void }) {
-  const { addSubtask } = useTodoStore();
-  const [newSubtaskText, setNewSubtaskText] = useState('');
-
-  const handleAddSubtask = () => {
-    if (newSubtaskText.trim()) {
-      addSubtask(todoId, newSubtaskText.trim());
-      setNewSubtaskText('');
-      onDone();
-    }
-  };
-
-  return (
-    <div className="flex gap-2 ml-8 mt-4 ">
-      <Input
-        value={newSubtaskText}
-        onChange={(e) => setNewSubtaskText(e.target.value)}
-        placeholder="Add a new subtask"
-        onKeyDown={(e) => e.key === 'Enter' && handleAddSubtask()}
-        className="h-8"
-        autoFocus
-      />
-      <Button onClick={handleAddSubtask} size="icon" className="h-8 w-8 flex-shrink-0">
-        <Plus className="h-4 w-4" />
-      </Button>
-    </div>
-  );
-}
-
-function TodoItem({ todo }: { todo: Todo }) {
-  const { toggleTodo, deleteTodo, toggleSubtask, deleteSubtask } = useTodoStore();
-  const [isAddingSubtask, setIsAddingSubtask] = useState(false);
-
-  return (
-    <li className="p-4 rounded-lg bg-card">
-      <div className="flex items-center gap-2 py-2">
-        <Checkbox
-          checked={todo.completed}
-          onCheckedChange={() => toggleTodo(todo.id)}
-          className="scale-150 ml-2"
-        />
-        <span
-          className={`flex-grow text-2xl ml-4 font-semibold cursor-pointer ${
-            todo.completed ? 'line-through text-muted-foreground' : ''
-          }`}
-          onClick={() => toggleTodo(todo.id)}
-        >
-          {todo.text}
-        </span>
-        <div className="opacity-40 hover:opacity-80">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreVertical className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem
-                onSelect={(e) => {
-                  e.preventDefault();
-                  setIsAddingSubtask(true);
-                }}
-              >
-                Add Subtask
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => deleteTodo(todo.id)} className="text-red-500">
-                Delete Task
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-      <ul className="mt-2 space-y-2">
-        {todo.subtasks.map((subtask: Subtask) => (
-          <li key={subtask.id} className="flex items-center gap-4 ml-8">
-            <CornerDownRight className="h-4 w-4 text-muted-foreground" />
-            <Checkbox
-              checked={subtask.completed}
-              onCheckedChange={() => toggleSubtask(todo.id, subtask.id)}
-            />
-            <span
-              className={`flex-grow cursor-pointer ${
-                subtask.completed ? 'line-through text-muted-foreground' : ''
-              }`}
-              onClick={() => toggleSubtask(todo.id, subtask.id)}
-            >
-              {subtask.text}
-            </span>
-            <div className="opacity-40 hover:opacity-80">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem
-                    onClick={() => deleteSubtask(todo.id, subtask.id)}
-                    className="text-red-500"
-                  >
-                    Delete Subtask
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </li>
-        ))}
-      </ul>
-      {isAddingSubtask && (
-        <SubtaskInput todoId={todo.id} onDone={() => setIsAddingSubtask(false)} />
-      )}
-    </li>
-  );
-}
+import { Plus, Trash2, ListTodo } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function TodoPage() {
-  const { Todos, addTodo } = useTodoStore();
-  const [newTodoText, setNewTodoText] = useState('');
+  const { user } = useAuthStore();
+  const { data: todos, isLoading } = useTodos(user?.id);
+  const createTodo = useCreateTodo();
+  const updateTodo = useUpdateTodo();
+  const deleteTodo = useDeleteTodo();
 
-  const handleAddTodo = () => {
-    if (newTodoText.trim()) {
-      addTodo(newTodoText.trim());
-      setNewTodoText('');
-    }
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+
+  const handleAddTodo = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !newTaskTitle.trim()) return;
+
+    createTodo.mutate(
+      { title: newTaskTitle.trim(), userId: user.id },
+      {
+        onSuccess: () => {
+          setNewTaskTitle('');
+          toast.success('Task added');
+        },
+        onError: () => toast.error('Failed to add task'),
+      },
+    );
   };
 
-  return (
-    <div className="container mx-auto p-4 flex flex-col gap-4">
-      <h1 className="text-5xl font-bold mb-4 my-8">To-Do List:</h1>
+  const handleToggle = (id: number, currentStatus: boolean) => {
+    updateTodo.mutate({ id, isCompleted: !currentStatus });
+  };
 
-      <ul className="space-y-4">
-        {Todos.map((todo) => (
-          <TodoItem key={todo.id} todo={todo} />
-        ))}
-      </ul>
-      <div className="flex gap-2 mt-4 items-center">
+  const handleDelete = (id: number) => {
+    deleteTodo.mutate(id, {
+      onSuccess: () => toast.success('Task deleted'),
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[calc(100vh-theme(spacing.16))] items-center justify-center">
+        Loading tasks...
+      </div>
+    );
+  }
+
+  const activeTodos = todos?.filter((t) => !t.isCompleted) || [];
+  const completedTodos = todos?.filter((t) => t.isCompleted) || [];
+
+  return (
+    <div className="flex flex-col h-full max-w-4xl mx-auto p-4 lg:p-8">
+      <div className="flex items-center gap-3 mb-8">
+        <div className="bg-primary/20 p-3 rounded-xl text-primary">
+          <ListTodo className="h-6 w-6" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
+          <p className="text-muted-foreground">Manage your action items.</p>
+        </div>
+      </div>
+
+      <form onSubmit={handleAddTodo} className="flex gap-2 mb-8 relative">
         <Input
-          value={newTodoText}
-          onChange={(e) => setNewTodoText(e.target.value)}
-          placeholder="Add a new to-do"
-          onKeyDown={(e) => e.key === 'Enter' && handleAddTodo()}
-          className="p-4 py-6"
+          className="flex-1 bg-background border-border/60 rounded-xl h-12 px-4 shadow-sm"
+          placeholder="What needs to be done?"
+          value={newTaskTitle}
+          onChange={(e) => setNewTaskTitle(e.target.value)}
         />
-        <Button onClick={handleAddTodo} className="py-4 font-black! text-2xl">
-          <Plus />
+        <Button
+          type="submit"
+          disabled={!newTaskTitle.trim() || createTodo.isPending}
+          className="h-12 w-12 rounded-xl shrink-0"
+        >
+          <Plus className="h-5 w-5" />
         </Button>
+      </form>
+
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-2">
+          {activeTodos.length === 0 && completedTodos.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-12 text-center text-muted-foreground bg-muted/20 border border-dashed rounded-xl">
+              <ListTodo className="h-12 w-12 mb-4 opacity-20" />
+              <p>Your task list is empty.</p>
+              <p className="text-sm">Add a task above to get started.</p>
+            </div>
+          ) : activeTodos.length === 0 ? (
+            <p className="text-sm text-muted-foreground p-4">All caught up!</p>
+          ) : (
+            activeTodos.map((todo) => (
+              <Card
+                key={todo.id}
+                className="bg-background border-border/40 shadow-sm transition-all hover:shadow-md group"
+              >
+                <CardContent className="flex items-center gap-3 p-3 lg:p-4">
+                  <Checkbox
+                    checked={todo.isCompleted}
+                    onCheckedChange={() => handleToggle(todo.id, todo.isCompleted)}
+                    className="h-5 w-5 rounded-md"
+                  />
+                  <span className="flex-1 text-foreground font-medium">{todo.title}</span>
+                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(todo.id)}
+                      className="text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+
+        {completedTodos.length > 0 && (
+          <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border/50">
+            <h2 className="text-sm font-semibold text-muted-foreground mb-2 px-1">
+              Completed ({completedTodos.length})
+            </h2>
+            {completedTodos.map((todo) => (
+              <Card key={todo.id} className="bg-muted/30 border-border/20 shadow-none group">
+                <CardContent className="flex items-center gap-3 p-3 lg:p-4 opacity-60">
+                  <Checkbox
+                    checked={todo.isCompleted}
+                    onCheckedChange={() => handleToggle(todo.id, todo.isCompleted)}
+                    className="h-5 w-5 rounded-md"
+                  />
+                  <span className="flex-1 text-muted-foreground line-through">{todo.title}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDelete(todo.id)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

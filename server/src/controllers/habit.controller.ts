@@ -41,6 +41,17 @@ const createHabit = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, 'User ID and Name are required');
   }
 
+  const habitCount = await prisma.habit.count({
+    where: { userId: parseInt(userId), deleted: false },
+  });
+
+  if (habitCount >= 6) {
+    throw new ApiError(
+      400,
+      'You can only track up to 6 habits at a time. Delete an existing habit to add a new one.',
+    );
+  }
+
   const habit = await prisma.habit.create({
     data: {
       name,
@@ -246,6 +257,43 @@ const getHabitDashboardData = asyncHandler(async (req: Request, res: Response) =
   );
 });
 
+const toggleHabitCompletion = asyncHandler(async (req: Request, res: Response) => {
+  const { habitId } = req.params;
+  const habitIdNum = Number(habitId);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const existingLog = await prisma.habitTimeLog.findFirst({
+    where: {
+      habitId: habitIdNum,
+      startedAt: { gte: today },
+      deleted: false,
+    },
+  });
+
+  if (existingLog) {
+    await prisma.habitTimeLog.update({
+      where: { id: existingLog.id },
+      data: { deleted: true },
+    });
+    return res
+      .status(200)
+      .json(new ApiResponse(200, { completed: false }, 'Habit uncompleted for today'));
+  } else {
+    await prisma.habitTimeLog.create({
+      data: {
+        habitId: habitIdNum,
+        startedAt: new Date(),
+        endedAt: new Date(), // Instant completion
+      },
+    });
+    return res
+      .status(200)
+      .json(new ApiResponse(200, { completed: true }, 'Habit completed for today'));
+  }
+});
+
 export {
   getAllHabits,
   createHabit,
@@ -255,4 +303,5 @@ export {
   getHabitLogs,
   getAllHabitsWithLogs,
   getHabitDashboardData,
+  toggleHabitCompletion,
 };

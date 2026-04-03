@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import api from '@/lib/api';
 
 interface User {
   id: number;
@@ -15,48 +15,24 @@ interface AuthState {
   logout: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set) => ({
-      user: null,
-      loading: true,
-      fetchUser: async () => {
-        try {
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000'}/api/auth/user`,
-            {
-              credentials: 'include',
-            },
-          );
-          if (res.ok) {
-            const data = await res.json();
-            set({ user: data, loading: false });
-          } else {
-            set({ user: null, loading: false });
-          }
-        } catch {
-          set({ user: null, loading: false });
-        }
-      },
-      logout: async () => {
-        try {
-          await fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000'}/api/auth/logout`,
-            {
-              method: 'POST',
-              credentials: 'include',
-            },
-          );
-          set({ user: null });
-          window.location.reload();
-        } catch (error) {
-          console.error('Logout failed', error);
-        }
-      },
-    }),
-    {
-      name: 'auth-storage',
-      storage: createJSONStorage(() => localStorage),
-    },
-  ),
-);
+export const useAuthStore = create<AuthState>((set) => ({
+  user: null,
+  loading: true,
+  fetchUser: async () => {
+    try {
+      const { data } = await api.get('/api/auth/user');
+      set({ user: data, loading: false });
+    } catch {
+      set({ user: null, loading: false });
+    }
+  },
+  logout: async () => {
+    try {
+      await api.post('/api/auth/logout');
+      set({ user: null });
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout failed', error);
+    }
+  },
+}));

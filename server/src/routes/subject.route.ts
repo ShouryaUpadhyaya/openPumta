@@ -5,6 +5,7 @@ import {
   startSubjectLog,
   endSubjectLog,
   updateSubject,
+  deleteSubject,
   getSubjectLogs,
   getAllSubjectsWithLogs,
   getDashboardData,
@@ -17,6 +18,7 @@ router
   .patch('/:subjectId/startTimer', startSubjectLog)
   .patch('/:subjectId/endTimer', endSubjectLog)
   .patch('/updateSubjectName/:id', updateSubject)
+  .delete('/:id', deleteSubject)
   .get('/:subjectId/logs', getSubjectLogs)
   .get('/:userId/stats', getAllSubjectsWithLogs)
   .get('/:userId/dashboard', getDashboardData);

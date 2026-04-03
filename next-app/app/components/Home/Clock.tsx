@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSubjectStore } from '@/store/useSubjectStore';
+import { useSubjectTimerStore } from '@/store/useSubjectStore';
 import { usePomodoroStore } from '@/store/usePomodoroStore';
 import { ConvertSecsToTimer, ConvertTimerToSecs } from '@/lib/utils';
 import ClockCircle from '../pomodoro/ClockCircle';
@@ -17,9 +17,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useSubjects } from '@/hooks/useSubjects';
+import { useAuthStore } from '@/store/useAuthStore';
 
 function Clock() {
-  const { timerRunningSubjectId, Subjects } = useSubjectStore();
+  const { user } = useAuthStore();
+  const { data: Subjects = [] } = useSubjects(user?.id);
+  const { timerRunningSubjectId } = useSubjectTimerStore();
   const { changeTimerPomodoro, pomodoroTimer, BreakTimer } = usePomodoroStore();
 
   const {

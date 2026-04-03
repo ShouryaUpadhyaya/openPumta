@@ -25,32 +25,58 @@ const getAllSubject = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const createSubject = asyncHandler(async (req: Request, res: Response) => {
-  const { userId, name } = req.body;
-  console.log(name, userId);
+  const { userId, name, goalWorkSecs } = req.body;
+
+  if (!name || userId === undefined) {
+    throw new ApiError(400, 'Name and UserId are required');
+  }
 
   const subject = await prisma.subject.create({
     data: {
       name: name,
-      userId: parseInt(userId),
+      userId: Number(userId),
+      goalWorkSecs: goalWorkSecs !== undefined ? Number(goalWorkSecs) : 0,
     },
   });
   res.status(200).json(new ApiResponse(200, subject, 'Subject Created successfully'));
 });
 
 const updateSubject = asyncHandler(async (req: Request, res: Response) => {
-  const { name } = req.body;
+  const { name, goalWorkSecs } = req.body;
   const { id } = req.params;
   const idNum = Number(id);
+
+  if (!idNum) {
+    throw new ApiError(400, 'Invalid Subject ID');
+  }
+
   const subject = await prisma.subject.update({
     where: {
       id: idNum,
     },
     data: {
-      name: name,
+      ...(name !== undefined && { name }),
+      ...(goalWorkSecs !== undefined && { goalWorkSecs: Number(goalWorkSecs) }),
     },
   });
 
   res.status(200).json(new ApiResponse(200, subject, 'Subject Updated successfully'));
+});
+
+const deleteSubject = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const idNum = Number(id);
+
+  const subject = await prisma.subject.update({
+    where: {
+      id: idNum,
+    },
+    data: {
+      deleted: true,
+    },
+  });
+
+  res.status(200).json(new ApiResponse(200, subject, 'Subject Deleted successfully'));
 });
 
 const startSubjectLog = asyncHandler(async (req: Request, res: Response) => {
@@ -82,8 +108,57 @@ const endSubjectLog = asyncHandler(async (req: Request, res: Response) => {
     data: {
       endedAt: new Date(),
     },
+    include: {
+      subject: {
+        include: { habits: true },
+      },
+    },
   });
-  console.log(updatedLog);
+
+  // Auto-Complete linked habits logic
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const todaysLogs = await prisma.subjectLog.findMany({
+    where: {
+      subjectId: subjectIdNum,
+      startedAt: { gte: today },
+      endedAt: { not: null },
+      deleted: false,
+    },
+  });
+
+  let totalSecs = 0;
+  for (const log of todaysLogs) {
+    if (log.endedAt) {
+      totalSecs += Math.floor(
+        (new Date(log.endedAt).getTime() - new Date(log.startedAt).getTime()) / 1000,
+      );
+    }
+  }
+
+  if (updatedLog.subject.goalWorkSecs > 0 && totalSecs >= updatedLog.subject.goalWorkSecs) {
+    for (const habit of updatedLog.subject.habits) {
+      if (habit.deleted) continue;
+      const existingHabitLog = await prisma.habitTimeLog.findFirst({
+        where: {
+          habitId: habit.id,
+          startedAt: { gte: today },
+          deleted: false,
+        },
+      });
+
+      if (!existingHabitLog) {
+        await prisma.habitTimeLog.create({
+          data: {
+            habitId: habit.id,
+            startedAt: new Date(),
+            endedAt: new Date(),
+          },
+        });
+      }
+    }
+  }
 
   res.status(200).json(new ApiResponse(200, updatedLog, 'Ended Subject Timer'));
 });
@@ -153,9 +228,19 @@ const getAllSubjectsWithLogs = asyncHandler(async (req: Request, res: Response) 
     },
   });
 
+  const subjectsWithDuration = subjects.map((subject) => ({
+    ...subject,
+    subjectLogs: subject.subjectLogs.map((log) => ({
+      ...log,
+      duration: log.endedAt
+        ? Math.floor((new Date(log.endedAt).getTime() - new Date(log.startedAt).getTime()) / 1000)
+        : 0,
+    })),
+  }));
+
   return res
     .status(200)
-    .json(new ApiResponse(200, subjects, 'Subjects with logs fetched successfully'));
+    .json(new ApiResponse(200, subjectsWithDuration, 'Subjects with logs fetched successfully'));
 });
 
 const getDashboardData = asyncHandler(async (req: Request, res: Response) => {
@@ -239,6 +324,7 @@ export {
   startSubjectLog,
   endSubjectLog,
   updateSubject,
+  deleteSubject,
   getSubjectLogs,
   getAllSubjectsWithLogs,
   getDashboardData,

@@ -5,6 +5,9 @@ import habitRoute from './routes/habit.route';
 import authRoute from './routes/auth.route';
 import subjectRoute from './routes/subject.route';
 import todoRoute from './routes/todo.route';
+import statsRoute from './routes/stats.route';
+import dailyRatingRoute from './routes/dailyRating.route';
+import exportRoute from './routes/export.route';
 import cors from 'cors';
 import 'dotenv/config';
 import cookieParser from 'cookie-parser';
@@ -47,5 +50,8 @@ app.use('/api/subject', subjectRoute);
 app.use('/api/habits', habitRoute);
 app.use('/api/todo', todoRoute);
 app.use('/api/auth', authRoute);
+app.use('/api/stats', statsRoute);
+app.use('/api/daily-rating', dailyRatingRoute);
+app.use('/api/export', exportRoute);
 
 app.use(errorHandler);

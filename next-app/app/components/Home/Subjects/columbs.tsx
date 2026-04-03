@@ -12,15 +12,24 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal } from 'lucide-react';
+import { ConvertSecsToTimer } from '@/lib/utils';
+
+export type SubjectLog = {
+  id: number;
+  startedAt: string;
+  endedAt?: string;
+  duration?: number;
+  subjectId: number;
+};
 
 export type Subject = {
-  id: string;
+  id: number;
   name: string;
-  workSecs: number;
-  goalWorkSecs: number;
-  status: 'not Started' | 'good progress' | 'excelent' | 'failed';
-  date: string;
-  additionInfo?: string;
+  userId: number;
+  subjectLogs?: SubjectLog[];
+  // UI fields
+  goalWorkSecs?: number;
+  createdAt?: string;
 };
 
 export const columns = ({
@@ -29,9 +38,9 @@ export const columns = ({
   deleteSubject,
   handleEdit,
 }: {
-  toggleTimer: (subjectId: string) => void;
-  runningSubjectId: string | null;
-  deleteSubject: (subjectId: string) => void;
+  toggleTimer: (subjectId: number) => void;
+  runningSubjectId: number | null;
+  deleteSubject: (subjectId: number) => void;
   handleEdit: (subject: Subject) => void;
 }): ColumnDef<Subject>[] => [
   {
@@ -67,14 +76,42 @@ export const columns = ({
     header: 'Subject',
   },
   {
-    accessorKey: 'status',
     header: 'Status',
+    cell: ({ row }) => {
+      const subject = row.original;
+      const activeLog = subject.subjectLogs?.find((log) => !log.endedAt);
+      const pastSecs = subject.subjectLogs?.reduce((acc, log) => acc + (log.duration || 0), 0) || 0;
+      const totalSecs =
+        pastSecs +
+        (activeLog
+          ? Math.floor((new Date().getTime() - new Date(activeLog.startedAt).getTime()) / 1000)
+          : 0);
+
+      const goal = subject.goalWorkSecs || 0;
+
+      if (totalSecs === 0) return 'not Started';
+      if (goal > 0) {
+        const percent = (totalSecs / goal) * 100;
+        if (percent >= 100) return 'excelent';
+        if (percent >= 50) return 'good progress';
+      }
+      return 'started';
+    },
   },
   {
     header: 'Progress',
     cell: ({ row }) => {
-      const { workSecs, goalWorkSecs } = row.original;
-      const percent = goalWorkSecs > 0 ? Math.round((workSecs / goalWorkSecs) * 100) : 0;
+      const subject = row.original;
+      const activeLog = subject.subjectLogs?.find((log) => !log.endedAt);
+      const pastSecs = subject.subjectLogs?.reduce((acc, log) => acc + (log.duration || 0), 0) || 0;
+      const totalSecs =
+        pastSecs +
+        (activeLog
+          ? Math.floor((new Date().getTime() - new Date(activeLog.startedAt).getTime()) / 1000)
+          : 0);
+
+      const goal = subject.goalWorkSecs || 0;
+      const percent = goal > 0 ? Math.round((totalSecs / goal) * 100) : 0;
       return `${percent}%`;
     },
   },
@@ -82,38 +119,41 @@ export const columns = ({
     accessorKey: 'workSecs',
     header: 'Worked (hrs)',
     cell: ({ row }) => {
-      const { workSecs, goalWorkSecs } = row.original;
+      const subject = row.original;
+      const activeLog = subject.subjectLogs?.find((log) => !log.endedAt);
+      const pastSecs = subject.subjectLogs?.reduce((acc, log) => acc + (log.duration || 0), 0) || 0;
+      const totalSecs =
+        pastSecs +
+        (activeLog
+          ? Math.floor((new Date().getTime() - new Date(activeLog.startedAt).getTime()) / 1000)
+          : 0);
 
-      const hours = Math.floor(workSecs / 3600);
-      const minutes = Math.floor((workSecs % 3600) / 60);
-      const seconds = Math.floor(workSecs % 60);
-
-      const percent = goalWorkSecs > 0 ? Math.round((workSecs / goalWorkSecs) * 100) : 0;
-
-      const hue = Math.min(120, (percent / 100) * 120);
-      // 0   = red
-      // 60  = yellow
-      // 120 = green
-
-      const style = {
-        color: `hsl(${hue}, 80%, 45%)`,
-      };
-
+      const { hours, minutes, seconds } = ConvertSecsToTimer({ workSecs: totalSecs });
       const pad = (n: number) => String(n).padStart(2, '0');
 
-      return <span style={style}>{`${pad(hours)}:${pad(minutes)}:${pad(seconds)}`}</span>;
+      const goal = subject.goalWorkSecs || 0;
+      const percent = goal > 0 ? Math.round((totalSecs / goal) * 100) : 0;
+      const hue = Math.min(120, (percent / 100) * 120);
+
+      return (
+        <span style={{ color: `hsl(${hue}, 80%, 45%)` }}>
+          {`${pad(hours)}:${pad(minutes)}:${pad(seconds)}`}
+        </span>
+      );
     },
   },
   {
-    accessorKey: 'goalWorkSecs',
     header: 'Goal (hrs)',
     cell: ({ row }) => {
-      const { goalWorkSecs } = row.original;
-      return (goalWorkSecs / 3600).toFixed(1);
+      const subject = row.original;
+      return ((subject.goalWorkSecs || 0) / 3600).toFixed(1);
     },
   },
   {
-    accessorKey: 'date',
     header: 'Date',
+    cell: ({ row }) => {
+      const subject = row.original;
+      return subject.createdAt ? new Date(subject.createdAt).toLocaleDateString() : 'N/A';
+    },
   },
 ];

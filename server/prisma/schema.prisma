@@ -19,8 +19,9 @@ model User {
   name      String?
   avatarUrl String?
   subjects  Subject[]
-  habits    Habit[]
-  toDo      ToDo[]
+  habits       Habit[]
+  toDo         ToDo[]
+  dailyRatings DailyRating[]
   deleted   Boolean   @default(false)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -52,15 +53,16 @@ model ToDoLog {
 }
 
 model Subject {
-  id          Int          @id @default(autoincrement())
-  name        String
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      Int
-  habits      Habit[] // SO that hatbis are automaticaly ticked after certain amount of time has been logged
-  deleted     Boolean      @default(false)
-  subjectLogs SubjectLog[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id           Int          @id @default(autoincrement())
+  name         String
+  goalWorkSecs Int          @default(0)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       Int
+  habits       Habit[] // SO that hatbis are automaticaly ticked after certain amount of time has been logged
+  deleted      Boolean      @default(false)
+  subjectLogs  SubjectLog[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
   @@unique([userId, name])
   @@index([userId])
@@ -114,4 +116,15 @@ model HabitTimeLog {
   updatedAt DateTime  @updatedAt
 
   @@index([habitId])
+}
+
+model DailyRating {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating      Int      // 1-5 scale
+  description String?
+  date        DateTime @default(now()) @db.Date
+
+  @@unique([userId, date])
 }

@@ -8,29 +8,18 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
+  AreaChart,
+  Area,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-const dummySubjects = [
-  { name: 'Math', workSecs: 3600, goalWorkSecs: 7200 },
-  { name: 'Science', workSecs: 1800, goalWorkSecs: 3600 },
-  { name: 'History', workSecs: 5400, goalWorkSecs: 3600 },
-  { name: 'English', workSecs: 2700, goalWorkSecs: 5400 },
-];
-
-const dummyHabits = [
-  { name: 'Read', completed: true },
-  { name: 'Exercise', completed: false },
-  { name: 'Meditate', completed: true },
-  { name: 'Code', completed: true },
-];
+import { useAuthStore } from '@/store/useAuthStore';
+import { useDashboardStats } from '@/hooks/useStats';
 
 const FALLBACK_COLORS = ['#0088FE', '#FF8042', '#00C49F', '#FFBB28', '#FF8042'];
 
 function Stats() {
+  const { user } = useAuthStore();
+  const { data: statsData, isLoading } = useDashboardStats(user?.id);
   const [chartColors, setChartColors] = useState<string[]>(FALLBACK_COLORS);
 
   useEffect(() => {
@@ -50,63 +39,92 @@ function Stats() {
     }
   }, []);
 
-  const completedHabits = dummyHabits.filter((habit) => habit.completed).length;
-  const totalHabits = dummyHabits.length;
-  const habitsData = [
-    { name: 'Completed', value: completedHabits },
-    { name: 'Pending', value: totalHabits - completedHabits },
-  ];
+  if (isLoading) {
+    return <div className="p-4 flex items-center justify-center">Loading statistics...</div>;
+  }
+
+  const focusData =
+    statsData?.focusTimeArray
+      ?.map((d: any) => ({
+        date: new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }),
+        hours: d.focusTimeHrs,
+      }))
+      .slice(-7) || [];
+
+  const habitData =
+    statsData?.habitCompletionRateByDate
+      ?.map((d: any) => ({
+        date: new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }),
+        rate: d.rate,
+      }))
+      .slice(-7) || [];
 
   return (
     <section className="flex flex-col h-full p-4 overflow-hidden">
-      <h1 className="text-2xl font-bold mb-4 shrink-0">Statistics</h1>
+      <div className="flex justify-between items-center mb-4 shrink-0">
+        <h1 className="text-2xl font-bold">21-Day Analytics</h1>
+        {statsData?.summary && (
+          <div className="flex gap-4 text-xs">
+            <span className="text-muted-foreground">
+              Perfect Days:{' '}
+              <strong className="text-foreground">{statsData.summary.perfectDaysLast21}</strong>
+            </span>
+          </div>
+        )}
+      </div>
+
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
-        <Card className="bg-background border-border/40 overflow-hidden flex flex-col">
+        <Card className="bg-background border-border/40 overflow-hidden flex flex-col shadow-none">
           <CardHeader className="py-2 px-4">
-            <CardTitle className="text-sm font-medium">Subject Progress (hrs)</CardTitle>
+            <CardTitle className="text-sm font-medium">Focus Time (Days)</CardTitle>
           </CardHeader>
           <CardContent className="flex-1 p-0 pb-2">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={dummySubjects.map((s) => ({
-                  ...s,
-                  workHrs: s.workSecs / 3600,
-                  goalHrs: s.goalWorkSecs / 3600,
-                }))}
-                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" fontSize={10} />
-                <YAxis fontSize={10} />
-                <Tooltip />
-                <Bar dataKey="workHrs" fill={chartColors[0]} radius={[2, 2, 0, 0]} name="Worked" />
-                <Bar dataKey="goalHrs" fill={chartColors[1]} radius={[2, 2, 0, 0]} name="Goal" />
+              <BarChart data={focusData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                <XAxis dataKey="date" fontSize={10} axisLine={false} tickLine={false} />
+                <YAxis fontSize={10} axisLine={false} tickLine={false} />
+                <Tooltip
+                  cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+                  contentStyle={{ borderRadius: '8px', border: 'none' }}
+                />
+                <Bar dataKey="hours" fill={chartColors[0]} radius={[4, 4, 0, 0]} name="Hours" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
-        <Card className="bg-background border-border/40 overflow-hidden flex flex-col">
+
+        <Card className="bg-background border-border/40 overflow-hidden flex flex-col shadow-none">
           <CardHeader className="py-2 px-4">
-            <CardTitle className="text-sm font-medium">Habit Completion</CardTitle>
+            <CardTitle className="text-sm font-medium">Habit Consistency</CardTitle>
           </CardHeader>
-          <CardContent className="flex-1 p-0">
+          <CardContent className="flex-1 p-0 pb-2">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={habitsData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius="80%"
-                  fill={chartColors[0]}
-                  dataKey="value"
-                >
-                  {habitsData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
+              <AreaChart data={habitData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={chartColors[1]} stopOpacity={0.8} />
+                    <stop offset="95%" stopColor={chartColors[1]} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
+                <XAxis dataKey="date" fontSize={10} axisLine={false} tickLine={false} />
+                <YAxis
+                  fontSize={10}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(value) => `${value}%`}
+                />
+                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none' }} />
+                <Area
+                  type="monotone"
+                  dataKey="rate"
+                  stroke={chartColors[1]}
+                  fillOpacity={1}
+                  fill="url(#colorRate)"
+                  name="Completion %"
+                />
+              </AreaChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>

@@ -8,6 +8,7 @@ import {
   getHabitLogs,
   getAllHabitsWithLogs,
   getHabitDashboardData,
+  toggleHabitCompletion,
 } from '../controllers/habit.controller';
 
 const router = express.Router();
@@ -20,5 +21,6 @@ router.post('/:habitId/end', endHabitLog);
 router.get('/:habitId/logs', getHabitLogs);
 router.get('/user/:userId/logs', getAllHabitsWithLogs);
 router.get('/user/:userId/dashboard', getHabitDashboardData);
+router.patch('/:habitId/toggle', toggleHabitCompletion);
 
 export default router;

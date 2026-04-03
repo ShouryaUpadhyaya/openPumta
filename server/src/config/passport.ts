@@ -15,7 +15,7 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       callbackURL: `${backendUrl}/api/auth/google/callback`,
     },
-    async (accessToken, refreshToken, profile, done) => {
+    async (accessToken: string, refreshToken: string, profile: any, done: any) => {
       const email = profile.emails?.[0].value;
       if (!email) {
         return done(new ApiError(400, 'No email found in Google profile'));

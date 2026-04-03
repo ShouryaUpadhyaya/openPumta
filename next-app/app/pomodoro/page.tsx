@@ -1,8 +1,8 @@
 'use client';
 // add a changing avatar in the middle of the pomodoro
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSubjectStore } from '@/store/useSubjectStore';
+import { useSubjectTimerStore } from '@/store/useSubjectStore';
 import { usePomodoroStore } from '@/store/usePomodoroStore';
 import ClockCircle from '../components/pomodoro/ClockCircle';
 import ClockTime from '../components/pomodoro/ClockTime';
@@ -11,17 +11,47 @@ import { IoIosPause } from 'react-icons/io';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useSubjects, useSubjectTimer } from '@/hooks/useSubjects';
+import { useAuthStore } from '@/store/useAuthStore';
+
 function PomodoroPage() {
-  const { timerRunningSubjectId, toggleTimer, Subjects } = useSubjectStore();
+  const { user } = useAuthStore();
+  const { data: Subjects = [], isLoading } = useSubjects(user?.id);
+  const { timerRunningSubjectId, stopLocalTimer, activeSeconds, tick } = useSubjectTimerStore();
+  const [timerInterval, setTimerInterval] = useState<ReturnType<typeof setInterval> | null>(null);
+  const { endTimer } = useSubjectTimer();
   const { pomodoroTimer } = usePomodoroStore();
   const router = useRouter();
 
-  const handlePauseClick = () => {
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
     if (timerRunningSubjectId) {
-      toggleTimer(timerRunningSubjectId);
+      interval = setInterval(() => {
+        tick();
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timerRunningSubjectId, tick]);
+
+  const handlePauseClick = async () => {
+    if (timerRunningSubjectId) {
+      try {
+        await endTimer.mutateAsync(timerRunningSubjectId);
+      } catch (error) {
+        console.error('Failed to end timer:', error);
+      }
+      stopLocalTimer();
     }
     router.push('/');
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen w-screen">
+        <span className="text-2xl font-semibold">Loading timer...</span>
+      </div>
+    );
+  }
 
   const runningSubject = Subjects.find((subject) => subject.id === timerRunningSubjectId);
 
@@ -33,8 +63,21 @@ function PomodoroPage() {
     goalWorkSecs = 0;
 
   if (runningSubject) {
-    const workedSecs = runningSubject.workSecs ?? 0;
-    goalWorkSecs = runningSubject.goalWorkSecs;
+    const activeLog = runningSubject.subjectLogs?.find((log) => !log.endedAt);
+    const pastLogsDuration =
+      runningSubject.subjectLogs?.reduce((acc, log) => acc + (log.duration || 0), 0) || 0;
+
+    let workedSecs = pastLogsDuration;
+    if (activeLog) {
+      workedSecs += Math.floor(
+        (new Date().getTime() - new Date(activeLog.startedAt).getTime()) / 1000,
+      );
+    } else {
+      workedSecs += activeSeconds;
+    }
+
+    goalWorkSecs = runningSubject.goalWorkSecs || 0;
+
     const { hours, minutes, seconds } = ConvertSecsToTimer({
       workSecs: workedSecs,
     });
@@ -67,10 +110,6 @@ function PomodoroPage() {
             </TooltipTrigger>
             <TooltipContent>
               <div className="flex flex-col items-center text-primary font-semibold text-lg">
-                {/* <span>{`${pad(displayHours)}:${pad(displayMinutes)}:${pad(
-                  displaySeconds
-                )}`}</span>
-                <span className="border-b border-primary w-full my-1"></span> */}
                 <span>
                   {(() => {
                     const { hours, minutes, seconds } = ConvertSecsToTimer({
