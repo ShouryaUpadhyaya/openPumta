@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Habit } from '../app/components/Home/Habits';
+export interface Habit {
+  id: string;
+  name: string;
+  completed: boolean;
+}
 
 interface HabitState {
   Habits: Habit[];
