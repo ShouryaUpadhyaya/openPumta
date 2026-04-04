@@ -12,7 +12,7 @@ type ClockTimeProps = {
 function ClockTime({ hours, minutes, seconds, color }: ClockTimeProps) {
   const Color = color ? 'white' : 'primary';
   return (
-    <div className="relative text-4xl font-semibold">
+    <div className="relative text-4xl font-bold">
       <h1 className={`font-bold  text-${Color}`}>
         {pad(hours)} : {pad(minutes)} : {pad(seconds)}
       </h1>

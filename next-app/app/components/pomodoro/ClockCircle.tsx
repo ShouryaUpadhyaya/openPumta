@@ -10,7 +10,7 @@ function ClockCircle({ percent, size }: ClockCircleProps) {
   return (
     <div
       className={`relative my-10 mx-5 flex items-center justify-center ${
-        size === 'sm' ? 'h-[40vh] w-[40vh]' : 'h-[60vh] w-[60vh]'
+        size === 'sm' ? 'h-90 w-90' : 'h-[50vh] w-[50vh]'
       }`}
     >
       <div
