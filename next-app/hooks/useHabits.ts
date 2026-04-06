@@ -9,27 +9,25 @@ export interface Habit {
   subjectId?: number;
 }
 
-export const useHabits = (userId: number) => {
+export const useHabits = () => {
   return useQuery<Habit[]>({
-    queryKey: ['habits', userId],
+    queryKey: ['habits'],
     queryFn: async () => {
-      const { data } = await api.get(`/api/habits/user/${userId}`);
+      const { data } = await api.get(`/api/habits`);
       return data.data; // ApiResponse.data
     },
-    enabled: !!userId,
   });
 };
 
-export const useHabitsWithLogs = (userId: number | undefined, fromDate: string) => {
+export const useHabitsWithLogs = (fromDate: string) => {
   return useQuery({
-    queryKey: ['habitsWithLogs', userId, fromDate],
+    queryKey: ['habitsWithLogs', fromDate],
     queryFn: async () => {
-      const { data } = await api.get(`/api/habits/user/${userId}/logs`, {
+      const { data } = await api.get(`/api/habits/logs`, {
         params: { from: fromDate },
       });
       return data.data;
     },
-    enabled: !!userId,
   });
 };
 
@@ -48,14 +46,13 @@ export const useCreateHabit = () => {
   });
 };
 
-export const useHabitDashboard = (userId: number | undefined) => {
+export const useHabitDashboard = () => {
   return useQuery({
-    queryKey: ['habitDashboard', userId],
+    queryKey: ['habitDashboard'],
     queryFn: async () => {
-      const { data } = await api.get(`/api/habits/user/${userId}/dashboard`);
+      const { data } = await api.get(`/api/habits/dashboard`);
       return data.data; // { habits, todayStats, activeLog }
     },
-    enabled: !!userId,
   });
 };
 

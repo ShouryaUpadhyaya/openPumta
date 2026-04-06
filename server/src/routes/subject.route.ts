@@ -1,4 +1,5 @@
 import express from 'express';
+import passport from '../config/passport';
 import {
   getAllSubject,
   createSubject,
@@ -10,17 +11,20 @@ import {
   getAllSubjectsWithLogs,
   getDashboardData,
 } from '../controllers/subject.controller';
+
 const router = express.Router();
 
+router.use(passport.authenticate('jwt', { session: false }));
+
 router
-  .get('/:id', getAllSubject)
+  .get('/', getAllSubject)
   .post('/', createSubject)
   .patch('/:subjectId/startTimer', startSubjectLog)
   .patch('/:subjectId/endTimer', endSubjectLog)
   .patch('/updateSubjectName/:id', updateSubject)
   .delete('/:id', deleteSubject)
   .get('/:subjectId/logs', getSubjectLogs)
-  .get('/:userId/stats', getAllSubjectsWithLogs)
-  .get('/:userId/dashboard', getDashboardData);
+  .get('/stats', getAllSubjectsWithLogs)
+  .get('/dashboard', getDashboardData);
 
 export default router;

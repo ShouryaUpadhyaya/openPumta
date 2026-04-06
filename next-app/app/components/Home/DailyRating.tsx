@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 
 export default function DailyRating() {
   const { user } = useAuthStore();
-  const { data: stats, isLoading } = useDailyRatingStats(user?.id);
+  const { data: stats, isLoading } = useDailyRatingStats();
   const submitRating = useSubmitDailyRating();
 
   const [rating, setRating] = useState<number>(0);
@@ -23,7 +23,7 @@ export default function DailyRating() {
     if (!user || rating === 0) return;
 
     submitRating.mutate(
-      { rating, description, userId: user.id },
+      { rating, description },
       {
         onSuccess: () => {
           toast.success('Rating saved for today!');

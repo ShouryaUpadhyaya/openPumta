@@ -10,26 +10,24 @@ export interface TimelineItem {
   duration: number;
 }
 
-export const useDailyTimeline = (userId: number | undefined, date?: string) => {
+export const useDailyTimeline = (date?: string) => {
   return useQuery<TimelineItem[]>({
-    queryKey: ['timeline', userId, date],
+    queryKey: ['timeline', date],
     queryFn: async () => {
-      const { data } = await api.get(`/api/stats/user/${userId}/timeline`, {
+      const { data } = await api.get(`/api/stats/timeline`, {
         params: { date },
       });
       return data.data;
     },
-    enabled: !!userId,
   });
 };
 
-export const useDashboardStats = (userId: number | undefined) => {
+export const useDashboardStats = () => {
   return useQuery({
-    queryKey: ['dashboardStats', userId],
+    queryKey: ['dashboardStats'],
     queryFn: async () => {
-      const { data } = await api.get(`/api/stats/user/${userId}/dashboard`);
+      const { data } = await api.get(`/api/stats/dashboard`);
       return data.data; // { focusTimeArray, habitCompletionRateByDate, summary }
     },
-    enabled: !!userId,
   });
 };

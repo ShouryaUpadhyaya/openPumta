@@ -22,7 +22,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 
 function Clock() {
   const { user } = useAuthStore();
-  const { data: Subjects = [] } = useSubjects(user?.id);
+  const { data: Subjects = [] } = useSubjects();
   const { timerRunningSubjectId } = useSubjectTimerStore();
   const { changeTimerPomodoro, pomodoroTimer, BreakTimer } = usePomodoroStore();
 

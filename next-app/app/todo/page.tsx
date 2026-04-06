@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 
 export default function TodoPage() {
   const { user } = useAuthStore();
-  const { data: todos, isLoading } = useTodos(user?.id);
+  const { data: todos, isLoading } = useTodos();
   const createTodo = useCreateTodo();
   const updateTodo = useUpdateTodo();
   const deleteTodo = useDeleteTodo();
@@ -24,7 +24,7 @@ export default function TodoPage() {
     if (!user || !newTaskTitle.trim()) return;
 
     createTodo.mutate(
-      { title: newTaskTitle.trim(), userId: user.id },
+      { title: newTaskTitle.trim() },
       {
         onSuccess: () => {
           setNewTaskTitle('');

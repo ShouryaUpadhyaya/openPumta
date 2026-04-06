@@ -5,13 +5,15 @@ import { ApiResponse } from '../utils/ApiResponse';
 import { ApiError } from '../utils/ApiError';
 
 const getDailyTimeline = asyncHandler(async (req: Request, res: Response) => {
-  const { userId } = req.params;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userId = (req as any).user?.id;
   const { date } = req.query; // Expecting YYYY-MM-DD
-  const userIdNum = Number(userId);
 
   if (!userId) {
-    throw new ApiError(400, 'User ID is required');
+    throw new ApiError(401, 'Unauthorized');
   }
+
+  const userIdNum = Number(userId);
 
   const targetDate = date ? new Date(date as string) : new Date();
   const startOfDay = new Date(targetDate);
@@ -89,10 +91,10 @@ const getDailyTimeline = asyncHandler(async (req: Request, res: Response) => {
 
 const getDashboardStats = asyncHandler(async (req: Request, res: Response) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id || req.params.userId || req.body?.userId;
+  const userId = (req as any).user?.id;
 
   if (!userId) {
-    throw new ApiError(400, 'User ID is required');
+    throw new ApiError(401, 'Unauthorized');
   }
 
   const userIdNum = Number(userId);

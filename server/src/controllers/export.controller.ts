@@ -6,11 +6,11 @@ import { ApiResponse } from '../utils/ApiResponse';
 
 const exportUserData = asyncHandler(async (req: Request, res: Response) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id || req.params.userId || req.body?.userId;
+  const userId = (req as any).user?.id;
   const { format } = req.query; // 'json' or 'txt'
 
   if (!userId) {
-    throw new ApiError(400, 'User ID is required');
+    throw new ApiError(401, 'Unauthorized');
   }
 
   const userIdNum = Number(userId);

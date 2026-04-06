@@ -17,14 +17,13 @@ export interface ToDo {
   toDoLog?: ToDoLog[];
 }
 
-export const useTodos = (userId: number | undefined) => {
+export const useTodos = () => {
   return useQuery<ToDo[]>({
-    queryKey: ['todos', userId],
+    queryKey: ['todos'],
     queryFn: async () => {
-      const { data } = await api.get(`/api/todo/user/${userId}`);
+      const { data } = await api.get(`/api/todo`);
       return data.data; // ApiResponse.data
     },
-    enabled: !!userId,
   });
 };
 
@@ -32,7 +31,7 @@ export const useCreateTodo = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (newTodo: { title: string; userId: number; description?: string }) => {
+    mutationFn: async (newTodo: { title: string; description?: string }) => {
       const { data } = await api.post('/api/todo/create', newTodo);
       return data.data; // ApiResponse.data
     },

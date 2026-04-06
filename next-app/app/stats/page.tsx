@@ -10,7 +10,7 @@ import { BookOpen, CheckCircle, RefreshCcw, Clock } from 'lucide-react';
 
 export default function StatsPage() {
   const { user } = useAuthStore();
-  const { data: timeline = [], isLoading } = useDailyTimeline(user?.id);
+  const { data: timeline = [], isLoading } = useDailyTimeline();
 
   const getIcon = (type: string) => {
     switch (type) {

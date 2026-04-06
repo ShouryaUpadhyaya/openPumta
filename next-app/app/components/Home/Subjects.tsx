@@ -25,7 +25,7 @@ import { ConvertSecsToTimer } from '@/lib/utils';
 
 function Subjects() {
   const { user } = useAuthStore();
-  const { data: Subjects = [] } = useSubjects(user?.id);
+  const { data: Subjects = [] } = useSubjects();
   const createSubject = useCreateSubject();
   const updateSubjectMutation = useUpdateSubject();
   const deleteSubjectMutation = useDeleteSubject();
@@ -101,7 +101,7 @@ function Subjects() {
                 const seconds = Number(formData.get('seconds')) || 0;
                 const goalWorkSecs = hours * 3600 + minutes * 60 + seconds;
 
-                createSubject.mutate({ name, userId: user.id, goalWorkSecs });
+                createSubject.mutate({ name, goalWorkSecs });
                 e.currentTarget.reset();
                 setIsAddDialogOpen(false);
               }}

@@ -16,7 +16,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 
 function PomodoroPage() {
   const { user } = useAuthStore();
-  const { data: Subjects = [], isLoading } = useSubjects(user?.id);
+  const { data: Subjects = [], isLoading } = useSubjects();
   const { timerRunningSubjectId, stopLocalTimer, activeSeconds, tick } = useSubjectTimerStore();
   const [timerInterval, setTimerInterval] = useState<ReturnType<typeof setInterval> | null>(null);
   const { endTimer } = useSubjectTimer();

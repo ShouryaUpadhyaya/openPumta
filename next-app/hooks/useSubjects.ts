@@ -18,14 +18,13 @@ export interface Subject {
   goalWorkSecs?: number;
 }
 
-export const useSubjects = (userId: number | undefined) => {
+export const useSubjects = () => {
   return useQuery<Subject[]>({
-    queryKey: ['subjects', userId],
+    queryKey: ['subjects'],
     queryFn: async () => {
-      const { data } = await api.get(`/api/subject/${userId}/stats`);
+      const { data } = await api.get(`/api/subject/stats`);
       return data.data; // ApiResponse.data
     },
-    enabled: !!userId,
   });
 };
 
@@ -33,7 +32,7 @@ export const useCreateSubject = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (newSubject: { name: string; userId: number; goalWorkSecs?: number }) => {
+    mutationFn: async (newSubject: { name: string; goalWorkSecs?: number }) => {
       const { data } = await api.post('/api/subject', newSubject);
       return data.data; // ApiResponse.data
     },

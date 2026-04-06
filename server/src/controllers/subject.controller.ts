@@ -5,19 +5,24 @@ import { ApiError } from '../utils/ApiError';
 import { ApiResponse } from '../utils/ApiResponse';
 
 const getAllSubject = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const idNum = Number(id);
-  const { to, from } = req.query; // ?from=...&to=...
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userId = (req as any).user?.id;
+  const { to, from } = req.query;
+
+  if (!userId) {
+    throw new ApiError(401, 'Unauthorized');
+  }
 
   if (typeof to !== 'string' || typeof from !== 'string') {
     throw new ApiError(400, 'Invalid type of To/From');
   }
+
   const subjects = await prisma.subject.findMany({
     where: {
-      userId: idNum,
+      userId: Number(userId),
       createdAt: {
-        gte: new Date(from as string),
-        lte: new Date(to as string),
+        gte: new Date(from),
+        lte: new Date(to),
       },
     },
   });
@@ -25,15 +30,17 @@ const getAllSubject = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const createSubject = asyncHandler(async (req: Request, res: Response) => {
-  const { userId, name, goalWorkSecs } = req.body;
+  const { name, goalWorkSecs } = req.body;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userId = (req as any).user?.id;
 
-  if (!name || userId === undefined) {
-    throw new ApiError(400, 'Name and UserId are required');
+  if (!name || !userId) {
+    throw new ApiError(400, 'Name is required');
   }
 
   const subject = await prisma.subject.create({
     data: {
-      name: name,
+      name,
       userId: Number(userId),
       goalWorkSecs: goalWorkSecs !== undefined ? Number(goalWorkSecs) : 0,
     },
@@ -164,7 +171,6 @@ const endSubjectLog = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const getSubjectLogs = asyncHandler(async (req: Request, res: Response) => {
-  // GET /subjects/:subjectId/logs?from=2026-02-01&to=2026-02-28
   const { subjectId } = req.params;
   const subjectIdNum = Number(subjectId);
   const { from, to } = req.query;
@@ -195,13 +201,15 @@ const getSubjectLogs = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const getAllSubjectsWithLogs = asyncHandler(async (req: Request, res: Response) => {
-  const { userId } = req.params;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userId = (req as any).user?.id;
   const { from, to } = req.query;
-  const userIdNum = Number(userId);
 
   if (!userId) {
-    throw new ApiError(400, 'User ID is required');
+    throw new ApiError(401, 'Unauthorized');
   }
+
+  const userIdNum = Number(userId);
 
   const subjects = await prisma.subject.findMany({
     where: {
@@ -244,12 +252,14 @@ const getAllSubjectsWithLogs = asyncHandler(async (req: Request, res: Response) 
 });
 
 const getDashboardData = asyncHandler(async (req: Request, res: Response) => {
-  const { userId } = req.params;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userId = (req as any).user?.id;
   const { from, to } = req.query;
 
   if (!userId) {
-    throw new ApiError(400, 'User ID is required');
+    throw new ApiError(401, 'Unauthorized');
   }
+
   const userIdNum = Number(userId);
   const today = new Date();
   today.setHours(0, 0, 0, 0);

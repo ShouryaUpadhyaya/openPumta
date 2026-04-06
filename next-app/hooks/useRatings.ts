@@ -1,14 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/api';
 
-export const useDailyRatingStats = (userId: number | undefined) => {
+export const useDailyRatingStats = () => {
   return useQuery({
-    queryKey: ['dailyRatingStats', userId],
+    queryKey: ['dailyRatingStats'],
     queryFn: async () => {
-      const { data } = await api.get(`/api/daily-rating/${userId}/stats`);
+      const { data } = await api.get(`/api/daily-rating/stats`);
       return data.data; // { today, yesterday, difference, weeklyAverage, twentyOneDayAverage, description }
     },
-    enabled: !!userId,
   });
 };
 
@@ -16,16 +15,8 @@ export const useSubmitDailyRating = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      rating,
-      description,
-      userId,
-    }: {
-      rating: number;
-      description?: string;
-      userId: number;
-    }) => {
-      const { data } = await api.post('/api/daily-rating', { rating, description, userId });
+    mutationFn: async ({ rating, description }: { rating: number; description?: string }) => {
+      const { data } = await api.post('/api/daily-rating', { rating, description });
       return data.data;
     },
     onSuccess: () => {

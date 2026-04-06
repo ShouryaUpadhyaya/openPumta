@@ -7,7 +7,7 @@ import { ApiResponse } from '../utils/ApiResponse';
 const createOrUpdateDailyRating = asyncHandler(async (req: Request, res: Response) => {
   const { rating, description } = req.body || {};
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id || req.body?.userId; // Depending on how auth is structured
+  const userId = (req as any).user?.id;
 
   if (!userId) {
     throw new ApiError(401, 'Unauthorized');
@@ -24,7 +24,7 @@ const createOrUpdateDailyRating = asyncHandler(async (req: Request, res: Respons
   const existingRating = await prisma.dailyRating.findUnique({
     where: {
       userId_date: {
-        userId: userId,
+        userId,
         date: today,
       },
     },
@@ -57,10 +57,10 @@ const createOrUpdateDailyRating = asyncHandler(async (req: Request, res: Respons
 
 const getDailyRatingStats = asyncHandler(async (req: Request, res: Response) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id || req.params.userId || req.body?.userId;
+  const userId = (req as any).user?.id;
 
   if (!userId) {
-    throw new ApiError(400, 'User ID is required');
+    throw new ApiError(401, 'Unauthorized');
   }
 
   const userIdNum = Number(userId);

@@ -24,7 +24,7 @@ import { toast } from 'sonner';
 
 export default function Habits() {
   const { user } = useAuthStore();
-  const { data: dashboardData, isLoading } = useHabitDashboard(user?.id);
+  const { data: dashboardData, isLoading } = useHabitDashboard();
   const createHabit = useCreateHabit();
   const toggleHabit = useToggleHabitCompletion();
   const [isDialogOpen, setIsDialogOpen] = useState(false);

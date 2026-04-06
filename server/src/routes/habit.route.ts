@@ -1,4 +1,5 @@
 import express from 'express';
+import passport from '../config/passport';
 import {
   getAllHabits,
   createHabit,
@@ -13,14 +14,16 @@ import {
 
 const router = express.Router();
 
-router.get('/user/:userId', getAllHabits);
+router.use(passport.authenticate('jwt', { session: false }));
+
+router.get('/', getAllHabits);
 router.post('/', createHabit);
 router.patch('/:id', updateHabit);
 router.post('/:habitId/start', startHabitLog);
 router.post('/:habitId/end', endHabitLog);
 router.get('/:habitId/logs', getHabitLogs);
-router.get('/user/:userId/logs', getAllHabitsWithLogs);
-router.get('/user/:userId/dashboard', getHabitDashboardData);
+router.get('/logs', getAllHabitsWithLogs);
+router.get('/dashboard', getHabitDashboardData);
 router.patch('/:habitId/toggle', toggleHabitCompletion);
 
 export default router;

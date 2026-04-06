@@ -27,14 +27,14 @@ import { toast } from 'sonner';
 
 export default function HabitsPage() {
   const { user } = useAuthStore();
-  const { data: dashboardData, isLoading: dashboardLoading } = useHabitDashboard(user?.id);
+  const { data: dashboardData, isLoading: dashboardLoading } = useHabitDashboard();
 
   // Fetch logs for the past 21 days
   const twentyOneDaysAgo = new Date();
   twentyOneDaysAgo.setDate(twentyOneDaysAgo.getDate() - 20);
   const fromDateString = twentyOneDaysAgo.toISOString();
-  const { data: habitsWithLogs } = useHabitsWithLogs(user?.id, fromDateString);
-  const { data: subjects } = useSubjects(user?.id);
+  const { data: habitsWithLogs } = useHabitsWithLogs(fromDateString);
+  const { data: subjects } = useSubjects();
 
   const toggleHabit = useToggleHabitCompletion();
   const createHabit = useCreateHabit();
@@ -63,7 +63,6 @@ export default function HabitsPage() {
     createHabit.mutate(
       {
         name: newTaskTitle.trim(),
-        userId: user.id,
         subjectId: selectedSubject !== 'none' ? parseInt(selectedSubject) : undefined,
       },
       {

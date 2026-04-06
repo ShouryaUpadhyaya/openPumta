@@ -5,13 +5,15 @@ import { ApiResponse } from '../utils/ApiResponse';
 import { ApiError } from '../utils/ApiError';
 
 const getAllHabits = asyncHandler(async (req: Request, res: Response) => {
-  const { userId } = req.params;
-  const userIdNum = Number(userId);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userId = (req as any).user?.id;
   const { from, to } = req.query;
 
   if (!userId) {
-    throw new ApiError(400, 'User ID is required');
+    throw new ApiError(401, 'Unauthorized');
   }
+
+  const userIdNum = Number(userId);
 
   const habits = await prisma.habit.findMany({
     where: {
@@ -35,14 +37,16 @@ const getAllHabits = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const createHabit = asyncHandler(async (req: Request, res: Response) => {
-  const { userId, name, description, difficulty, subjectId } = req.body;
+  const { name, description, difficulty, subjectId } = req.body;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userId = (req as any).user?.id;
 
   if (!userId || !name) {
-    throw new ApiError(400, 'User ID and Name are required');
+    throw new ApiError(400, 'Name is required');
   }
 
   const habitCount = await prisma.habit.count({
-    where: { userId: parseInt(userId), deleted: false },
+    where: { userId: Number(userId), deleted: false },
   });
 
   if (habitCount >= 6) {
@@ -55,7 +59,7 @@ const createHabit = asyncHandler(async (req: Request, res: Response) => {
   const habit = await prisma.habit.create({
     data: {
       name,
-      userId: parseInt(userId),
+      userId: Number(userId),
       description: description || '',
       difficulty: difficulty || 'MID',
       subjectId: subjectId ? parseInt(subjectId) : null,
@@ -157,13 +161,15 @@ const getHabitLogs = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const getAllHabitsWithLogs = asyncHandler(async (req: Request, res: Response) => {
-  const { userId } = req.params;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userId = (req as any).user?.id;
   const { from, to } = req.query;
-  const userIdNum = Number(userId);
 
   if (!userId) {
-    throw new ApiError(400, 'User ID is required');
+    throw new ApiError(401, 'Unauthorized');
   }
+
+  const userIdNum = Number(userId);
 
   const habits = await prisma.habit.findMany({
     where: {
@@ -197,14 +203,16 @@ const getAllHabitsWithLogs = asyncHandler(async (req: Request, res: Response) =>
 });
 
 const getHabitDashboardData = asyncHandler(async (req: Request, res: Response) => {
-  const { userId } = req.params;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userId = (req as any).user?.id;
+
+  if (!userId) {
+    throw new ApiError(401, 'Unauthorized');
+  }
+
   const userIdNum = Number(userId);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
-  if (!userId) {
-    throw new ApiError(400, 'User ID is required');
-  }
 
   const habits = await prisma.habit.findMany({
     where: {

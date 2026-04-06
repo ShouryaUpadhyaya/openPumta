@@ -19,7 +19,7 @@ const FALLBACK_COLORS = ['#0088FE', '#FF8042', '#00C49F', '#FFBB28', '#FF8042'];
 
 function Stats() {
   const { user } = useAuthStore();
-  const { data: statsData, isLoading } = useDashboardStats(user?.id);
+  const { data: statsData, isLoading } = useDashboardStats();
   const [chartColors, setChartColors] = useState<string[]>(FALLBACK_COLORS);
 
   useEffect(() => {

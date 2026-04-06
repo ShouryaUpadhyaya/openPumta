@@ -5,16 +5,16 @@ import { ApiResponse } from '../utils/ApiResponse';
 import { ApiError } from '../utils/ApiError';
 
 const getAllToDos = asyncHandler(async (req: Request, res: Response) => {
-  const { userId } = req.params;
-  const userIdNum = Number(userId);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userId = (req as any).user?.id;
 
   if (!userId) {
-    throw new ApiError(400, 'User ID is required');
+    throw new ApiError(401, 'Unauthorized');
   }
 
   const toDos = await prisma.toDo.findMany({
     where: {
-      userId: userIdNum,
+      userId: Number(userId),
     },
     include: {
       toDoLog: true,
@@ -28,17 +28,19 @@ const getAllToDos = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const createToDo = asyncHandler(async (req: Request, res: Response) => {
-  const { userId, title, description } = req.body;
+  const { title, description } = req.body;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userId = (req as any).user?.id;
 
   if (!userId || !title) {
-    throw new ApiError(400, 'User ID and Title are required');
+    throw new ApiError(400, 'Title is required');
   }
 
   const toDo = await prisma.toDo.create({
     data: {
       title,
       discription: description || '', // Matching schema's 'discription' spelling
-      userId: parseInt(userId),
+      userId: Number(userId),
     },
   });
 
