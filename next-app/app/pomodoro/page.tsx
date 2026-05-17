@@ -1,13 +1,13 @@
 'use client';
 // add a changing avatar in the middle of the pomodoro
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSubjectTimerStore } from '@/store/useSubjectStore';
 import { usePomodoroStore } from '@/store/usePomodoroStore';
 import ClockCircle from '../components/pomodoro/ClockCircle';
 import ClockTime from '../components/pomodoro/ClockTime';
 import { ConvertSecsToTimer, pad } from '@/lib/utils';
-import { IoIosPause } from 'react-icons/io';
+import { IoIosPause, IoIosPlay, IoIosRefresh } from 'react-icons/io';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -18,20 +18,30 @@ function PomodoroPage() {
   const { user } = useAuthStore();
   const { data: Subjects = [], isLoading } = useSubjects();
   const { timerRunningSubjectId, stopLocalTimer, activeSeconds, tick } = useSubjectTimerStore();
-  const [timerInterval, setTimerInterval] = useState<ReturnType<typeof setInterval> | null>(null);
   const { endTimer } = useSubjectTimer();
-  const { pomodoroTimer, timerMode } = usePomodoroStore();
+  const { 
+    mode, 
+    phase, 
+    workDuration, 
+    breakDuration, 
+    breakElapsedSeconds, 
+    tickBreak, 
+    togglePhase, 
+    resetBreak 
+  } = usePomodoroStore();
   const router = useRouter();
 
+  // Unified Interval for Work and Break
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
-    if (timerRunningSubjectId) {
-      interval = setInterval(() => {
+    const interval = setInterval(() => {
+      if (timerRunningSubjectId && phase === 'WORK') {
         tick();
-      }, 1000);
-    }
+      } else if (phase === 'BREAK') {
+        tickBreak();
+      }
+    }, 1000);
     return () => clearInterval(interval);
-  }, [timerRunningSubjectId, tick]);
+  }, [timerRunningSubjectId, phase, tick, tickBreak]);
 
   const handlePauseClick = async () => {
     if (timerRunningSubjectId) {
@@ -55,14 +65,10 @@ function PomodoroPage() {
 
   const runningSubject = Subjects.find((subject) => subject.id === timerRunningSubjectId);
 
-  let displayHours,
-    displayMinutes,
-    displaySeconds,
-    circlePercent,
-    progressBarPercent,
-    goalWorkSecs = 0,
-    sessionSecs = 0,
-    totalWorkedSecs = 0;
+  // Time Calculations
+  let sessionSecs = 0;
+  let totalWorkedSecs = 0;
+  let goalWorkSecs = 0;
 
   if (runningSubject) {
     const activeLog = runningSubject.subjectLogs?.find((log) => !log.endedAt);
@@ -74,78 +80,99 @@ function PomodoroPage() {
       : activeSeconds;
 
     totalWorkedSecs = pastLogsDuration + sessionSecs;
-
     goalWorkSecs = runningSubject.goalWorkSecs || 0;
-
-    const pomodoroRemainingSecs = pomodoroTimer - (totalWorkedSecs % pomodoroTimer);
-    const { hours, minutes, seconds } = ConvertSecsToTimer({
-      workSecs: pomodoroRemainingSecs,
-    });
-    displayHours = hours;
-    displayMinutes = minutes;
-    displaySeconds = seconds;
-
-    circlePercent = ((totalWorkedSecs % pomodoroTimer) / pomodoroTimer) * 100;
-    progressBarPercent = goalWorkSecs ? (totalWorkedSecs / goalWorkSecs) * 100 : 0;
-  } else {
-    const { hours, minutes, seconds } = ConvertSecsToTimer({
-      workSecs: pomodoroTimer,
-    });
-    displayHours = hours;
-    displayMinutes = minutes;
-    displaySeconds = seconds;
-    circlePercent = 100;
-    progressBarPercent = 0;
   }
+
+  // Phase & Mode Logic
+  let displayTime = { hours: 0, minutes: 0, seconds: 0 };
+  let circlePercent = 0;
+  let bottomText = "";
+  let subText = "";
+
+  if (mode === 'POMODORO') {
+    if (phase === 'WORK') {
+      const remainingWork = Math.max(0, workDuration - (totalWorkedSecs % workDuration));
+      displayTime = ConvertSecsToTimer({ workSecs: remainingWork });
+      circlePercent = ((totalWorkedSecs % workDuration) / workDuration) * 100;
+      bottomText = "WORK PHASE";
+      subText = runningSubject ? `Session: ${pad(ConvertSecsToTimer({workSecs: sessionSecs}).minutes)}:${pad(ConvertSecsToTimer({workSecs: sessionSecs}).seconds)}` : "Select a subject to start";
+      
+      // Auto-transition to Break
+      if (remainingWork === 0 && timerRunningSubjectId) {
+        handlePauseClick();
+        togglePhase();
+      }
+    } else {
+      const remainingBreak = Math.max(0, breakDuration - breakElapsedSeconds);
+      displayTime = ConvertSecsToTimer({ workSecs: remainingBreak });
+      circlePercent = (breakElapsedSeconds / breakDuration) * 100;
+      bottomText = "BREAK PHASE";
+      subText = "Time to rest!";
+
+      // Auto-transition to Work
+      if (remainingBreak === 0) {
+        togglePhase();
+      }
+    }
+  } else {
+    // NORMAL MODE (Stopwatch Session)
+    displayTime = ConvertSecsToTimer({ workSecs: sessionSecs });
+    circlePercent = goalWorkSecs ? (totalWorkedSecs / goalWorkSecs) * 100 : 0;
+    bottomText = "DEEP WORK";
+    subText = `Daily Total: ${pad(ConvertSecsToTimer({workSecs: totalWorkedSecs}).hours)}:${pad(ConvertSecsToTimer({workSecs: totalWorkedSecs}).minutes)}`;
+  }
+
+  const progressBarPercent = goalWorkSecs ? (totalWorkedSecs / goalWorkSecs) * 100 : 0;
 
   return (
     <section className="flex flex-col justify-center items-center h-screen w-screen gap-0">
-      {runningSubject && <h1 className="text-5xl font-bold">{runningSubject.name}</h1>}
+      {runningSubject && <h1 className="text-5xl font-bold mb-4">{runningSubject.name}</h1>}
+      
       <ClockCircle percent={circlePercent} size="lg">
-        {timerMode ? (
-          <div className="flex flex-col items-center">
-            <div className="text-7xl font-bold text-primary mb-2">
-              {(() => {
-                const { hours, minutes, seconds } = ConvertSecsToTimer({ workSecs: sessionSecs });
-                return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-              })()}
-            </div>
-            <div className="text-2xl font-semibold text-muted-foreground">
-              {(() => {
-                const { hours, minutes, seconds } = ConvertSecsToTimer({
-                  workSecs: totalWorkedSecs,
-                });
-                return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-              })()}
-            </div>
+        <div className="flex flex-col items-center">
+          <div className="text-7xl font-bold text-primary mb-2">
+            {pad(displayTime.hours)}:{pad(displayTime.minutes)}:{pad(displayTime.seconds)}
           </div>
-        ) : (
-          <ClockTime hours={displayHours} minutes={displayMinutes} seconds={displaySeconds} />
-        )}
+          <div className="text-2xl font-semibold text-muted-foreground uppercase tracking-widest">
+            {bottomText}
+          </div>
+          <div className="text-lg font-medium text-muted-foreground/60 mt-1">
+            {subText}
+          </div>
+        </div>
       </ClockCircle>
+
       {runningSubject && (
-        <div className="w-1/2 mb-8">
+        <div className="w-1/2 mb-12">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Progress value={progressBarPercent} draggable={false} className="h-5" />
+              <Progress value={progressBarPercent} className="h-4" />
             </TooltipTrigger>
             <TooltipContent>
-              <div className="flex flex-col items-center text-primary font-semibold text-lg">
-                <span>
-                  {(() => {
-                    const { hours, minutes, seconds } = ConvertSecsToTimer({
-                      workSecs: goalWorkSecs,
-                    });
-                    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-                  })()}
-                </span>
+              <div className="font-semibold text-lg">
+                Goal: {pad(ConvertSecsToTimer({workSecs: goalWorkSecs}).hours)}:{pad(ConvertSecsToTimer({workSecs: goalWorkSecs}).minutes)}
               </div>
             </TooltipContent>
           </Tooltip>
         </div>
       )}
-      <div className="flex flex-col items-center gap-8">
-        <Button onClick={handlePauseClick} variant="secondary" className="scale-150 ">
+
+      <div className="flex items-center gap-12">
+        {mode === 'POMODORO' && (
+           <Button 
+            onClick={togglePhase} 
+            variant="outline" 
+            className="rounded-full w-16 h-16"
+          >
+            <IoIosRefresh size={32} />
+          </Button>
+        )}
+        
+        <Button 
+          onClick={handlePauseClick} 
+          variant="secondary" 
+          className="rounded-full w-24 h-24 shadow-lg hover:scale-105 transition-transform"
+        >
           <IoIosPause size={48} />
         </Button>
       </div>

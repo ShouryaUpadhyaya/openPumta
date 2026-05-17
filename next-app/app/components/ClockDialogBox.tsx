@@ -7,7 +7,6 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -21,19 +20,21 @@ import { Field, FieldContent, FieldDescription, FieldLabel } from '@/components/
 import { Switch } from '@/components/ui/switch';
 
 export function TimerSwitchDescription() {
-  const { timerMode, changeTimerMode } = usePomodoroStore();
+  const { mode, setMode } = usePomodoroStore();
   return (
     <Field orientation="horizontal" className="max-w-sm">
       <FieldContent>
-        <FieldLabel htmlFor="switch-focus-mode">Timer mode</FieldLabel>
+        <FieldLabel htmlFor="switch-focus-mode">Pomodoro Mode</FieldLabel>
         <FieldDescription>
-          when on you will be seeing a timer showing total time studied per session
+          {mode === 'POMODORO' 
+            ? "Cycles between work and breaks." 
+            : "Continuous tracking with session stopwatch."}
         </FieldDescription>
       </FieldContent>
       <Switch
         id="switch-focus-mode"
-        checked={timerMode}
-        onCheckedChange={(checked) => changeTimerMode({ timermode: checked })}
+        checked={mode === 'POMODORO'}
+        onCheckedChange={(checked) => setMode(checked ? 'POMODORO' : 'NORMAL')}
       />
     </Field>
   );
@@ -42,19 +43,19 @@ export function TimerSwitchDescription() {
 type Props = { child: React.ReactNode };
 
 const ClockDialogBox = (props: Props) => {
-  const { changeTimerPomodoro, pomodoroTimer, BreakTimer } = usePomodoroStore();
+  const { setDurations, workDuration, breakDuration } = usePomodoroStore();
 
   const {
     hours: workHours,
     minutes: workMinutes,
     seconds: workSeconds,
-  } = ConvertSecsToTimer({ workSecs: pomodoroTimer, goalWorkSecs: pomodoroTimer });
+  } = ConvertSecsToTimer({ workSecs: workDuration });
 
   const {
     hours: breakHours,
     minutes: breakMinutes,
     seconds: breakSeconds,
-  } = ConvertSecsToTimer({ workSecs: BreakTimer, goalWorkSecs: BreakTimer });
+  } = ConvertSecsToTimer({ workSecs: breakDuration });
 
   return (
     <>
@@ -88,10 +89,10 @@ const ClockDialogBox = (props: Props) => {
                 sec: breakSec,
               });
 
-              changeTimerPomodoro({
-                workSecs: newWorkSecs || pomodoroTimer,
-                breakSecs: newBreakSecs || BreakTimer,
-              });
+              setDurations(
+                newWorkSecs || workDuration,
+                newBreakSecs || breakDuration,
+              );
             }}
           >
             <DialogHeader>
@@ -99,13 +100,10 @@ const ClockDialogBox = (props: Props) => {
                 <h1 className="text-2xl font-bold mb-4">Timer settings</h1>
               </DialogTitle>
               <TimerSwitchDescription />
-              {/* <DialogDescription>
-                Make changes to your pomodoro timer here. Click save when you&apos;re done.
-              </DialogDescription> */}
             </DialogHeader>
             <div className="grid gap-4 mt-4">
               <div className="grid gap-3">
-                <Label htmlFor="work-time">Work Timer</Label>
+                <Label htmlFor="work-time">Work Duration</Label>
                 <div className="flex items-center gap-2">
                   <Input placeholder="hh" type="number" min={0} defaultValue={workHours} />
                   <span>:</span>
@@ -127,7 +125,7 @@ const ClockDialogBox = (props: Props) => {
                 </div>
               </div>
               <div className="grid gap-3">
-                <Label htmlFor="break-time">Break Timer</Label>
+                <Label htmlFor="break-time">Break Duration</Label>
                 <div className="flex items-center gap-2">
                   <Input placeholder="hh" type="number" min={0} defaultValue={breakHours} />
                   <span>:</span>
