@@ -89,19 +89,9 @@ function Subjects() {
 
   return (
     <section className="rounded-xl  bg-background p-4">
-      <div className="mb-4 flex items-start justify-between">
+      <div className="my-4 flex items-start justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Subjects</h1>
-
-          <p className="text-sm font-medium text-muted-foreground">Total today</p>
-
-          <div className="flex items-end gap-1.5 pt-1">
-            <span className="font-mono text-2xl font-semibold leading-none tracking-tight text-foreground">
-              {totalTrackedFormatted}
-            </span>
-
-            <span className="pb-0.5 text-xs font-medium text-muted-foreground">tracked</span>
-          </div>
+          <h1 className="text-2xl mb-2 font-semibold tracking-tight text-foreground">Subjects</h1>
         </div>
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
@@ -160,7 +150,12 @@ function Subjects() {
           </DialogContent>
         </Dialog>
       </div>
-
+      <div className="flex my-4 justify-between items-end  gap-1.5 pt-1">
+        <p className="text-md font-medium text-muted-foreground">Total today:</p>
+        <span className="font-mono text-2xl font-semibold leading-none tracking-tight text-foreground">
+          {totalTrackedFormatted}
+        </span>
+      </div>
       <div className="rounded-lg border border-border">
         <div className=" overflow-y-scroll">
           <table className="w-full text-lg bg-dashboard-card">
