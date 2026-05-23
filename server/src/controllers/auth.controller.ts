@@ -16,6 +16,7 @@ export const googleCallback = (req: Request, res: Response) => {
     secure: true,
     sameSite: 'none',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    path: '/',
   });
 
   res.redirect(`${frontendUrl}/`);
@@ -30,6 +31,6 @@ export const getCurrentUser = asyncHandler(async (req: Request, res: Response) =
 });
 
 export const logout = asyncHandler(async (req: Request, res: Response) => {
-  res.clearCookie('token');
+  res.clearCookie('token', { path: '/' });
   res.json({ message: 'Logged out' });
 });
