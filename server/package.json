@@ -7,7 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon --exec tsx src/index.ts",
-    "prebuild": "npx prisma generate",
+    "prebuild": "pnpm exec prisma generate",
     "build": "tsc",
     "start": "node dist/src/index.js",
     "seed": "tsx prisma/seed.ts"
