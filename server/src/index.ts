@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import { prisma } from '../prisma/prismaClient.js';
 import userRoute from './routes/user.route.js';
@@ -8,8 +9,8 @@ import todoRoute from './routes/todo.route.js';
 import statsRoute from './routes/stats.route.js';
 import dailyRatingRoute from './routes/dailyRating.route.js';
 import exportRoute from './routes/export.route.js';
+import aiRoute from './routes/ai.route.js';
 import cors from 'cors';
-import 'dotenv/config';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import { errorHandler } from './middlewares/error.middleware.js';
@@ -32,7 +33,7 @@ app.use(passport.initialize());
 app.listen(process.env.PORT || 4000, () => {
   console.log(`Running on http://localhost:${process.env.PORT}`);
 });
-// app.route;
+
 app.get('/', async (req: express.Request, res: express.Response) =>
   res.send(await prisma.user.findMany()),
 );
@@ -44,5 +45,6 @@ app.use('/api/auth', authRoute);
 app.use('/api/stats', statsRoute);
 app.use('/api/daily-rating', dailyRatingRoute);
 app.use('/api/export', exportRoute);
+app.use('/api/ai', aiRoute);
 
 app.use(errorHandler);
