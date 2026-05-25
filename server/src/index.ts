@@ -14,7 +14,6 @@ import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import { errorHandler } from './middlewares/error.middleware.js';
 import { ApiResponse } from './utils/ApiResponse.js';
-import { data } from '../../next-app/app/settings/page';
 
 let app = express();
 
