@@ -1,156 +1,127 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useTodos, useCreateTodo, useUpdateTodo, useDeleteTodo } from '@/hooks/useTodos';
-import { useAuthStore } from '@/store/useAuthStore';
-import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Trash2, ListTodo } from 'lucide-react';
+import React, { useEffect, Suspense } from 'react';
+import { useSpaces, useCreateSpace } from '@/hooks/useSpaces';
+import { useColumns } from '@/hooks/useColumns';
+import { useWorkspaceStore } from '@/store/useWorkspaceStore';
+import { SpaceNav } from './components/SpaceNav';
+import { FilterBar } from './components/FilterBar';
+import { SpaceBoard } from './components/SpaceBoard';
 import { toast } from 'sonner';
+import { Loader2, LayoutDashboard } from 'lucide-react';
 
-export default function TodoPage() {
-  const { user } = useAuthStore();
-  const { data: todos, isLoading } = useTodos();
-  const createTodo = useCreateTodo();
-  const updateTodo = useUpdateTodo();
-  const deleteTodo = useDeleteTodo();
+function WorkspaceInner() {
+  const { activeSpaceId, activeFilter, dateRange, setActiveSpace } = useWorkspaceStore();
+  const { data: spaces, isLoading: spacesLoading } = useSpaces();
+  const { data: columns, isLoading: columnsLoading } = useColumns(activeSpaceId);
+  const createSpace = useCreateSpace();
 
-  const [newTaskTitle, setNewTaskTitle] = useState('');
+  // Auto-select first space when loaded
+  useEffect(() => {
+    if (spaces && spaces.length > 0 && !activeSpaceId) {
+      setActiveSpace(spaces[0].id);
+    }
+  }, [spaces, activeSpaceId, setActiveSpace]);
 
-  const handleAddTodo = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !newTaskTitle.trim()) return;
-
-    createTodo.mutate(
-      { title: newTaskTitle.trim() },
+  const handleCreateSpace = (name: string, icon: string) => {
+    createSpace.mutate(
+      { name, icon },
       {
-        onSuccess: () => {
-          setNewTaskTitle('');
-          toast.success('Task added');
+        onSuccess: (space) => {
+          setActiveSpace(space.id);
+          toast.success(`Space "${name}" created`);
         },
-        onError: () => toast.error('Failed to add task'),
+        onError: () => toast.error('Failed to create space'),
       },
     );
   };
 
-  const handleToggle = (id: number, currentStatus: boolean) => {
-    updateTodo.mutate({ id, isCompleted: !currentStatus });
-  };
-
-  const handleDelete = (id: number) => {
-    deleteTodo.mutate(id, {
-      onSuccess: () => toast.success('Task deleted'),
-    });
-  };
-
-  if (isLoading) {
+  // ─── Loading state ─────────────────────────────────────────────────────────
+  if (spacesLoading) {
     return (
-      <div className="flex h-[calc(100vh-theme(spacing.16))] items-center justify-center">
-        Loading tasks...
+      <div className="flex flex-col items-center justify-center h-full min-h-[60vh] gap-3 text-muted-foreground">
+        <Loader2 className="h-8 w-8 animate-spin opacity-50" />
+        <p className="text-sm">Loading your workspace...</p>
       </div>
     );
   }
 
-  const activeTodos = todos?.filter((t) => !t.isCompleted) || [];
-  const completedTodos = todos?.filter((t) => t.isCompleted) || [];
-
-  return (
-    <div className="flex flex-col h-full max-w-4xl mx-auto p-4 lg:p-8">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="bg-primary/20 p-3 rounded-xl text-primary">
-          <ListTodo className="h-6 w-6" />
+  // ─── Empty state — no spaces ───────────────────────────────────────────────
+  if (!spaces || spaces.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full min-h-[60vh] gap-5 text-center px-4">
+        <div className="p-5 rounded-2xl bg-primary/10 text-primary">
+          <LayoutDashboard className="h-10 w-10" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
-          <p className="text-muted-foreground">Manage your action items.</p>
+          <h2 className="text-xl font-bold mb-1">Create your first Space</h2>
+          <p className="text-sm text-muted-foreground max-w-xs">
+            Spaces are your workspaces — think &quot;Daily Planner&quot;, &quot;Coding&quot;,
+            &quot;Fitness&quot;.
+          </p>
         </div>
+        <button
+          onClick={() => handleCreateSpace('Daily Planner', '📋')}
+          className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/30"
+        >
+          + Create &quot;Daily Planner&quot;
+        </button>
+      </div>
+    );
+  }
+
+  const activeSpace = spaces.find((s) => s.id === activeSpaceId);
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* ── Top bar: Space name + Space tabs ── */}
+      <div className="flex flex-col border-b border-border/30 pb-3 pt-4 gap-3">
+        {/* Space title row */}
+        <div className="px-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {activeSpace?.icon && <span className="text-2xl leading-none">{activeSpace.icon}</span>}
+            <h1 className="text-2xl font-bold tracking-tight">
+              {activeSpace?.name ?? 'Workspace'}
+            </h1>
+          </div>
+        </div>
+
+        {/* Space nav tabs */}
+        <SpaceNav spaces={spaces} onCreateSpace={handleCreateSpace} />
       </div>
 
-      <form onSubmit={handleAddTodo} className="flex gap-2 mb-8 relative">
-        <Input
-          className="flex-1 bg-background border-border/60 rounded-xl h-12 px-4 shadow-sm"
-          placeholder="What needs to be done?"
-          value={newTaskTitle}
-          onChange={(e) => setNewTaskTitle(e.target.value)}
-        />
-        <Button
-          type="submit"
-          disabled={!newTaskTitle.trim() || createTodo.isPending}
-          className="h-12 w-12 rounded-xl shrink-0"
-        >
-          <Plus className="h-5 w-5" />
-        </Button>
-      </form>
+      {/* ── Filter bar ── */}
+      <div className="py-2 border-b border-border/20">
+        <FilterBar />
+      </div>
 
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-2">
-          {activeTodos.length === 0 && completedTodos.length === 0 ? (
-            <div className="flex flex-col items-center justify-center p-12 text-center text-muted-foreground bg-muted/20 border border-dashed rounded-xl">
-              <ListTodo className="h-12 w-12 mb-4 opacity-20" />
-              <p>Your task list is empty.</p>
-              <p className="text-sm">Add a task above to get started.</p>
-            </div>
-          ) : activeTodos.length === 0 ? (
-            <p className="text-sm text-muted-foreground p-4">All caught up!</p>
-          ) : (
-            activeTodos.map((todo) => (
-              <Card
-                key={todo.id}
-                className="bg-background border-border/40 shadow-sm transition-all hover:shadow-md group"
-              >
-                <CardContent className="flex items-center gap-3 p-3 lg:p-4">
-                  <Checkbox
-                    checked={todo.isCompleted}
-                    onCheckedChange={() => handleToggle(todo.id, todo.isCompleted)}
-                    className="h-5 w-5 rounded-md"
-                  />
-                  <span className="flex-1 text-foreground font-medium">{todo.title}</span>
-                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(todo.id)}
-                      className="text-destructive hover:bg-destructive/10"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
-
-        {completedTodos.length > 0 && (
-          <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border/50">
-            <h2 className="text-sm font-semibold text-muted-foreground mb-2 px-1">
-              Completed ({completedTodos.length})
-            </h2>
-            {completedTodos.map((todo) => (
-              <Card key={todo.id} className="bg-muted/30 border-border/20 shadow-none group">
-                <CardContent className="flex items-center gap-3 p-3 lg:p-4 opacity-60">
-                  <Checkbox
-                    checked={todo.isCompleted}
-                    onCheckedChange={() => handleToggle(todo.id, todo.isCompleted)}
-                    className="h-5 w-5 rounded-md"
-                  />
-                  <span className="flex-1 text-muted-foreground line-through">{todo.title}</span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(todo.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive hover:bg-destructive/10"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+      {/* ── Board ── */}
+      <div className="flex-1 overflow-hidden pt-4">
+        {!activeSpaceId ? (
+          <div className="flex items-center justify-center h-40 text-muted-foreground text-sm">
+            Select a space to get started
           </div>
+        ) : columnsLoading ? (
+          <div className="flex items-center justify-center h-40">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <SpaceBoard
+            spaceId={activeSpaceId}
+            columns={columns ?? []}
+            filter={activeFilter}
+            dateRange={dateRange}
+          />
         )}
       </div>
     </div>
+  );
+}
+
+export default function TodoPage() {
+  return (
+    <Suspense>
+      <WorkspaceInner />
+    </Suspense>
   );
 }

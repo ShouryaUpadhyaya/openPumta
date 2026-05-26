@@ -66,8 +66,7 @@ export function focusTrend(subjectLogs: SubjectLog[], today: Date = new Date()) 
   prevWeekEnd.setDate(prevWeekEnd.getDate() - 7);
   const prevWeek = lastNDays(7, prevWeekEnd);
 
-  const toMinutes = (days: string[]) =>
-    days.map((d) => round1((focusMap[d] || 0) / 60));
+  const toMinutes = (days: string[]) => days.map((d) => round1((focusMap[d] || 0) / 60));
 
   const thisTotal = round1(sum(toMinutes(thisWeek)));
   const prevTotal = round1(sum(toMinutes(prevWeek)));
@@ -83,7 +82,13 @@ export function focusTrend(subjectLogs: SubjectLog[], today: Date = new Date()) 
     direction = 'improving';
   }
 
-  return { thisWeekMinutes: thisTotal, prevWeekMinutes: prevTotal, pctChange, direction, avgDailyThisWeek: round1(thisTotal / 7) };
+  return {
+    thisWeekMinutes: thisTotal,
+    prevWeekMinutes: prevTotal,
+    pctChange,
+    direction,
+    avgDailyThisWeek: round1(thisTotal / 7),
+  };
 }
 
 export function habitConsistency(habits: Habit[], habitLogs: HabitLog[], today: Date = new Date()) {
@@ -101,7 +106,13 @@ export function habitConsistency(habits: Habit[], habitLogs: HabitLog[], today: 
 
   const perHabit = activeHabits.map((h) => {
     const daysDone = doneByHabit[h.id] ? doneByHabit[h.id].size : 0;
-    return { habitId: h.id, name: h.name, difficulty: h.difficulty, daysCompleted: daysDone, consistencyPct: round1((daysDone / 7) * 100) };
+    return {
+      habitId: h.id,
+      name: h.name,
+      difficulty: h.difficulty,
+      daysCompleted: daysDone,
+      consistencyPct: round1((daysDone / 7) * 100),
+    };
   });
 
   const possible = activeHabits.length * 7;
@@ -111,7 +122,11 @@ export function habitConsistency(habits: Habit[], habitLogs: HabitLog[], today: 
   return { overallPct, perHabit, trackedHabits: activeHabits.length };
 }
 
-export function subjectBreakdown(subjects: Subject[], subjectLogs: SubjectLog[], today: Date = new Date()) {
+export function subjectBreakdown(
+  subjects: Subject[],
+  subjectLogs: SubjectLog[],
+  today: Date = new Date(),
+) {
   const days = lastNDays(7, today);
   const bySubject: Record<number, number> = {};
   for (const log of active(subjectLogs)) {
@@ -125,7 +140,13 @@ export function subjectBreakdown(subjects: Subject[], subjectLogs: SubjectLog[],
     .map((s) => {
       const actualSecs = bySubject[s.id] || 0;
       const goalWeekSecs = s.goalWorkSecs * 7;
-      return { subjectId: s.id, name: s.name, actualMinutes: round1(actualSecs / 60), weeklyGoalMinutes: round1(goalWeekSecs / 60), goalMetPct: goalWeekSecs > 0 ? round1((actualSecs / goalWeekSecs) * 100) : null };
+      return {
+        subjectId: s.id,
+        name: s.name,
+        actualMinutes: round1(actualSecs / 60),
+        weeklyGoalMinutes: round1(goalWeekSecs / 60),
+        goalMetPct: goalWeekSecs > 0 ? round1((actualSecs / goalWeekSecs) * 100) : null,
+      };
     })
     .sort((a, b) => b.actualMinutes - a.actualMinutes);
 }
@@ -142,10 +163,22 @@ export function moodTrend(ratings: DailyRating[], today: Date = new Date()) {
   const thisVals = thisWeek.map((d) => ratingByDay[d]).filter((v) => v != null) as number[];
   const prevVals = prevWeek.map((d) => ratingByDay[d]).filter((v) => v != null) as number[];
 
-  return { avgThisWeek: thisVals.length ? round1(avg(thisVals)) : null, avgPrevWeek: prevVals.length ? round1(avg(prevVals)) : null, daysRated: thisVals.length };
+  return {
+    avgThisWeek: thisVals.length ? round1(avg(thisVals)) : null,
+    avgPrevWeek: prevVals.length ? round1(avg(prevVals)) : null,
+    daysRated: thisVals.length,
+  };
 }
 
-export function burnoutRisk({ trend, mood, consistency }: { trend: ReturnType<typeof focusTrend>; mood: ReturnType<typeof moodTrend>; consistency: ReturnType<typeof habitConsistency> }) {
+export function burnoutRisk({
+  trend,
+  mood,
+  consistency,
+}: {
+  trend: ReturnType<typeof focusTrend>;
+  mood: ReturnType<typeof moodTrend>;
+  consistency: ReturnType<typeof habitConsistency>;
+}) {
   let score = 0;
   const reasons: string[] = [];
 
@@ -187,8 +220,14 @@ export function burnoutRisk({ trend, mood, consistency }: { trend: ReturnType<ty
 }
 
 export function computeMetrics(
-  data: { subjectLogs: SubjectLog[]; habitLogs: HabitLog[]; habits: Habit[]; subjects: Subject[]; dailyRatings: DailyRating[] },
-  today: Date = new Date()
+  data: {
+    subjectLogs: SubjectLog[];
+    habitLogs: HabitLog[];
+    habits: Habit[];
+    subjects: Subject[];
+    dailyRatings: DailyRating[];
+  },
+  today: Date = new Date(),
 ): Metrics {
   const trend = focusTrend(data.subjectLogs, today);
   const consistency = habitConsistency(data.habits, data.habitLogs, today);

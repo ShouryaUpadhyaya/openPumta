@@ -17,7 +17,11 @@ const getWeeklyReport = asyncHandler(async (req: Request, res: Response) => {
 
   const [subjectLogs, subjects, habits, habitLogs, dailyRatings] = await Promise.all([
     prisma.subjectLog.findMany({
-      where: { subject: { userId: userIdNum }, startedAt: { gte: fourteenDaysAgo }, deleted: false },
+      where: {
+        subject: { userId: userIdNum },
+        startedAt: { gte: fourteenDaysAgo },
+        deleted: false,
+      },
     }),
     prisma.subject.findMany({ where: { userId: userIdNum, deleted: false } }),
     prisma.habit.findMany({ where: { userId: userIdNum, deleted: false } }),
@@ -50,7 +54,11 @@ const chat = asyncHandler(async (req: Request, res: Response) => {
 
   const [subjectLogs, subjects, habits, habitLogs, dailyRatings] = await Promise.all([
     prisma.subjectLog.findMany({
-      where: { subject: { userId: userIdNum }, startedAt: { gte: fourteenDaysAgo }, deleted: false },
+      where: {
+        subject: { userId: userIdNum },
+        startedAt: { gte: fourteenDaysAgo },
+        deleted: false,
+      },
     }),
     prisma.subject.findMany({ where: { userId: userIdNum, deleted: false } }),
     prisma.habit.findMany({ where: { userId: userIdNum, deleted: false } }),

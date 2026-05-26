@@ -15,13 +15,15 @@ datasource db {
 
 model User {
   id           Int           @id @default(autoincrement())
-  email        String        @unique
+  email        String?       @unique
   name         String?
   avatarUrl    String?
+  isGuest      Boolean       @default(false)
   subjects     Subject[]
   habits       Habit[]
   toDo         ToDo[]
   dailyRatings DailyRating[]
+  spaces       Space[]
   deleted      Boolean       @default(false)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
@@ -147,4 +149,67 @@ model DailyRating {
   date        DateTime @default(now()) @db.Date
 
   @@unique([userId, date])
+}
+
+// ─── Workspace / Planner System ───────────────────────────────────────────────
+
+model Space {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  icon       String?  // emoji or short string
+  order      Int      @default(0)
+  isArchived Boolean  @default(false)
+  deleted    Boolean  @default(false)
+  columns    Column[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, deleted])
+}
+
+model Column {
+  id          Int      @id @default(autoincrement())
+  spaceId     Int
+  space       Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  title       String
+  order       Int      @default(0)
+  width       Int?     // px width, null = default (280)
+  isCollapsed Boolean  @default(false)
+  deleted     Boolean  @default(false)
+  blocks      Block[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([spaceId])
+  @@index([spaceId, deleted])
+}
+
+enum BlockType {
+  HEADING
+  PARAGRAPH
+  TODO
+  DIVIDER
+}
+
+model Block {
+  id          Int       @id @default(autoincrement())
+  columnId    Int
+  column      Column    @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  type        BlockType @default(TODO)
+  content     String    @default("")
+  order       Int       @default(0)
+  deleted     Boolean   @default(false)
+  // TODO-specific metadata
+  isCompleted Boolean   @default(false)
+  scheduledAt DateTime?
+  dueAt       DateTime?
+  reminderAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([columnId])
+  @@index([columnId, deleted])
 }

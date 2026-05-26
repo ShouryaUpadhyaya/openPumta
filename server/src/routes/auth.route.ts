@@ -1,6 +1,11 @@
 import express from 'express';
 import passport from '../config/passport.js';
-import { googleCallback, getCurrentUser, logout } from '../controllers/auth.controller.js';
+import {
+  googleCallback,
+  getCurrentUser,
+  logout,
+  guestLogin,
+} from '../controllers/auth.controller.js';
 
 const router = express.Router();
 const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
@@ -18,6 +23,8 @@ router.get(
   }),
   googleCallback,
 );
+
+router.post('/guest-login', guestLogin);
 
 router.get('/user', passport.authenticate('jwt', { session: false }), getCurrentUser);
 

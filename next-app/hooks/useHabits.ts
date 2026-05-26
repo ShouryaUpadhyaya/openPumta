@@ -67,7 +67,8 @@ export const useToggleHabitCompletion = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['habitDashboard'] });
       queryClient.invalidateQueries({ queryKey: ['habits'] });
-      queryClient.invalidateQueries({ queryKey: ['habitsWithLogs'] }); // keep heatmap in sync
+      queryClient.invalidateQueries({ queryKey: ['habitsWithLogs'] }); // keep heatmap in sync as this is needed - krish
+
     },
   });
 };

@@ -44,7 +44,6 @@ interface DetailedHabit extends Habit {
 export default function HabitsPage() {
   const { user } = useAuthStore();
   const { data: dashboardData, isLoading: dashboardLoading } = useHabitDashboard();
-
   // Stable date — computed once at mount, never changes mid-session
   const fromDateString = useMemo(() => {
     const d = new Date();

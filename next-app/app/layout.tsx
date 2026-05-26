@@ -30,7 +30,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
+        suppressHydrationWarning
+      >
         <Providers>
           <LayoutWrapper>{children}</LayoutWrapper>
           <Toaster position="top-right" className="mr-5" richColors />

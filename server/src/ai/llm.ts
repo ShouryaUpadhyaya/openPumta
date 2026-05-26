@@ -2,22 +2,35 @@ import { Metrics } from './engine.js';
 
 function metricsToContext(m: Metrics): string {
   const lines: string[] = [];
-  lines.push(`Focus this week: ${m.focus.thisWeekMinutes} min (avg ${m.focus.avgDailyThisWeek} min/day).`);
+  lines.push(
+    `Focus this week: ${m.focus.thisWeekMinutes} min (avg ${m.focus.avgDailyThisWeek} min/day).`,
+  );
   if (m.focus.pctChange !== null) {
-    lines.push(`Focus vs last week: ${m.focus.pctChange > 0 ? '+' : ''}${m.focus.pctChange}% (${m.focus.direction}).`);
+    lines.push(
+      `Focus vs last week: ${m.focus.pctChange > 0 ? '+' : ''}${m.focus.pctChange}% (${m.focus.direction}).`,
+    );
   }
   lines.push(`Habit consistency: ${m.habits.overallPct}% across ${m.habits.trackedHabits} habits.`);
   const habitDetail = m.habits.perHabit.map((h) => `${h.name} ${h.consistencyPct}%`).join(', ');
   if (habitDetail) lines.push(`Per habit: ${habitDetail}.`);
   lines.push(
     `Subjects: ` +
-      m.subjects.map((s) => `${s.name} ${s.actualMinutes}min${s.goalMetPct !== null ? ` (${s.goalMetPct}% of goal)` : ''}`).join(', ') +
-      '.'
+      m.subjects
+        .map(
+          (s) =>
+            `${s.name} ${s.actualMinutes}min${s.goalMetPct !== null ? ` (${s.goalMetPct}% of goal)` : ''}`,
+        )
+        .join(', ') +
+      '.',
   );
   if (m.mood.avgThisWeek !== null) {
-    lines.push(`Mood this week: ${m.mood.avgThisWeek}/5${m.mood.avgPrevWeek !== null ? ` (was ${m.mood.avgPrevWeek}/5)` : ''}.`);
+    lines.push(
+      `Mood this week: ${m.mood.avgThisWeek}/5${m.mood.avgPrevWeek !== null ? ` (was ${m.mood.avgPrevWeek}/5)` : ''}.`,
+    );
   }
-  lines.push(`Burnout risk: ${m.burnoutRisk.level.toUpperCase()}${m.burnoutRisk.reasons.length ? ` — ${m.burnoutRisk.reasons.join('; ')}` : ''}.`);
+  lines.push(
+    `Burnout risk: ${m.burnoutRisk.level.toUpperCase()}${m.burnoutRisk.reasons.length ? ` — ${m.burnoutRisk.reasons.join('; ')}` : ''}.`,
+  );
   lines.push(`Strongest: ${m.strongestSubject || 'n/a'}. Weakest: ${m.weakestSubject || 'n/a'}.`);
   return lines.join('\n');
 }
@@ -37,7 +50,7 @@ export function buildWeeklyReportPrompt(metrics: Metrics): string {
 export function buildChatPrompt(
   metrics: Metrics,
   conversationHistory: { role: string; content: string }[],
-  userMessage: string
+  userMessage: string,
 ): string {
   const context = metricsToContext(metrics);
   const historyText = conversationHistory
