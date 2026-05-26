@@ -130,18 +130,20 @@ export default function Navigation({ mounted }: { mounted: boolean }) {
             </Link>
           ) : (
             user && (
-              <Link href="/profile">
+              <Link href={user.isGuest ? '/login' : '/profile'}>
                 <div
                   className={cn(
                     'flex items-center rounded-lg transition-all duration-200 text-muted-foreground hover:bg-secondary hover:text-foreground',
                     isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-3 py-2',
+                    user.isGuest && 'border border-primary/20 bg-primary/5',
                   )}
                 >
                   {user.avatarUrl ? (
-                    <img
+                    <Image
                       src={user.avatarUrl}
                       alt="Avatar"
                       className="h-6 w-6 rounded-full object-cover shrink-0"
+                      fill
                     />
                   ) : (
                     <User className="h-6 w-6 shrink-0" />
@@ -149,9 +151,16 @@ export default function Navigation({ mounted }: { mounted: boolean }) {
                   {!isSidebarCollapsed && (
                     <div className="flex flex-col overflow-hidden">
                       <span className="font-medium text-sm text-foreground truncate">
-                        {user.name}
+                        {user.name || (user.isGuest ? 'Guest User' : 'User')}
                       </span>
-                      <span className="text-xs truncate">{user.email}</span>
+                      <span className="text-xs truncate">
+                        {user.email || (user.isGuest ? 'Save progress' : '')}
+                      </span>
+                    </div>
+                  )}
+                  {user.isGuest && !isSidebarCollapsed && (
+                    <div className="ml-auto px-1.5 py-0.5 rounded-md bg-primary text-[10px] text-primary-foreground font-bold uppercase tracking-wider">
+                      Guest
                     </div>
                   )}
                 </div>
