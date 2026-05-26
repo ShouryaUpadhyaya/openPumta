@@ -10,11 +10,15 @@ import statsRoute from './routes/stats.route.js';
 import dailyRatingRoute from './routes/dailyRating.route.js';
 import exportRoute from './routes/export.route.js';
 import aiRoute from './routes/ai.route.js';
+import spaceRoute from './routes/space.route.js';
+import columnRoute from './routes/column.route.js';
+import blockRoute from './routes/block.route.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import { errorHandler } from './middlewares/error.middleware.js';
 import { ApiResponse } from './utils/ApiResponse.js';
+import { moveBlock } from './controllers/block.controller.js';
 
 let app = express();
 
@@ -50,5 +54,15 @@ app.use('/api/stats', statsRoute);
 app.use('/api/daily-rating', dailyRatingRoute);
 app.use('/api/export', exportRoute);
 app.use('/api/ai', aiRoute);
+// Workspace routes
+app.use('/api/spaces', spaceRoute);
+app.use('/api/spaces/:spaceId/columns', columnRoute);
+app.use('/api/columns/:columnId/blocks', blockRoute);
+app.post(
+  '/api/blocks/:id/move',
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (passport as any).authenticate('jwt', { session: false }),
+  moveBlock,
+);
 
 app.use(errorHandler);
