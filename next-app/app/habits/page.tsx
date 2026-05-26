@@ -45,10 +45,14 @@ export default function HabitsPage() {
   const { user } = useAuthStore();
   const { data: dashboardData, isLoading: dashboardLoading } = useHabitDashboard();
 
-  // Fetch logs for the past 21 days
-  const twentyOneDaysAgo = new Date();
-  twentyOneDaysAgo.setDate(twentyOneDaysAgo.getDate() - 20);
-  const fromDateString = twentyOneDaysAgo.toISOString();
+  // Fetch logs for the past 21 days - stabilized to start of day
+  const fromDateString = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 20);
+    d.setHours(0, 0, 0, 0);
+    return d.toISOString();
+  }, []);
+
   const { data: habitsWithLogs } = useHabitsWithLogs(fromDateString);
   const { data: subjects } = useSubjects();
 

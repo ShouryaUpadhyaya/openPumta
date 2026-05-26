@@ -67,6 +67,7 @@ export const useToggleHabitCompletion = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['habitDashboard'] });
       queryClient.invalidateQueries({ queryKey: ['habits'] });
+      queryClient.invalidateQueries({ queryKey: ['habitsWithLogs'] });
     },
   });
 };
