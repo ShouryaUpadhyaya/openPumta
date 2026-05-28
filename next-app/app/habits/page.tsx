@@ -52,6 +52,7 @@ interface Habit {
   name: string;
   difficulty?: HabitDifficulty;
   subjectId?: number;
+  autoCompleteTime?: number | null;
 }
 
 interface HabitLog {
@@ -120,6 +121,7 @@ export default function HabitsPage() {
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [selectedSubject, setSelectedSubject] = useState<string>('none');
   const [selectedDifficulty, setSelectedDifficulty] = useState<HabitDifficulty>('MID');
+  const [addAutoCompleteMins, setAddAutoCompleteMins] = useState<string>('2');
 
   // Edit habit dialog state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -127,6 +129,7 @@ export default function HabitsPage() {
   const [editName, setEditName] = useState('');
   const [editSubject, setEditSubject] = useState<string>('none');
   const [editDifficulty, setEditDifficulty] = useState<HabitDifficulty>('MID');
+  const [editAutoCompleteMins, setEditAutoCompleteMins] = useState<string>('');
 
   // Build from date based on filter
   const fromDateString = useMemo(() => {
@@ -155,6 +158,7 @@ export default function HabitsPage() {
     setNewTaskTitle('');
     setSelectedSubject('none');
     setSelectedDifficulty('MID');
+    setAddAutoCompleteMins('2');
   };
 
   const handleAddHabit = (e: React.FormEvent) => {
@@ -171,6 +175,10 @@ export default function HabitsPage() {
         name: newTaskTitle.trim(),
         difficulty: selectedDifficulty,
         subjectId: selectedSubject !== 'none' ? parseInt(selectedSubject) : undefined,
+        autoCompleteTime:
+          selectedSubject !== 'none' && addAutoCompleteMins
+            ? Math.max(1, parseInt(addAutoCompleteMins)) * 60
+            : null,
       },
       {
         onSuccess: () => {
@@ -188,6 +196,9 @@ export default function HabitsPage() {
     setEditName(habit.name);
     setEditSubject(habit.subjectId ? String(habit.subjectId) : 'none');
     setEditDifficulty(habit.difficulty || 'MID');
+    setEditAutoCompleteMins(
+      habit.autoCompleteTime ? String(Math.floor(habit.autoCompleteTime / 60)) : '',
+    );
     setEditDialogOpen(true);
   };
 
@@ -201,6 +212,10 @@ export default function HabitsPage() {
         name: editName.trim(),
         difficulty: editDifficulty,
         subjectId: editSubject !== 'none' ? parseInt(editSubject) : null,
+        autoCompleteTime:
+          editSubject !== 'none' && editAutoCompleteMins
+            ? Math.max(1, parseInt(editAutoCompleteMins)) * 60
+            : null,
       },
       {
         onSuccess: () => {
@@ -380,6 +395,26 @@ export default function HabitsPage() {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Auto Complete Time (only if subject linked) */}
+                {selectedSubject !== 'none' && (
+                  <div className="flex flex-col gap-2">
+                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Auto-Complete Time
+                      <span className="ml-1 normal-case font-normal text-muted-foreground/60">
+                        (minutes)
+                      </span>
+                    </Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="e.g. 2 (fallback to subject goal if empty)"
+                      value={addAutoCompleteMins}
+                      onChange={(e) => setAddAutoCompleteMins(e.target.value)}
+                      className="bg-muted/30 border-muted-foreground/20 focus-visible:ring-primary"
+                    />
+                  </div>
+                )}
               </div>
 
               <DialogFooter className="p-6 pt-0 gap-2 sm:gap-2">
@@ -629,6 +664,25 @@ export default function HabitsPage() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {editSubject !== 'none' && (
+                <div className="flex flex-col gap-2">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Auto-Complete Time
+                    <span className="ml-1 normal-case font-normal text-muted-foreground/60">
+                      (minutes)
+                    </span>
+                  </Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    placeholder="e.g. 2 (fallback to subject goal if empty)"
+                    value={editAutoCompleteMins}
+                    onChange={(e) => setEditAutoCompleteMins(e.target.value)}
+                    className="bg-muted/30 border-muted-foreground/20 focus-visible:ring-primary"
+                  />
+                </div>
+              )}
             </div>
 
             <DialogFooter className="p-6 pt-0 gap-2 sm:gap-2">

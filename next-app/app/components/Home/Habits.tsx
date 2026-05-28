@@ -53,6 +53,7 @@ export default function Habits() {
   const [addName, setAddName] = useState('');
   const [addDifficulty, setAddDifficulty] = useState<HabitDifficulty>('MID');
   const [addSubject, setAddSubject] = useState<string>('none');
+  const [addAutoCompleteMins, setAddAutoCompleteMins] = useState<string>('2');
 
   // Edit dialog state
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -60,6 +61,7 @@ export default function Habits() {
   const [editName, setEditName] = useState('');
   const [editDifficulty, setEditDifficulty] = useState<HabitDifficulty>('MID');
   const [editSubject, setEditSubject] = useState<string>('none');
+  const [editAutoCompleteMins, setEditAutoCompleteMins] = useState<string>('');
 
   const habits: Habit[] = dashboardData?.habits || [];
   const todayStats = dashboardData?.todayStats || [];
@@ -72,6 +74,7 @@ export default function Habits() {
     setAddName('');
     setAddDifficulty('MID');
     setAddSubject('none');
+    setAddAutoCompleteMins('2');
   };
 
   const handleAddHabit = (e: React.FormEvent) => {
@@ -88,6 +91,10 @@ export default function Habits() {
         name: addName.trim(),
         difficulty: addDifficulty,
         subjectId: addSubject !== 'none' ? parseInt(addSubject) : undefined,
+        autoCompleteTime:
+          addSubject !== 'none' && addAutoCompleteMins
+            ? Math.max(1, parseInt(addAutoCompleteMins)) * 60
+            : null,
       },
       {
         onSuccess: () => {
@@ -110,6 +117,9 @@ export default function Habits() {
     setEditName(habit.name);
     setEditDifficulty((habit.difficulty as HabitDifficulty) || 'MID');
     setEditSubject(habit.subjectId ? String(habit.subjectId) : 'none');
+    setEditAutoCompleteMins(
+      habit.autoCompleteTime ? String(Math.floor(habit.autoCompleteTime / 60)) : '',
+    );
     setIsEditDialogOpen(true);
   };
 
@@ -123,6 +133,10 @@ export default function Habits() {
         name: editName.trim(),
         difficulty: editDifficulty,
         subjectId: editSubject !== 'none' ? parseInt(editSubject) : null,
+        autoCompleteTime:
+          editSubject !== 'none' && editAutoCompleteMins
+            ? Math.max(1, parseInt(editAutoCompleteMins)) * 60
+            : null,
       },
       {
         onSuccess: () => {
@@ -241,6 +255,22 @@ export default function Habits() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Auto Complete Time (only if subject linked) */}
+              {addSubject !== 'none' && (
+                <div className="flex flex-col gap-2">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Auto-Complete Time (mins)
+                  </Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    placeholder="e.g. 2 (fallback to subject goal if empty)"
+                    value={addAutoCompleteMins}
+                    onChange={(e) => setAddAutoCompleteMins(e.target.value)}
+                  />
+                </div>
+              )}
 
               <DialogFooter className="gap-2 sm:gap-0 mt-1">
                 <Button type="button" variant="ghost" onClick={() => setIsAddDialogOpen(false)}>
@@ -376,6 +406,22 @@ export default function Habits() {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Auto Complete Time (only if subject linked) */}
+            {editSubject !== 'none' && (
+              <div className="flex flex-col gap-2">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Auto-Complete Time (mins)
+                </Label>
+                <Input
+                  type="number"
+                  min="1"
+                  placeholder="e.g. 2 (fallback to subject goal if empty)"
+                  value={editAutoCompleteMins}
+                  onChange={(e) => setEditAutoCompleteMins(e.target.value)}
+                />
+              </div>
+            )}
 
             <DialogFooter className="gap-2 sm:gap-0 mt-1">
               <Button type="button" variant="ghost" onClick={() => setIsEditDialogOpen(false)}>

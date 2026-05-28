@@ -37,7 +37,7 @@ const getAllHabits = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const createHabit = asyncHandler(async (req: Request, res: Response) => {
-  const { name, description, difficulty, subjectId } = req.body;
+  const { name, description, difficulty, subjectId, autoCompleteTime } = req.body;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userId = (req as any).user?.id;
 
@@ -63,6 +63,10 @@ const createHabit = asyncHandler(async (req: Request, res: Response) => {
       description: description || '',
       difficulty: difficulty || 'MID',
       subjectId: subjectId ? parseInt(subjectId) : null,
+      autoCompleteTime:
+        autoCompleteTime !== undefined && autoCompleteTime !== null
+          ? Number(autoCompleteTime)
+          : null,
     },
   });
 
@@ -71,7 +75,7 @@ const createHabit = asyncHandler(async (req: Request, res: Response) => {
 
 const updateHabit = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name, description, difficulty, subjectId, deleted } = req.body;
+  const { name, description, difficulty, subjectId, deleted, autoCompleteTime } = req.body;
   const idNum = Number(id);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userId = (req as any).user?.id;
@@ -93,6 +97,14 @@ const updateHabit = asyncHandler(async (req: Request, res: Response) => {
         ? Number(subjectId)
         : undefined;
 
+  // autoCompleteTime: null clears it, number sets it, undefined leaves it unchanged
+  const resolvedAutoCompleteTime =
+    autoCompleteTime === null || autoCompleteTime === 'null' || autoCompleteTime === ''
+      ? null
+      : autoCompleteTime !== undefined
+        ? Number(autoCompleteTime)
+        : undefined;
+
   const updatedHabit = await prisma.habit.update({
     where: {
       id: idNum,
@@ -102,6 +114,7 @@ const updateHabit = asyncHandler(async (req: Request, res: Response) => {
       ...(description !== undefined && { description }),
       ...(difficulty !== undefined && { difficulty }),
       ...(resolvedSubjectId !== undefined && { subjectId: resolvedSubjectId }),
+      ...(resolvedAutoCompleteTime !== undefined && { autoCompleteTime: resolvedAutoCompleteTime }),
       ...(deleted !== undefined && { deleted }),
     },
   });

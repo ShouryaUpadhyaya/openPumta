@@ -8,8 +8,9 @@ export interface Habit {
   name: string;
   description?: string;
   difficulty?: HabitDifficulty;
+  autoCompleteTime?: number | null;
   userId: number;
-  subjectId?: number;
+  subjectId?: number | null;
 }
 
 export const useHabits = () => {
@@ -100,18 +101,21 @@ export const useUpdateHabit = () => {
       description,
       difficulty,
       subjectId,
+      autoCompleteTime,
     }: {
       id: number;
       name?: string;
       description?: string;
       difficulty?: HabitDifficulty;
       subjectId?: number | null;
+      autoCompleteTime?: number | null;
     }) => {
       const { data } = await api.patch(`/habits/${id}`, {
         name,
         description,
         difficulty,
         subjectId,
+        autoCompleteTime,
       });
       return data.data;
     },

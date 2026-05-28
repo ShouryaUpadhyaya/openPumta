@@ -213,25 +213,32 @@ const endSubjectLog = asyncHandler(async (req: Request, res: Response) => {
     }
   }
 
-  if (updatedLog.subject.goalWorkSecs > 0 && totalSecs >= updatedLog.subject.goalWorkSecs) {
-    for (const habit of updatedLog.subject.habits) {
-      const existingHabitLog = await prisma.habitTimeLog.findFirst({
-        where: {
+  for (const habit of updatedLog.subject.habits) {
+    const threshold =
+      habit.autoCompleteTime !== null && habit.autoCompleteTime !== undefined
+        ? habit.autoCompleteTime
+        : updatedLog.subject.goalWorkSecs > 0
+          ? updatedLog.subject.goalWorkSecs
+          : null;
+
+    if (threshold === null || totalSecs < threshold) continue;
+
+    const existingHabitLog = await prisma.habitTimeLog.findFirst({
+      where: {
+        habitId: habit.id,
+        startedAt: { gte: today },
+        deleted: false,
+      },
+    });
+
+    if (!existingHabitLog) {
+      await prisma.habitTimeLog.create({
+        data: {
           habitId: habit.id,
-          startedAt: { gte: today },
-          deleted: false,
+          startedAt: new Date(),
+          endedAt: new Date(),
         },
       });
-
-      if (!existingHabitLog) {
-        await prisma.habitTimeLog.create({
-          data: {
-            habitId: habit.id,
-            startedAt: new Date(),
-            endedAt: new Date(),
-          },
-        });
-      }
     }
   }
 
@@ -320,6 +327,7 @@ const getAllSubjectsWithLogs = asyncHandler(async (req: Request, res: Response) 
 
   const subjectsWithDuration = subjects.map((subject: any) => ({
     ...subject,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     subjectLogs: subject.subjectLogs.map((log: any) => ({
       ...log,
       durationSecs: log.endedAt

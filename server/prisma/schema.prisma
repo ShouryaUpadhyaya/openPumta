@@ -76,7 +76,7 @@ model Subject {
   color        String       @default("#f97316")
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       Int
-  habits       Habit[] // SO that hatbis are automaticaly ticked after certain amount of time has been logged
+  habits       Habit[]
   deleted      Boolean      @default(false)
   subjectLogs  SubjectLog[]
   createdAt    DateTime     @default(now())
@@ -102,18 +102,19 @@ model SubjectLog {
 }
 
 model Habit {
-  id          Int            @id @default(autoincrement())
-  name        String
-  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      Int
-  subjectId   Int?
-  subject     Subject?       @relation(fields: [subjectId], references: [id], onDelete: SetNull)
-  description String         @default("")
-  difficulty  difficulty     @default(MID)
-  deleted     Boolean        @default(false)
-  log         HabitTimeLog[]
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id               Int            @id @default(autoincrement())
+  name             String
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           Int
+  subjectId        Int?
+  subject          Subject?       @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  description      String         @default("")
+  difficulty       difficulty     @default(MID)
+  autoCompleteTime Int?
+  deleted          Boolean        @default(false)
+  log              HabitTimeLog[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
   @@unique([userId, name])
   @@index([userId])
@@ -151,14 +152,12 @@ model DailyRating {
   @@unique([userId, date])
 }
 
-// ─── Workspace / Planner System ───────────────────────────────────────────────
-
 model Space {
   id         Int      @id @default(autoincrement())
   userId     Int
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   name       String
-  icon       String? // emoji or short string
+  icon       String?
   order      Int      @default(0)
   isArchived Boolean  @default(false)
   deleted    Boolean  @default(false)
@@ -176,7 +175,7 @@ model Column {
   space       Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   title       String
   order       Int      @default(0)
-  width       Int? // px width, null = default (280)
+  width       Int?
   isCollapsed Boolean  @default(false)
   deleted     Boolean  @default(false)
   blocks      Block[]
