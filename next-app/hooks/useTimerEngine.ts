@@ -25,7 +25,8 @@ export function useTimerEngine() {
     })),
   );
 
-  const { running, phase, mode, phaseStartedAt, durationMs, endWork, completeBreak } = store;
+  const { running, phase, mode, phaseStartedAt, durationMs, endWork, completeBreak, settings } =
+    store;
 
   const [localNow, setLocalNow] = useState(() => Date.now());
 
@@ -38,14 +39,14 @@ export function useTimerEngine() {
 
   const progress = useMemo(() => {
     if (mode === 'pomodoro' && durationMs > 0) {
-      return Math.min(100, (elapsedMs / durationMs) * 100);
+      return (elapsedMs / durationMs) * 100;
     }
     return 0;
   }, [mode, durationMs, elapsedMs]);
 
   const remainingMs = useMemo(() => {
     if (mode === 'pomodoro') {
-      return Math.max(0, durationMs - elapsedMs);
+      return durationMs - elapsedMs;
     }
     return elapsedMs;
   }, [mode, durationMs, elapsedMs]);
@@ -72,13 +73,17 @@ export function useTimerEngine() {
       if (mode === 'pomodoro' && phase !== 'idle') {
         const currentElapsed = now - (phaseStartedAt || now);
         if (currentElapsed >= durationMs) {
-          handleTransition();
+          if (phase === 'work' && settings.autoStartBreaks) {
+            handleTransition();
+          } else if ((phase === 'shortBreak' || phase === 'longBreak') && settings.autoStartWork) {
+            handleTransition();
+          }
         }
       }
     }, 100);
 
     return () => clearInterval(interval);
-  }, [running, mode, phase, phaseStartedAt, durationMs, handleTransition, hasHydrated]);
+  }, [running, mode, phase, phaseStartedAt, durationMs, handleTransition, hasHydrated, settings]);
 
   // Check for missed transitions on hydration or visibility change
   useEffect(() => {
@@ -87,9 +92,13 @@ export function useTimerEngine() {
     const now = Date.now();
     const currentElapsed = now - (phaseStartedAt || now);
     if (currentElapsed >= durationMs) {
-      handleTransition();
+      if (phase === 'work' && settings.autoStartBreaks) {
+        handleTransition();
+      } else if ((phase === 'shortBreak' || phase === 'longBreak') && settings.autoStartWork) {
+        handleTransition();
+      }
     }
-  }, [hasHydrated, running, mode, phase, phaseStartedAt, durationMs, handleTransition]);
+  }, [hasHydrated, running, mode, phase, phaseStartedAt, durationMs, handleTransition, settings]);
 
   return {
     elapsedMs,

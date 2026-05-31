@@ -1,17 +1,11 @@
 'use client';
 import React from 'react';
-import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useTimerEngine } from '@/hooks/useTimerEngine';
 import ClockCircle from '../components/pomodoro/ClockCircle';
 import { ConvertSecsToTimer, pad } from '@/lib/utils';
-import {
-  IoIosPlay,
-  IoIosRefresh,
-  IoIosSkipForward,
-  IoIosArrowBack,
-  IoIosSquare,
-} from 'react-icons/io';
+import { IoIosPlay, IoIosRefresh, IoIosSkipForward, IoIosSquare } from 'react-icons/io';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -22,7 +16,6 @@ function PomodoroPage() {
   const store = useTimerStore();
   const { remainingMs, elapsedMs, progress, phase, mode, activeSubjectId, completedPomodoros } =
     useTimerEngine();
-  const router = useRouter();
 
   const runningSubject = Subjects.find((subject) => subject.id === activeSubjectId);
 
@@ -32,6 +25,10 @@ function PomodoroPage() {
     } else if (phase === 'idle') {
       if (activeSubjectId) {
         await store.startWork(activeSubjectId);
+      } else if (Subjects.length > 0) {
+        await store.startWork(Subjects[0].id);
+      } else {
+        toast.error('Please create a subject on the dashboard first!');
       }
     }
   };
@@ -45,12 +42,7 @@ function PomodoroPage() {
   const handleReset = () => {
     if (confirm('Are you sure you want to reset the entire cycle?')) {
       store.reset();
-      router.push('/');
     }
-  };
-
-  const handleBack = () => {
-    router.push('/');
   };
 
   if (isLoading) {
@@ -61,7 +53,9 @@ function PomodoroPage() {
     );
   }
 
-  const displayTime = ConvertSecsToTimer({ workSecs: Math.floor(remainingMs / 1000) });
+  const isOverflow = remainingMs < 0;
+  const displayMs = Math.abs(remainingMs);
+  const displayTime = ConvertSecsToTimer({ workSecs: Math.floor(displayMs / 1000) });
 
   let totalWorkedSecs = 0;
   const totalBreakSecs = 0;
@@ -124,32 +118,47 @@ function PomodoroPage() {
     }
   };
 
+  const primaryColor = getPhaseColor();
+  const secondaryColor = `color-mix(in srgb, ${primaryColor} 50%, white)`;
+  const loopIndex = Math.floor(progress / 100);
+  const cyclePercent = progress % 100;
+
+  let currentColor = primaryColor;
+  let backgroundColor = 'var(--card)';
+  if (loopIndex > 0) {
+    if (loopIndex % 2 === 1) {
+      currentColor = secondaryColor;
+      backgroundColor = primaryColor;
+    } else {
+      currentColor = primaryColor;
+      backgroundColor = secondaryColor;
+    }
+  }
+
   return (
     <section className="flex flex-col justify-between items-center h-[calc(100dvh-4rem)] lg:h-screen w-full p-4 md:p-6 lg:p-8 relative overflow-hidden bg-background">
       {/* Header Bar */}
-      <div className="w-full max-w-md flex items-center justify-between px-4 py-2 shrink-0">
-        <Button
-          onClick={handleBack}
-          variant="ghost"
-          className="rounded-full h-10 w-10 p-0 hover:bg-muted"
-        >
-          <IoIosArrowBack size={20} />
-        </Button>
+      <div className="w-full max-w-md flex items-center justify-center px-4 py-2 shrink-0">
         {runningSubject && (
-          <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-center flex-1 truncate mx-2 text-foreground">
+          <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-center truncate mx-2 text-foreground">
             {runningSubject.name}
           </h1>
         )}
-        <div className="w-10 h-10" /> {/* Spacer */}
       </div>
 
       <div className="flex-1 flex flex-col justify-center items-center w-full max-w-lg px-4 md:px-10 gap-2 overflow-hidden">
-        <ClockCircle percent={progress} size="lg" color={getPhaseColor()}>
+        <ClockCircle
+          percent={cyclePercent}
+          size="lg"
+          currentColor={currentColor}
+          backgroundColor={backgroundColor}
+        >
           <div className="flex flex-col items-center justify-center p-2 text-center select-none">
             <div
               className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl font-mono font-bold mb-1 transition-colors duration-500 tracking-tight"
-              style={{ color: getPhaseColor() }}
+              style={{ color: primaryColor }}
             >
+              {isOverflow ? '+' : ''}
               {pad(displayTime.hours)}:{pad(displayTime.minutes)}:{pad(displayTime.seconds)}
             </div>
             <div className="text-xs sm:text-sm md:text-lg font-semibold text-muted-foreground uppercase tracking-widest mt-1">

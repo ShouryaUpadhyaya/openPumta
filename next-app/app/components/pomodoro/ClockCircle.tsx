@@ -5,10 +5,17 @@ type ClockCircleProps = {
   size: 'sm' | 'lg';
   percent: number;
   children?: React.ReactNode;
-  color?: string; // Optional CSS color or variable
+  currentColor?: string;
+  backgroundColor?: string;
 };
 
-function ClockCircle({ percent, size, children, color = 'var(--primary)' }: ClockCircleProps) {
+function ClockCircle({
+  percent,
+  size,
+  children,
+  currentColor = 'var(--primary)',
+  backgroundColor = 'var(--card)',
+}: ClockCircleProps) {
   return (
     <div
       className={`relative my-4 mx-2 flex items-center justify-center ${
@@ -20,7 +27,7 @@ function ClockCircle({ percent, size, children, color = 'var(--primary)' }: Cloc
       <div
         className="absolute h-full w-full rounded-full"
         style={{
-          background: `conic-gradient(${color} ${percent}%, var(--card) 0)`,
+          background: `conic-gradient(${currentColor} ${percent}%, ${backgroundColor} 0)`,
           transition: 'background 0.5s ease-out',
         }}
       />
