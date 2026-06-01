@@ -13,7 +13,7 @@ export default function Home() {
   const { user, logout, loading } = useAuthStore();
 
   return (
-    <div className="flex flex-col min-h-screen lg:h-screen lg:overflow-hidden p-4 bg-background text-foreground pb-24 lg:pb-4">
+    <div className="flex flex-col min-h-screen lg:h-screen lg:overflow-hidden p-4 bg-background text-foreground pb-24 lg:pb-4 w-full max-w-full overflow-x-hidden min-w-0">
       {/* Header */}
       <header className="flex justify-between items-center mb-4 shrink-0">
         <h1 className="text-2xl font-bold tracking-tight">OpenPumta</h1>
@@ -63,22 +63,22 @@ export default function Home() {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col lg:grid lg:grid-cols-12 lg:grid-rows-12 gap-4 min-h-0">
         {/* Top Row - Clock and Subjects */}
-        <div className="lg:col-span-4 lg:row-span-5 bg-background rounded-xl border shadow-sm overflow-clip flex flex-col items-center justify-center p-4 min-h-[300px] lg:min-h-0">
+        <div className="lg:col-span-4 lg:row-span-5 bg-background rounded-xl border shadow-sm overflow-clip flex flex-col items-center justify-center p-4 min-h-[260px] lg:min-h-0">
           <Clock />
         </div>
         {/* Middle Row - Habits and General Subjects/Stats space */}
-        <div className="lg:col-span-8  lg:row-span-6 bg-background rounded-xl border shadow-sm  overflow-clip flex flex-col min-h-[400px] lg:min-h-0">
+        <div className="lg:col-span-8 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-clip flex flex-col min-h-[280px] lg:min-h-0">
           <Subjects />
         </div>
-        <div className="lg:col-span-4 lg:row-span-7 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[400px] lg:min-h-0">
+        <div className="lg:col-span-4 lg:row-span-7 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[280px] lg:min-h-0">
           <Habits />
         </div>
 
         {/* Bottom Row - Rating and Stats */}
-        <div className="lg:col-span-4 lg:row-span-6  bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[300px] lg:min-h-0">
+        <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[220px] lg:min-h-0">
           <DailyRating />
         </div>
-        <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[300px] lg:min-h-0">
+        <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[220px] lg:min-h-0">
           <Stats />
         </div>
       </main>

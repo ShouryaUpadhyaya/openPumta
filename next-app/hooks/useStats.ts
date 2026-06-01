@@ -31,3 +31,56 @@ export const useDashboardStats = () => {
     },
   });
 };
+
+// ─── Extended Stats Hooks for Overview Page ──────────────────────────────────
+
+export const useSubjectsWithLogs = () => {
+  const to = new Date();
+  const from = new Date();
+  from.setDate(from.getDate() - 21);
+
+  return useQuery({
+    queryKey: ['subjectsWithLogs21'],
+    queryFn: async () => {
+      const { data } = await api.get(
+        `/subject/stats?from=${from.toISOString()}&to=${to.toISOString()}`,
+      );
+      return data.data;
+    },
+  });
+};
+
+export const useDailyRatings21 = () => {
+  return useQuery({
+    queryKey: ['dailyRatingStats'],
+    queryFn: async () => {
+      const { data } = await api.get(`/daily-rating/stats`);
+      return data.data;
+    },
+  });
+};
+
+export const useTodosAll = () => {
+  return useQuery({
+    queryKey: ['todos'],
+    queryFn: async () => {
+      const { data } = await api.get(`/todo`);
+      return data.data;
+    },
+  });
+};
+
+export const useHabitsWithLogs21 = () => {
+  const from = new Date();
+  from.setDate(from.getDate() - 21);
+
+  return useQuery({
+    queryKey: ['habitsWithLogs', from.toISOString().split('T')[0]],
+    queryFn: async () => {
+      const { data } = await api.get(`/habits/logs`, {
+        params: { from: from.toISOString() },
+      });
+      return data.data;
+    },
+  });
+};

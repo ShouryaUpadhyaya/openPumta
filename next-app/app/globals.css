@@ -124,5 +124,6 @@
   }
   body {
     @apply bg-background text-foreground;
+    touch-action: manipulation;
   }
 }

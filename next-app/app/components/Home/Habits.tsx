@@ -142,7 +142,7 @@ export default function Habits() {
           <Skeleton className="h-8 w-36" />
           <Skeleton className="h-8 w-24 rounded-xl" />
         </div>
-        <div className="flex-1 overflow-hidden grid gap-2 content-start">
+        <div className="flex-1 overflow-hidden grid gap-2 content-start pt-2 p-1 -m-1">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
@@ -255,7 +255,7 @@ export default function Habits() {
         </Dialog>
       </div>
 
-      <div className="flex-1 overflow-hidden grid gap-2 content-start">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden grid gap-2 content-start p-1 -mx-1 py-2">
         {habits.length > 0 ? (
           habits.map((habit) => {
             const isCompleted = completedHabitIds.has(habit.id);

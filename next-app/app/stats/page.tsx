@@ -1,130 +1,148 @@
 'use client';
 
-import React from 'react';
-import { useAuthStore } from '@/store/useAuthStore';
-import { useDailyTimeline } from '@/hooks/useStats';
-import { ConvertSecsToTimer, pad } from '@/lib/utils';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { BookOpen, CheckCircle, RefreshCcw, Clock } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import {
+  useDashboardStats,
+  useDailyTimeline,
+  useSubjectsWithLogs,
+  useDailyRatings21,
+  useTodosAll,
+  useHabitsWithLogs21,
+} from '@/hooks/useStats';
+import { useChartThemeStore } from '@/store/useChartThemeStore';
+import {
+  computeFocusTrend,
+  computeSubjectDistribution,
+  computeGoalProgress,
+  computeHabitStreaks,
+  computeTaskCompletion,
+  computeBurnoutRisk,
+  computeProductivityScore,
+} from './lib/metrics';
+import OverviewGrid from '../components/stats/OverviewGrid';
+import DailyTimeline from '../components/stats/DailyTimeline';
+import DetailedView from '../components/stats/DetailedView';
+import { BarChart3, ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function StatsPage() {
-  const { user } = useAuthStore();
-  const { data: timeline = [], isLoading } = useDailyTimeline();
+  const theme = useChartThemeStore((s) => s.getTheme());
+  const { data: statsData, isLoading } = useDashboardStats();
+  const { data: timeline = [] } = useDailyTimeline();
+  const { data: subjects } = useSubjectsWithLogs();
+  const { data: ratingStats } = useDailyRatings21();
+  const { data: todos } = useTodosAll();
+  const { data: habitsData } = useHabitsWithLogs21();
+  const [showDetailed, setShowDetailed] = useState(false);
 
-  const getIcon = (type: string) => {
-    switch (type) {
-      case 'subject':
-        return <BookOpen className="h-5 w-5 text-blue-500" />;
-      case 'habit':
-        return <RefreshCcw className="h-5 w-5 text-green-500" />;
-      case 'todo':
-        return <CheckCircle className="h-5 w-5 text-orange-500" />;
-      default:
-        return <Clock className="h-5 w-5 text-gray-500" />;
-    }
-  };
+  // ── Compute overview metrics ──────────────────────────────────────────────
+  const focusTrend = useMemo(() => computeFocusTrend(statsData?.focusTimeArray || []), [statsData]);
+  const subjectDist = useMemo(() => computeSubjectDistribution(subjects || []), [subjects]);
+  const goalProgress = useMemo(() => computeGoalProgress(subjects || []), [subjects]);
+  const habitStreaks = useMemo(() => computeHabitStreaks(habitsData || []), [habitsData]);
+  const taskCompletion = useMemo(() => computeTaskCompletion(todos || []), [todos]);
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'subject':
-        return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
-      case 'habit':
-        return 'bg-green-500/10 text-green-500 border-green-500/20';
-      case 'todo':
-        return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
-      default:
-        return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
-    }
-  };
+  const overallHabitConsistency = useMemo(() => {
+    if (!habitStreaks.length) return 0;
+    return Math.round(habitStreaks.reduce((s, h) => s + h.consistency, 0) / habitStreaks.length);
+  }, [habitStreaks]);
 
+  const burnout = useMemo(
+    () =>
+      computeBurnoutRisk(focusTrend, ratingStats?.weeklyAverage ?? null, overallHabitConsistency),
+    [focusTrend, ratingStats, overallHabitConsistency],
+  );
+
+  const productivityScore = useMemo(() => {
+    const avgGoalPct = goalProgress.length
+      ? Math.round(goalProgress.reduce((s, g) => s + g.pct, 0) / goalProgress.length)
+      : 0;
+    const moodNorm = ratingStats?.weeklyAverage ? (ratingStats.weeklyAverage / 5) * 100 : 50;
+    return computeProductivityScore(
+      avgGoalPct,
+      overallHabitConsistency,
+      taskCompletion.rate,
+      moodNorm,
+    );
+  }, [goalProgress, overallHabitConsistency, taskCompletion, ratingStats]);
+
+  // ── Loading ───────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="text-xl font-semibold animate-pulse">Loading Statistics...</div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground font-medium animate-pulse">Loading your stats...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <main className="container mx-auto p-6 pb-24 max-w-4xl">
-      <Card className="mb-8">
-        <CardHeader>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight mb-1">Your Performance</h1>
-            <p className="text-muted-foreground">See everything you&apos;ve accomplished today</p>
-          </div>
-        </CardHeader>
-      </Card>
-
-      <div className="relative space-y-8">
-        {/* Timeline Line */}
-        <div className="absolute left-6 top-2 bottom-2 w-0.5 bg-border hidden sm:block" />
-
-        {timeline.length === 0 ? (
-          <div className="text-center py-20 bg-muted/20 rounded-2xl border-2 border-dashed">
-            <Clock className="h-12 w-12 mx-auto text-muted-foreground mb-4 opacity-20" />
-            <p className="text-xl text-muted-foreground">No activities recorded yet today</p>
-          </div>
-        ) : (
-          timeline.map((item, index) => (
-            <div key={index} className="relative pl-0 sm:pl-16 group">
-              {/* Timeline dot */}
-              <div className="absolute left-[21px] top-6 w-3 h-3 rounded-full bg-primary border-2 border-background hidden sm:block group-hover:scale-150 transition-transform" />
-
-              <Card className="transition-all hover:shadow-md border-muted-foreground/10">
-                <CardContent className="p-5">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className={`p-3 rounded-xl ${getTypeColor(item.type)}`}>
-                        {getIcon(item.type)}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <Badge
-                            variant="outline"
-                            className={`capitalize text-[10px] py-0 px-2 ${getTypeColor(item.type)}`}
-                          >
-                            {item.type}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(item.startedAt).toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </span>
-                        </div>
-                        <h3 className="text-lg font-bold leading-none">{item.name}</h3>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-6 sm:text-right">
-                      {item.duration > 0 && (
-                        <div>
-                          <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider mb-1">
-                            Duration
-                          </p>
-                          <p className="font-mono text-lg">
-                            {(() => {
-                              const { hours, minutes, seconds } = ConvertSecsToTimer({
-                                workSecs: item.duration,
-                              });
-                              return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-                            })()}
-                          </p>
-                        </div>
-                      )}
-                      {!item.endedAt && (
-                        <Badge className="bg-primary animate-pulse">Active Now</Badge>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          ))
-        )}
+    <main className="min-h-screen p-4 md:p-6 pb-28 max-w-[1400px] mx-auto">
+      {/* ── Page Header ──────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-3 rounded-xl bg-primary/20 text-primary">
+          <BarChart3 className="h-6 w-6" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Performance</h1>
+          <p className="text-muted-foreground text-sm">Your 21-day overview</p>
+        </div>
       </div>
+
+      {/* ── Overview Grid (12 KEEP metrics) ──────────────────────────────── */}
+      <OverviewGrid
+        theme={theme}
+        statsData={statsData}
+        subjects={subjects}
+        ratingStats={ratingStats}
+        todos={todos}
+        habitsData={habitsData}
+        focusTrend={focusTrend}
+        subjectDist={subjectDist}
+        goalProgress={goalProgress}
+        habitStreaks={habitStreaks}
+        taskCompletion={taskCompletion}
+        overallHabitConsistency={overallHabitConsistency}
+        burnout={burnout}
+        productivityScore={productivityScore}
+      />
+
+      {/* ── Daily Timeline ───────────────────────────────────────────────── */}
+      <div className="mt-4">
+        <DailyTimeline timeline={timeline} accentColor={theme.colors[0]} />
+      </div>
+
+      {/* ── Deep Dive Toggle ─────────────────────────────────────────────── */}
+      <div className="mt-6">
+        <button
+          onClick={() => setShowDetailed(!showDetailed)}
+          className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-dashed border-border/40 hover:border-primary/40 hover:bg-primary/5 transition-all group"
+        >
+          <span className="text-sm font-semibold text-muted-foreground group-hover:text-primary transition-colors">
+            {showDetailed ? 'Hide' : 'Show'} Deep Dive Analytics
+          </span>
+          {showDetailed ? (
+            <ChevronUp className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors animate-bounce" />
+          )}
+        </button>
+      </div>
+
+      {/* ── Detailed View (18 deep-dive metrics) ─────────────────────────── */}
+      {showDetailed && (
+        <div className="mt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <DetailedView
+            theme={theme}
+            subjects={subjects}
+            todos={todos}
+            habitsData={habitsData}
+            ratingStats={ratingStats}
+            statsData={statsData}
+          />
+        </div>
+      )}
     </main>
   );
 }

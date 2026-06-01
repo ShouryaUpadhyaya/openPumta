@@ -103,7 +103,7 @@ export const useTimerStore = create<TimerState>()(
           set({
             completedPomodoros: nextCompleted,
             phase: nextPhase,
-            running: state.settings.autoStartBreaks ? true : false,
+            running: true,
             phaseStartedAt: Date.now(),
             durationMs: breakDuration,
           });
@@ -177,7 +177,7 @@ export const useTimerStore = create<TimerState>()(
         set({
           completedPomodoros: nextCompleted,
           phase: nextPhase,
-          running: state.settings.autoStartBreaks ? true : false,
+          running: true,
           phaseStartedAt: Date.now(),
           durationMs: breakDuration,
         });
@@ -207,7 +207,6 @@ export const useTimerStore = create<TimerState>()(
         set({
           phase: 'idle',
           running: false,
-          activeSubjectId: null,
           phaseStartedAt: null,
           durationMs: 0,
           completedPomodoros: 0,

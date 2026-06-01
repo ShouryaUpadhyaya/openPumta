@@ -347,15 +347,15 @@ function Subjects() {
           </DialogContent>
         </Dialog>
       </div>
-      <div className="flex my-4 justify-between items-end  gap-1.5 pt-1">
-        <p className="text-md font-medium text-muted-foreground">Total today:</p>
-        <span className="font-mono text-2xl font-semibold leading-none tracking-tight text-foreground">
+      <div className="flex my-2 justify-between items-end gap-1.5 pt-1">
+        <p className="text-xs sm:text-sm font-medium text-muted-foreground">Total today:</p>
+        <span className="font-mono text-lg sm:text-2xl font-semibold leading-none tracking-tight text-foreground">
           {totalTrackedFormatted}
         </span>
       </div>
       <div className="rounded-lg border border-border">
-        <div className=" overflow-y-scroll">
-          <table className="w-full text-lg bg-dashboard-card">
+        <div className="overflow-x-auto overflow-y-auto">
+          <table className="w-full text-xs sm:text-sm lg:text-base bg-dashboard-card">
             <tbody>
               {Subjects.map((subject: Subject) => {
                 const activeLog = subject.subjectLogs?.find((log) => !log.endedAt);
@@ -392,29 +392,29 @@ function Subjects() {
                 return (
                   <tr
                     key={subject.id}
-                    className="border-b border-border last:border-b-0  hover:bg-muted/30 transition-colors"
+                    className="border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors"
                   >
-                    <td className="px-4 py-4 font-medium text-sm text-foreground capitalize">
-                      <div className="flex items-center gap-2">
+                    <td className="px-2 py-3 sm:px-4 sm:py-4 font-medium text-xs sm:text-sm text-foreground capitalize">
+                      <div className="flex items-center gap-1.5 sm:gap-2">
                         <div
                           className="w-2 h-2 rounded-full shrink-0"
                           style={{ backgroundColor: subject.color || '#f97316' }}
                         />
-                        {subject.name}
+                        <span className="truncate max-w-[80px] sm:max-w-none">{subject.name}</span>
                       </div>
                     </td>
-                    <td className="px-0 py-2">
+                    <td className="px-1 py-2 hidden sm:table-cell">
                       <span
-                        className={`inline-flex items-center justify-center text-left rounded-full border px-2 py-0.5 text-xs tracking-tighter font-medium whitespace-nowrap ${statusClass}`}
+                        className={`inline-flex items-center justify-center text-left rounded-full border px-1.5 py-0.5 text-[9px] sm:text-xs tracking-tighter font-medium whitespace-nowrap ${statusClass}`}
                       >
                         {statusText}
                       </span>
                     </td>
-                    <td className="px-4 py-4 font-mono text-muted-foreground whitespace-nowrap">
+                    <td className="px-2 py-3 sm:px-4 sm:py-4 font-mono text-[10px] sm:text-xs md:text-sm text-muted-foreground whitespace-nowrap">
                       {`${pad(hours)}:${pad(minutes)}:${pad(seconds)} / ${goal > 0 ? (goal / 3600).toFixed(1).replace(/\.0$/, '') + 'h' : '0h'}`}
                     </td>
-                    <td className="px-4 py-2">
-                      <div className="flex items-center gap-3 min-w-40">
+                    <td className="px-2 py-2 sm:px-4 sm:py-2 hidden sm:table-cell">
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-[70px] sm:min-w-40">
                         <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
                           <div
                             className="h-full rounded-full transition-all"
@@ -424,26 +424,54 @@ function Subjects() {
                             }}
                           />
                         </div>
-                        <span className="w-8 text-right text-xs text-muted-foreground">
+                        <span className="w-6 sm:w-8 text-right text-[10px] sm:text-xs text-muted-foreground">
                           {percent}%
                         </span>
                       </div>
                     </td>
 
-                    <td className="px-4 py-2 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handlePlayClick(subject.id)}
-                          className="h-8 w-8 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground p-0 flex items-center justify-center shrink-0"
-                        >
-                          {isRunning ? (
-                            <IoIosPause className="h-4 w-4 text-white" />
-                          ) : (
-                            <IoIosPlay className="h-4 w-4 translate-x-0.5 text-white" />
-                          )}
-                        </Button>
+                    <td className="px-2 py-2 sm:px-4 sm:py-2 text-right">
+                      <div className="flex items-center justify-end gap-1 sm:gap-2">
+                        <div className="relative flex items-center justify-center">
+                          <svg
+                            className="absolute inset-0 w-8 h-8 sm:hidden -rotate-90 pointer-events-none"
+                            viewBox="0 0 32 32"
+                          >
+                            <circle
+                              cx="16"
+                              cy="16"
+                              r="14"
+                              fill="none"
+                              className="stroke-muted"
+                              strokeWidth="2.5"
+                            />
+                            <circle
+                              cx="16"
+                              cy="16"
+                              r="14"
+                              fill="none"
+                              stroke={subject.color || '#f97316'}
+                              strokeWidth="2.5"
+                              strokeDasharray="100"
+                              strokeDashoffset={100 - percent}
+                              pathLength="100"
+                              className="transition-all duration-300"
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handlePlayClick(subject.id)}
+                            className="h-6 w-6 sm:h-8 sm:w-8 m-1 sm:m-0 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground p-0 flex items-center justify-center shrink-0"
+                          >
+                            {isRunning ? (
+                              <IoIosPause className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
+                            ) : (
+                              <IoIosPlay className="h-3 w-3 sm:h-4 sm:w-4 translate-x-[1px] text-white" />
+                            )}
+                          </Button>
+                        </div>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button
