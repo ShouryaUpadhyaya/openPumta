@@ -5,8 +5,9 @@ WORKDIR /app
 RUN npm install -g pnpm 
 
 COPY package.json .
-COPY . .
 
 RUN pnpm i
+
+COPY . .
 
 ENTRYPOINT [ "pnpm", "run", "dev" ]
