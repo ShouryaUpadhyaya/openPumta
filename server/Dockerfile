@@ -10,4 +10,7 @@ RUN pnpm i
 
 COPY . .
 
+RUN pnpm prisma generate
+#docker compose exec app npx prisma migrate dev    //add this to be ran after docker compose up in readme
+
 ENTRYPOINT [ "pnpm", "run", "dev" ]
