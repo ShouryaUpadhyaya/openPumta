@@ -31,6 +31,8 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_USER: user
       POSTGRES_DB: openpumta
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
   adminer:
     image: adminer
     restart: always
@@ -50,3 +52,6 @@ services:
       - next-app/.env
     depends_on:
       - api
+
+volumes:
+  postgres_data:
