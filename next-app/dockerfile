@@ -1,0 +1,23 @@
+FROM node:22-slim
+
+WORKDIR /app
+
+RUN corepack enable
+
+ARG NEXT_PUBLIC_BACKEND_URL=http://api:4000
+ENV NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY next-app/package.json ./next-app/package.json
+
+RUN pnpm install --frozen-lockfile
+
+COPY next-app next-app
+
+WORKDIR /app/next-app
+
+RUN pnpm build
+
+EXPOSE 3000
+
+CMD ["pnpm", "start"]

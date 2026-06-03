@@ -1,0 +1,11 @@
+**/node_modules
+**/.next
+**/dist
+**/coverage
+**/.env
+**/.env.*
+.git
+.agents
+.codex
+*.log
+next_dev_output.log

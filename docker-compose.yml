@@ -1,13 +1,19 @@
 services:
-  app:
-    build: .
+  api:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
     ports:
       - '4000:4000'
     env_file:
-      - .env
+      - server/.env
+    environment:
+      DATABASE_URL: postgresql://user:password@db:5432/openpumta
+      FRONTEND_URL: http://localhost:3000
+      BACKEND_URL: http://localhost:4000
+      PORT: 4000
     depends_on:
       - db
-
   db:
     ports:
       - '5450:5432'
@@ -30,3 +36,17 @@ services:
     restart: always
     ports:
       - 8080:8080
+  web:
+    build:
+      context: .
+      dockerfile: next-app/dockerfile
+      args:
+        NEXT_PUBLIC_BACKEND_URL: http://api:4000
+    ports:
+      - '3000:3000'
+    environment:
+      NEXT_PUBLIC_BACKEND_URL: http://api:4000
+    env_file:
+      - next-app/.env
+    depends_on:
+      - api

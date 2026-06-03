@@ -1,16 +1,22 @@
-FROM node:22
+FROM node:22-slim
 
 WORKDIR /app
 
-RUN npm install -g pnpm 
+RUN corepack enable
+RUN apt-get update -y && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 
-COPY package.json .
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY server/package.json ./server/package.json
 
-RUN pnpm i
+RUN pnpm install --frozen-lockfile
 
-COPY . .
+COPY server ./server
+
+WORKDIR /app/server
 
 RUN pnpm prisma generate
-#docker compose exec app npx prisma migrate dev    //add this to be ran after docker compose up in readme
+RUN pnpm build
 
-ENTRYPOINT [ "pnpm", "run", "dev" ]
+EXPOSE 4000
+
+CMD ["pnpm", "start"]
