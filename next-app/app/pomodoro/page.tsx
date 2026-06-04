@@ -140,7 +140,7 @@ function PomodoroPage() {
       {/* Header Bar */}
       <div className="w-full max-w-md flex items-center justify-center px-4 py-2 shrink-0">
         {runningSubject && (
-          <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-center truncate mx-2 text-foreground">
+          <h1 className="text-lg sm:text-2xl  font-bold tracking-tight text-center truncate mx-2 text-foreground">
             {runningSubject.name}
           </h1>
         )}
