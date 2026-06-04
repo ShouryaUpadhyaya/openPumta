@@ -101,9 +101,22 @@ function Subjects() {
 
   const pad = (n: number) => String(n).padStart(2, '0');
 
+  const getSubjectLogSecs = (log: NonNullable<Subject['subjectLogs']>[number]) => {
+    if (log.durationSecs !== undefined) return log.durationSecs;
+    if (log.duration !== undefined) return log.duration;
+    if (log.endedAt) {
+      return Math.max(
+        0,
+        Math.floor((new Date(log.endedAt).getTime() - new Date(log.startedAt).getTime()) / 1000),
+      );
+    }
+    return 0;
+  };
+
   const totalTrackedSecsToday = Subjects.reduce((total: number, subject: Subject) => {
     const activeLog = subject.subjectLogs?.find((log) => !log.endedAt);
-    const pastSecs = subject.subjectLogs?.reduce((acc, log) => acc + (log.duration || 0), 0) || 0;
+    const pastSecs =
+      subject.subjectLogs?.reduce((acc, log) => acc + getSubjectLogSecs(log), 0) || 0;
     const activeSecs = activeLog
       ? Math.floor((new Date().getTime() - new Date(activeLog.startedAt).getTime()) / 1000)
       : 0;
@@ -360,7 +373,7 @@ function Subjects() {
               {Subjects.map((subject: Subject) => {
                 const activeLog = subject.subjectLogs?.find((log) => !log.endedAt);
                 const pastSecs =
-                  subject.subjectLogs?.reduce((acc, log) => acc + (log.duration || 0), 0) || 0;
+                  subject.subjectLogs?.reduce((acc, log) => acc + getSubjectLogSecs(log), 0) || 0;
                 const totalSecs =
                   pastSecs +
                   (activeLog

@@ -7,6 +7,7 @@ import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { SpaceNav } from './components/SpaceNav';
 import { FilterBar } from './components/FilterBar';
 import { SpaceBoard } from './components/SpaceBoard';
+import { SpaceSettingsMenu } from './components/SpaceSettingsMenu';
 import { toast } from 'sonner';
 import { LayoutDashboard } from 'lucide-react';
 
@@ -74,12 +75,17 @@ function WorkspaceInner() {
       {/* ── Top bar: Space name + Space tabs ── */}
       <div className="flex flex-col border-b border-border/30 pb-3 pt-4 gap-3">
         {/* Space title row */}
-        <div className="px-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {activeSpace?.icon && <span className="text-2xl leading-none">{activeSpace.icon}</span>}
-            <h1 className="text-2xl font-bold tracking-tight">
+        <div className="px-4 flex items-center justify-between gap-4">
+          <div className="group flex items-center gap-2 min-w-0">
+            {activeSpace?.icon && (
+              <span className="text-2xl leading-none flex-shrink-0">{activeSpace.icon}</span>
+            )}
+            <h1 className="text-2xl font-bold tracking-tight truncate">
               {activeSpace?.name ?? 'Workspace'}
             </h1>
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+              {activeSpace && <SpaceSettingsMenu space={activeSpace} />}
+            </div>
           </div>
         </div>
 

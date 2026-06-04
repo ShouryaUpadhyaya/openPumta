@@ -7,6 +7,7 @@ export interface SubjectLog {
   startedAt: string;
   endedAt?: string;
   duration?: number;
+  durationSecs?: number;
   subjectId: number;
 }
 
@@ -115,6 +116,9 @@ export const useSubjectTimer = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subjects'] });
+      queryClient.invalidateQueries({ queryKey: ['habits'] });
+      queryClient.invalidateQueries({ queryKey: ['habitDashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['habitsWithLogs'] });
     },
   });
 

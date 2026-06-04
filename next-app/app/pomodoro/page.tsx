@@ -1,6 +1,5 @@
 'use client';
 import { toast } from 'sonner';
-import { Subject } from '../components/Home/Subjects/columns';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useTimerEngine } from '@/hooks/useTimerEngine';
 import ClockCircle from '../components/pomodoro/ClockCircle';
@@ -60,23 +59,29 @@ function PomodoroPage() {
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   const activeWorkSecs = phase === 'work' ? Math.floor(elapsedMs / 1000) : 0;
 
+  const getSubjectLogSecs = (
+    log: NonNullable<(typeof Subjects)[number]['subjectLogs']>[number],
+  ) => {
+    if (log.durationSecs !== undefined) return log.durationSecs;
+    if (log.duration !== undefined) return log.duration;
+    if (log.endedAt) {
+      return Math.max(
+        0,
+        Math.floor((new Date(log.endedAt).getTime() - new Date(log.startedAt).getTime()) / 1000),
+      );
+    }
+    return 0;
+  };
+
   const getTodayWorkedSecs = (subject: (typeof Subjects)[number]) =>
     [...(subject.subjectLogs || [])]
       .filter((log) => new Date(log.startedAt).getTime() >= startOfToday)
-      .reduce((acc, log) => acc + (log.duration || 0), 0);
+      .reduce((acc, log) => acc + getSubjectLogSecs(log), 0);
 
   const subjectWorkedSecs = runningSubject
     ? getTodayWorkedSecs(runningSubject) + activeWorkSecs
     : 0;
 
-  const totalTrackedSecsToday = Subjects.reduce((total: number, subject: Subject) => {
-    const activeLog = subject.subjectLogs?.find((log) => !log.endedAt);
-    const pastSecs = subject.subjectLogs?.reduce((acc, log) => acc + (log.duration || 0), 0) || 0;
-    const activeSecs = activeLog
-      ? Math.floor((new Date().getTime() - new Date(activeLog.startedAt).getTime()) / 1000)
-      : 0;
-    return total + pastSecs + activeSecs;
-  }, 0);
   const totalWorkedSecs =
     Subjects.reduce((acc, subject) => acc + getTodayWorkedSecs(subject), 0) + activeWorkSecs;
   let goalWorkSecs = 0;
@@ -180,7 +185,7 @@ function PomodoroPage() {
               <div className="min-w-0">
                 <div className="truncate text-[10px] sm:text-xs font-medium">Total time today</div>
                 <div className="font-mono text-xs sm:text-sm md:text-base">
-                  {formatDuration(totalTrackedSecsToday)}
+                  {formatDuration(totalWorkedSecs)}
                 </div>
               </div>
             </div>

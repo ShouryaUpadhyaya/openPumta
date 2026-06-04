@@ -57,7 +57,7 @@ const createColumn = asyncHandler(async (req: Request, res: Response) => {
 
 const updateColumn = asyncHandler(async (req: Request, res: Response) => {
   const { spaceId, id } = req.params;
-  const { title, order, width, isCollapsed } = req.body;
+  const { title, order, width, height, isCollapsed } = req.body;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userId = (req as any).user?.id;
   if (!userId) throw new ApiError(401, 'Unauthorized');
@@ -75,6 +75,7 @@ const updateColumn = asyncHandler(async (req: Request, res: Response) => {
       ...(title !== undefined && { title }),
       ...(order !== undefined && { order }),
       ...(width !== undefined && { width }),
+      ...(height !== undefined && { height }),
       ...(isCollapsed !== undefined && { isCollapsed }),
     },
   });

@@ -127,6 +127,7 @@ export const useTimerStore = create<TimerState>()(
         // 3. Start new backend log
         try {
           await api.patch(`/subject/${subjectId}/startTimer`);
+          await invalidateSubjectTimerQueries();
         } catch (e) {
           console.error('Failed to start new timer:', e);
           return;

@@ -7,6 +7,7 @@ export interface Column {
   title: string;
   order: number;
   width?: number | null;
+  height?: number | null;
   isCollapsed: boolean;
   deleted: boolean;
   createdAt: string;

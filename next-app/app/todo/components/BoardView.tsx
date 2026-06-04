@@ -12,7 +12,7 @@ import {
   useSensors,
   closestCorners,
 } from '@dnd-kit/core';
-import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
+import { SortableContext, rectSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 import { Column, useCreateColumn, useUpdateColumn, useDeleteColumn } from '@/hooks/useColumns';
 import {
   Block,
@@ -30,7 +30,6 @@ import { Input } from '@/components/ui/input';
 import { Plus, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import api from '@/lib/api';
 import { Minimize2 } from 'lucide-react';
 
@@ -292,70 +291,60 @@ export function BoardView({ spaceId, columns, blocksByColumn }: BoardViewProps) 
     : null;
 
   const mobileView = (
-    <div className="flex flex-col gap-4 px-4 md:hidden">
+    <div className="flex flex-col gap-4 px-4 md:hidden pb-6">
       {sortedColumns.length === 0 ? (
         <div className="text-center text-muted-foreground py-12 text-sm">
           No columns yet. Add your first column above.
         </div>
       ) : (
-        <Tabs defaultValue={String(sortedColumns[0]?.id)}>
-          <TabsList className="flex flex-wrap gap-1 h-auto bg-muted/30 p-1 rounded-xl mb-4">
-            {sortedColumns.map((col) => (
-              <TabsTrigger
-                key={col.id}
-                value={String(col.id)}
-                className="text-xs rounded-lg data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                {col.title}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          {sortedColumns.map((col) => {
-            const colBlocks = (blocksByColumn[col.id] || []).sort((a, b) => a.order - b.order);
-            return (
-              <TabsContent key={col.id} value={String(col.id)}>
-                <div className="flex flex-col gap-1 bg-card/60 rounded-xl border border-border/30 p-3">
-                  {colBlocks.map((block) => (
-                    <BlockItem
-                      key={block.id}
-                      block={block}
-                      onUpdate={(updates) => updateBlock.mutate(updates)}
-                      onDelete={(id) =>
-                        deleteBlock.mutate(
-                          { columnId: col.id, id },
-                          { onSuccess: () => toast.success('Block deleted') },
-                        )
-                      }
-                    />
-                  ))}
-                  {colBlocks.length === 0 && (
-                    <p className="text-xs text-muted-foreground/50 text-center py-4 italic">
-                      No blocks yet
-                    </p>
-                  )}
-                  <div className="pt-2 border-t border-border/20">
-                    {(['HEADING', 'PARAGRAPH', 'TODO', 'DIVIDER'] as BlockType[]).map((type) => (
-                      <Button
-                        key={type}
-                        variant="ghost"
-                        size="sm"
-                        className="text-xs"
-                        onClick={() =>
-                          createBlock.mutate(
-                            { columnId: col.id, type },
-                            { onSuccess: () => toast.success('Block added') },
-                          )
-                        }
-                      >
-                        + {type}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              </TabsContent>
-            );
-          })}
-        </Tabs>
+        sortedColumns.map((col) => {
+          const colBlocks = (blocksByColumn[col.id] || []).sort((a, b) => a.order - b.order);
+          return (
+            <div
+              key={col.id}
+              className="flex flex-col gap-1 bg-card/60 rounded-xl border border-border/30 p-3"
+            >
+              <div className="font-semibold text-sm mb-2 px-1 text-foreground">{col.title}</div>
+              {colBlocks.map((block) => (
+                <BlockItem
+                  key={block.id}
+                  block={block}
+                  onUpdate={(updates) => updateBlock.mutate(updates)}
+                  onDelete={(id) =>
+                    deleteBlock.mutate(
+                      { columnId: col.id, id },
+                      { onSuccess: () => toast.success('Block deleted') },
+                    )
+                  }
+                />
+              ))}
+              {colBlocks.length === 0 && (
+                <p className="text-xs text-muted-foreground/50 text-center py-4 italic">
+                  No blocks yet
+                </p>
+              )}
+              <div className="pt-2 mt-2 border-t border-border/20 grid grid-cols-2 gap-1.5">
+                {(['HEADING', 'PARAGRAPH', 'TODO', 'DIVIDER'] as BlockType[]).map((type) => (
+                  <Button
+                    key={type}
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted/40 justify-start px-2"
+                    onClick={() =>
+                      createBlock.mutate(
+                        { columnId: col.id, type },
+                        { onSuccess: () => toast.success('Block added') },
+                      )
+                    }
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    {type.charAt(0) + type.slice(1).toLowerCase()}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          );
+        })
       )}
     </div>
   );
@@ -368,8 +357,8 @@ export function BoardView({ spaceId, columns, blocksByColumn }: BoardViewProps) 
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="hidden md:flex items-start gap-3 px-4 pb-6 overflow-x-auto min-h-[calc(100vh-200px)]">
-        <SortableContext items={columnIds} strategy={horizontalListSortingStrategy}>
+      <div className="hidden md:flex flex-wrap items-start gap-4 px-4 pb-6 min-h-[calc(100vh-200px)] content-start">
+        <SortableContext items={columnIds} strategy={rectSortingStrategy}>
           {sortedColumns.map((col) => {
             const colBlocks = (blocksByColumn[col.id] || []).sort((a, b) => a.order - b.order);
             return (

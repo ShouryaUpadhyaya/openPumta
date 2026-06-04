@@ -325,15 +325,21 @@ const getAllSubjectsWithLogs = asyncHandler(async (req: Request, res: Response) 
     },
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const subjectsWithDuration = subjects.map((subject: any) => ({
     ...subject,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    subjectLogs: subject.subjectLogs.map((log: any) => ({
-      ...log,
-      durationSecs: log.endedAt
+    subjectLogs: subject.subjectLogs.map((log: any) => {
+      const durationSecs = log.endedAt
         ? Math.floor((new Date(log.endedAt).getTime() - new Date(log.startedAt).getTime()) / 1000)
-        : 0,
-    })),
+        : 0;
+
+      return {
+        ...log,
+        duration: durationSecs,
+        durationSecs,
+      };
+    }),
   }));
 
   return res

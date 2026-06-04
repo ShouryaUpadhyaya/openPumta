@@ -176,6 +176,7 @@ model Column {
   title       String
   order       Int      @default(0)
   width       Int?
+  height      Int?
   isCollapsed Boolean  @default(false)
   deleted     Boolean  @default(false)
   blocks      Block[]

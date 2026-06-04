@@ -19,6 +19,7 @@ export type SubjectLog = {
   startedAt: string;
   endedAt?: string;
   duration?: number;
+  durationSecs?: number;
   subjectId: number;
 };
 
@@ -31,7 +32,19 @@ export type Subject = {
   goalWorkSecs?: number;
   createdAt?: string;
   color?: string;
-  habits?: any[];
+  habits?: { id: number; name: string }[];
+};
+
+const getSubjectLogSecs = (log: SubjectLog) => {
+  if (log.durationSecs !== undefined) return log.durationSecs;
+  if (log.duration !== undefined) return log.duration;
+  if (log.endedAt) {
+    return Math.max(
+      0,
+      Math.floor((new Date(log.endedAt).getTime() - new Date(log.startedAt).getTime()) / 1000),
+    );
+  }
+  return 0;
 };
 
 export const columns = ({
@@ -73,7 +86,8 @@ export const columns = ({
     cell: ({ row }) => {
       const subject = row.original;
       const activeLog = subject.subjectLogs?.find((log) => !log.endedAt);
-      const pastSecs = subject.subjectLogs?.reduce((acc, log) => acc + (log.duration || 0), 0) || 0;
+      const pastSecs =
+        subject.subjectLogs?.reduce((acc, log) => acc + getSubjectLogSecs(log), 0) || 0;
       const totalSecs =
         pastSecs +
         (activeLog
@@ -96,7 +110,8 @@ export const columns = ({
     cell: ({ row }) => {
       const subject = row.original;
       const activeLog = subject.subjectLogs?.find((log) => !log.endedAt);
-      const pastSecs = subject.subjectLogs?.reduce((acc, log) => acc + (log.duration || 0), 0) || 0;
+      const pastSecs =
+        subject.subjectLogs?.reduce((acc, log) => acc + getSubjectLogSecs(log), 0) || 0;
       const totalSecs =
         pastSecs +
         (activeLog
@@ -114,7 +129,8 @@ export const columns = ({
     cell: ({ row }) => {
       const subject = row.original;
       const activeLog = subject.subjectLogs?.find((log) => !log.endedAt);
-      const pastSecs = subject.subjectLogs?.reduce((acc, log) => acc + (log.duration || 0), 0) || 0;
+      const pastSecs =
+        subject.subjectLogs?.reduce((acc, log) => acc + getSubjectLogSecs(log), 0) || 0;
       const totalSecs =
         pastSecs +
         (activeLog

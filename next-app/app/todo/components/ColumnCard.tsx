@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import { Column } from '@/hooks/useColumns';
@@ -8,6 +8,7 @@ import { Block, BlockType } from '@/hooks/useBlocks';
 import { BlockItem } from './BlockItem';
 import { Button } from '@/components/ui/button';
 import { Minus, Pencil, Maximize2, Plus, X, GripVertical, ChevronDown } from 'lucide-react';
+import { useLayoutStore } from '@/store/useLayoutStore';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -18,8 +19,9 @@ import {
 import { toast } from 'sonner';
 
 const MIN_WIDTH = 200;
-const MAX_WIDTH = 700;
 const DEFAULT_WIDTH = 280;
+
+const MIN_HEIGHT = 150;
 
 const BLOCK_TYPES: { type: BlockType; label: string; description: string }[] = [
   { type: 'HEADING', label: 'Heading', description: 'Large section title' },
@@ -67,41 +69,61 @@ export function ColumnCard({
   onFocus,
   onUnfocus,
 }: ColumnCardProps) {
+  const { isSidebarCollapsed } = useLayoutStore();
   const [isTitleEditing, setIsTitleEditing] = useState(false);
   const [titleValue, setTitleValue] = useState(column.title);
   const titleInputRef = useRef<HTMLInputElement>(null);
 
   // ── Resize state ────────────────────────────────────────────────────────────
   const [localWidth, setLocalWidth] = useState<number>(column.width ?? DEFAULT_WIDTH);
+  const [localHeight, setLocalHeight] = useState<number | undefined>(column.height ?? undefined);
   const [prevWidth, setPrevWidth] = useState(column.width);
-  const [isResizing, setIsResizing] = useState(false);
+  const [prevHeight, setPrevHeight] = useState(column.height);
+  const [isResizingWidth, setIsResizingWidth] = useState(false);
+  const [isResizingHeight, setIsResizingHeight] = useState(false);
+
   const dragStartX = useRef<number>(0);
   const dragStartWidth = useRef<number>(DEFAULT_WIDTH);
+  const dragStartY = useRef<number>(0);
+  const dragStartHeight = useRef<number>(MIN_HEIGHT);
 
-  // Keep localWidth in sync when the server-persisted value changes
-  if (column.width !== prevWidth) {
+  // Keep localWidth/Height in sync when the server-persisted value changes
+  if (column.width !== prevWidth || column.height !== prevHeight) {
     setPrevWidth(column.width);
     setLocalWidth(column.width ?? DEFAULT_WIDTH);
+    setPrevHeight(column.height);
+    setLocalHeight(column.height ?? undefined);
   }
 
-  const handleResizeMouseDown = useCallback(
+  const handleResizeWidthMouseDown = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
       dragStartX.current = e.clientX;
       dragStartWidth.current = localWidth;
-      setIsResizing(true);
+      setIsResizingWidth(true);
+
+      const getCurMaxWidth = () => {
+        if (typeof window === 'undefined') return 1000;
+        return isSidebarCollapsed ? window.innerWidth - 300 : window.innerWidth - 320;
+      };
 
       const onMouseMove = (ev: MouseEvent) => {
         const delta = ev.clientX - dragStartX.current;
-        const newWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, dragStartWidth.current + delta));
+        const newWidth = Math.min(
+          getCurMaxWidth(),
+          Math.max(MIN_WIDTH, dragStartWidth.current + delta),
+        );
         setLocalWidth(newWidth);
       };
 
       const onMouseUp = (ev: MouseEvent) => {
-        setIsResizing(false);
+        setIsResizingWidth(false);
         const delta = ev.clientX - dragStartX.current;
-        const finalWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, dragStartWidth.current + delta));
+        const finalWidth = Math.min(
+          getCurMaxWidth(),
+          Math.max(MIN_WIDTH, dragStartWidth.current + delta),
+        );
         setLocalWidth(finalWidth);
         // Persist to server
         onUpdateColumn({ id: column.id, spaceId: column.spaceId, width: finalWidth });
@@ -112,7 +134,47 @@ export function ColumnCard({
       window.addEventListener('mousemove', onMouseMove);
       window.addEventListener('mouseup', onMouseUp);
     },
-    [localWidth, column.id, column.spaceId, onUpdateColumn],
+    [localWidth, column.id, column.spaceId, onUpdateColumn, isSidebarCollapsed],
+  );
+
+  const handleResizeHeightMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragStartY.current = e.clientY;
+      dragStartHeight.current = localHeight ?? MIN_HEIGHT;
+      setIsResizingHeight(true);
+
+      const getCurMaxHeight = () =>
+        typeof window !== 'undefined' ? window.innerHeight - 200 : 1200;
+
+      const onMouseMove = (ev: MouseEvent) => {
+        const delta = ev.clientY - dragStartY.current;
+        const newHeight = Math.min(
+          getCurMaxHeight(),
+          Math.max(MIN_HEIGHT, dragStartHeight.current + delta),
+        );
+        setLocalHeight(newHeight);
+      };
+
+      const onMouseUp = (ev: MouseEvent) => {
+        setIsResizingHeight(false);
+        const delta = ev.clientY - dragStartY.current;
+        const finalHeight = Math.min(
+          getCurMaxHeight(),
+          Math.max(MIN_HEIGHT, dragStartHeight.current + delta),
+        );
+        setLocalHeight(finalHeight);
+        // Persist to server
+        onUpdateColumn({ id: column.id, spaceId: column.spaceId, height: finalHeight });
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+      };
+
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+    },
+    [localHeight, column.id, column.spaceId, onUpdateColumn],
   );
 
   // ── DnD droppable ───────────────────────────────────────────────────────────
@@ -162,14 +224,20 @@ export function ColumnCard({
   return (
     <div
       ref={setDropRef}
-      style={{ width: `${localWidth}px` }}
+      style={{
+        width: `${localWidth}px`,
+        maxWidth: 'calc(100vw - 2rem)',
+        height: localHeight ? `${localHeight}px` : undefined,
+        maxHeight: 'calc(100vh - 200px)',
+      }}
       className={cn(
         'relative flex flex-col rounded-xl bg-card/60 border border-border/30 flex-shrink-0',
         // Suppress transition during live resize so it doesn't lag
-        !isResizing && 'transition-[border-color,box-shadow] duration-200',
+        !(isResizingWidth || isResizingHeight) &&
+          'transition-[border-color,box-shadow] duration-200',
         isOver && 'border-primary/50 bg-primary/5 shadow-lg shadow-primary/10',
         isFocused && 'ring-2 ring-primary/40',
-        isResizing && 'select-none',
+        (isResizingWidth || isResizingHeight) && 'select-none',
       )}
     >
       {/* ── Column Header ── */}
@@ -273,7 +341,7 @@ export function ColumnCard({
       </div>
 
       {/* ── Blocks List ── */}
-      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5 min-h-[80px] max-h-[calc(100vh-260px)]">
+      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-0.5 min-h-[80px]">
         <SortableContext items={blockIds} strategy={verticalListSortingStrategy}>
           {blocks.length === 0 ? (
             <div className="flex items-center justify-center h-16 text-xs text-muted-foreground/40 italic">
@@ -293,58 +361,69 @@ export function ColumnCard({
       </div>
 
       {/* ── Add Block Button ── */}
-      <div className="px-3 pb-3 pt-2 border-t border-border/20">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full h-8 gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 justify-start"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Add Block
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-48">
-            {BLOCK_TYPES.map(({ type, label, description }) => (
-              <DropdownMenuItem
-                key={type}
-                onClick={() => onCreateBlock(type)}
-                className="flex flex-col items-start gap-0.5 py-2"
-              >
-                <span className="text-sm font-medium">{label}</span>
-                <span className="text-xs text-muted-foreground">{description}</span>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <div className="px-3 pb-3 pt-2 border-t border-border/20 grid grid-cols-2 gap-1.5">
+        {BLOCK_TYPES.map(({ type, label }) => (
+          <Button
+            key={type}
+            variant="ghost"
+            size="sm"
+            className="h-7 text-[10px] text-muted-foreground hover:text-foreground hover:bg-muted/40 justify-start px-2"
+            onClick={() => onCreateBlock(type)}
+          >
+            <Plus className="h-3 w-3 mr-1" />
+            {label}
+          </Button>
+        ))}
       </div>
 
-      {/* ── Resize Handle ─────────────────────────────────────────────────────
-          Positioned on the right edge. Visible gutter on hover, highlighted
-          in primary color while actively dragging.                           */}
+      {/* ── Resize Handles ───────────────────────────────────────────────────── */}
+
+      {/* Width Handle */}
       <div
-        onMouseDown={handleResizeMouseDown}
-        title="Drag to resize"
+        onMouseDown={handleResizeWidthMouseDown}
+        title="Drag to resize width"
         className={cn(
           'absolute top-0 right-0 h-full w-2 -mr-1 z-10',
           'flex items-center justify-center',
-          'cursor-col-resize group/handle',
+          'cursor-col-resize group/handle-w',
         )}
       >
-        {/* The visual bar */}
         <div
           className={cn(
             'h-full w-[3px] rounded-full transition-all duration-150',
-            isResizing
+            isResizingWidth
               ? 'bg-primary/70 w-[4px] shadow-[0_0_8px_2px] shadow-primary/30'
-              : 'bg-transparent group-hover/handle:bg-border/70',
+              : 'bg-transparent group-hover/handle-w:bg-border/70',
           )}
         />
-        {/* Width tooltip while resizing */}
-        {isResizing && (
-          <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-popover border border-border/40 text-foreground text-[10px] font-mono px-1.5 py-0.5 rounded shadow-md whitespace-nowrap pointer-events-none">
+        {isResizingWidth && (
+          <span className="absolute -top-7 left-1/2 -translate-x-1/2 bg-popover border border-border/40 text-foreground text-[10px] font-mono px-1.5 py-0.5 rounded shadow-md whitespace-nowrap pointer-events-none z-20">
             {localWidth}px
+          </span>
+        )}
+      </div>
+
+      {/* Height Handle */}
+      <div
+        onMouseDown={handleResizeHeightMouseDown}
+        title="Drag to resize height"
+        className={cn(
+          'absolute bottom-0 left-0 w-full h-2 -mb-1 z-10',
+          'flex items-center justify-center',
+          'cursor-row-resize group/handle-h',
+        )}
+      >
+        <div
+          className={cn(
+            'w-full h-[3px] rounded-full transition-all duration-150',
+            isResizingHeight
+              ? 'bg-primary/70 h-[4px] shadow-[0_0_8px_2px] shadow-primary/30'
+              : 'bg-transparent group-hover/handle-h:bg-border/70',
+          )}
+        />
+        {isResizingHeight && (
+          <span className="absolute top-3 left-1/2 -translate-x-1/2 bg-popover border border-border/40 text-foreground text-[10px] font-mono px-1.5 py-0.5 rounded shadow-md whitespace-nowrap pointer-events-none z-20">
+            {localHeight}px
           </span>
         )}
       </div>
