@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import api from '@/lib/api';
+import { invalidateSubjectTimerQueries } from '@/lib/queryClient';
 
 export type TimerPhase = 'work' | 'shortBreak' | 'longBreak' | 'idle';
 export type TimerMode = 'pomodoro' | 'stopwatch';
@@ -83,6 +84,7 @@ export const useTimerStore = create<TimerState>()(
           await api.patch(`/subject/${state.activeSubjectId}/endTimer`, {
             endedAt: new Date(),
           });
+          await invalidateSubjectTimerQueries();
           if (state.mode === 'stopwatch') {
             set({
               phase: 'idle',
@@ -116,6 +118,7 @@ export const useTimerStore = create<TimerState>()(
             await api.patch(`/subject/${state.activeSubjectId}/endTimer`, {
               endedAt: new Date(),
             });
+            await invalidateSubjectTimerQueries();
           } catch (e) {
             console.error('Failed to end previous timer:', e);
           }
@@ -152,6 +155,7 @@ export const useTimerStore = create<TimerState>()(
           await api.patch(`/subject/${state.activeSubjectId}/endTimer`, {
             endedAt: new Date(targetEnd),
           });
+          await invalidateSubjectTimerQueries();
         } catch (e) {
           console.error('Failed to end timer:', e);
         }

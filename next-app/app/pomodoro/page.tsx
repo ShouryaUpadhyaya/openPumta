@@ -1,6 +1,6 @@
 'use client';
-import React from 'react';
 import { toast } from 'sonner';
+import { Subject } from '../components/Home/Subjects/columns';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useTimerEngine } from '@/hooks/useTimerEngine';
 import ClockCircle from '../components/pomodoro/ClockCircle';
@@ -14,8 +14,7 @@ import { useSubjects } from '@/hooks/useSubjects';
 function PomodoroPage() {
   const { data: Subjects = [], isLoading } = useSubjects();
   const store = useTimerStore();
-  const { remainingMs, elapsedMs, progress, phase, mode, activeSubjectId, completedPomodoros } =
-    useTimerEngine();
+  const { remainingMs, elapsedMs, progress, phase, mode, activeSubjectId } = useTimerEngine();
 
   const runningSubject = Subjects.find((subject) => subject.id === activeSubjectId);
 
@@ -57,36 +56,41 @@ function PomodoroPage() {
   const displayMs = Math.abs(remainingMs);
   const displayTime = ConvertSecsToTimer({ workSecs: Math.floor(displayMs / 1000) });
 
-  let totalWorkedSecs = 0;
-  const totalBreakSecs = 0;
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const activeWorkSecs = phase === 'work' ? Math.floor(elapsedMs / 1000) : 0;
+
+  const getTodayWorkedSecs = (subject: (typeof Subjects)[number]) =>
+    [...(subject.subjectLogs || [])]
+      .filter((log) => new Date(log.startedAt).getTime() >= startOfToday)
+      .reduce((acc, log) => acc + (log.duration || 0), 0);
+
+  const subjectWorkedSecs = runningSubject
+    ? getTodayWorkedSecs(runningSubject) + activeWorkSecs
+    : 0;
+
+  const totalTrackedSecsToday = Subjects.reduce((total: number, subject: Subject) => {
+    const activeLog = subject.subjectLogs?.find((log) => !log.endedAt);
+    const pastSecs = subject.subjectLogs?.reduce((acc, log) => acc + (log.duration || 0), 0) || 0;
+    const activeSecs = activeLog
+      ? Math.floor((new Date().getTime() - new Date(activeLog.startedAt).getTime()) / 1000)
+      : 0;
+    return total + pastSecs + activeSecs;
+  }, 0);
+  const totalWorkedSecs =
+    Subjects.reduce((acc, subject) => acc + getTodayWorkedSecs(subject), 0) + activeWorkSecs;
   let goalWorkSecs = 0;
-  let goalBreakSecs = 0;
 
   if (runningSubject) {
-    const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-
-    const logsToday = [...(runningSubject.subjectLogs || [])]
-      .filter((log) => new Date(log.startedAt).getTime() >= startOfToday)
-      .sort((a, b) => new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime());
-
-    totalWorkedSecs =
-      logsToday.reduce((acc, log) => acc + (log.duration || 0), 0) +
-      (phase === 'work' ? Math.floor(elapsedMs / 1000) : 0);
-
     goalWorkSecs = runningSubject.goalWorkSecs || 0;
-    const breakRatio = store.settings.shortBreakDuration / store.settings.workDuration;
-    goalBreakSecs = Math.floor(goalWorkSecs * breakRatio);
   }
 
   const isBreak = phase === 'shortBreak' || phase === 'longBreak';
-  const goalProgressPercent = isBreak
-    ? goalBreakSecs
-      ? Math.min(100, (totalBreakSecs / goalBreakSecs) * 100)
-      : 0
-    : goalWorkSecs
-      ? Math.min(100, (totalWorkedSecs / goalWorkSecs) * 100)
-      : 0;
+  const goalProgressPercent = goalWorkSecs
+    ? Math.min(100, (subjectWorkedSecs / goalWorkSecs) * 100)
+    : 0;
+  const formatDuration = (secs: number) =>
+    `${pad(Math.floor(secs / 3600))}:${pad(Math.floor((secs % 3600) / 60))}:${pad(Math.floor(secs % 60))}`;
 
   const getPhaseColor = () => {
     if (mode === 'stopwatch') return store.workColor;
@@ -164,10 +168,21 @@ function PomodoroPage() {
             <div className="text-xs sm:text-sm md:text-lg font-semibold text-muted-foreground uppercase tracking-widest mt-1">
               {getPhaseLabel()}
             </div>
-            <div className="text-[10px] sm:text-xs md:text-md font-medium text-muted-foreground/60 mt-1">
-              {mode === 'pomodoro'
-                ? `Completed: ${completedPomodoros}`
-                : `Session: ${pad(Math.floor(elapsedMs / 3600000))}:${pad(Math.floor((elapsedMs % 3600000) / 60000))}`}
+            <div className="mt-3 grid grid-cols-2 gap-x-8 gap-y-1 text-muted-foreground/70">
+              <div className="min-w-0">
+                <div className="truncate text-[10px] sm:text-xs font-medium">
+                  {runningSubject?.name || 'Subject'}
+                </div>
+                <div className="font-mono text-xs sm:text-sm md:text-base">
+                  {formatDuration(subjectWorkedSecs)}
+                </div>
+              </div>
+              <div className="min-w-0">
+                <div className="truncate text-[10px] sm:text-xs font-medium">Total time today</div>
+                <div className="font-mono text-xs sm:text-sm md:text-base">
+                  {formatDuration(totalTrackedSecsToday)}
+                </div>
+              </div>
             </div>
           </div>
         </ClockCircle>
@@ -184,10 +199,7 @@ function PomodoroPage() {
               </TooltipTrigger>
               <TooltipContent>
                 <div className="font-semibold text-xs sm:text-base">
-                  {isBreak ? 'Daily Break Total: ' : 'Daily Work Goal: '}
-                  {isBreak
-                    ? `${pad(Math.floor(totalBreakSecs / 3600))}:${pad(Math.floor((totalBreakSecs % 3600) / 60))}`
-                    : `${pad(Math.floor(goalWorkSecs / 3600))}:${pad(Math.floor((goalWorkSecs % 3600) / 60))}`}
+                  {formatDuration(goalWorkSecs)} / {formatDuration(subjectWorkedSecs)}
                 </div>
               </TooltipContent>
             </Tooltip>

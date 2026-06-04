@@ -1,12 +1,20 @@
 'use client';
 
 import React, { useMemo, useEffect } from 'react';
-import { QueryClient, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import type { Persister } from '@tanstack/react-query-persist-client';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { TimerManager } from './pomodoro/TimerManager';
 import { toast } from 'sonner';
 import { Block } from '@/hooks/useBlocks';
+import { queryClient } from '@/lib/queryClient';
+
+const noopPersister: Persister = {
+  persistClient: async () => undefined,
+  restoreClient: async () => undefined,
+  removeClient: async () => undefined,
+};
 
 /** Checks all cached blocks every 60s for past reminderAt times and fires toasts */
 function ReminderWatcher() {
@@ -47,19 +55,6 @@ function ReminderWatcher() {
 }
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const queryClient = useMemo(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            gcTime: 1000 * 60 * 60 * 24,
-            staleTime: 1000 * 60 * 5,
-          },
-        },
-      }),
-    [],
-  );
-
   const persister = useMemo(() => {
     if (typeof window === 'undefined') return null;
     return createSyncStoragePersister({
@@ -71,7 +66,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     <PersistQueryClientProvider
       client={queryClient}
       persistOptions={{
-        persister: persister || (undefined as any),
+        persister: persister || noopPersister,
         maxAge: 1000 * 60 * 60 * 24, // 24 hours
       }}
     >

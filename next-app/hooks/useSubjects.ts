@@ -125,6 +125,9 @@ export const useSubjectTimer = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subjects'] });
+      queryClient.invalidateQueries({ queryKey: ['habits'] });
+      queryClient.invalidateQueries({ queryKey: ['habitDashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['habitsWithLogs'] });
     },
   });
 
