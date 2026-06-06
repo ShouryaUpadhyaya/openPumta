@@ -11,6 +11,7 @@ export interface Habit {
   autoCompleteTime?: number | null;
   userId: number;
   subjectId?: number | null;
+  badDayPlan?: string | null;
 }
 
 export const useHabits = () => {
@@ -64,8 +65,8 @@ export const useToggleHabitCompletion = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (habitId: number) => {
-      const { data } = await api.patch(`/habits/${habitId}/toggle`);
+    mutationFn: async ({ habitId, isBadDayPlan }: { habitId: number; isBadDayPlan?: boolean }) => {
+      const { data } = await api.patch(`/habits/${habitId}/toggle`, { isBadDayPlan });
       return data.data; // { completed: boolean }
     },
     onSuccess: () => {
@@ -102,6 +103,7 @@ export const useUpdateHabit = () => {
       difficulty,
       subjectId,
       autoCompleteTime,
+      badDayPlan,
     }: {
       id: number;
       name?: string;
@@ -109,6 +111,7 @@ export const useUpdateHabit = () => {
       difficulty?: HabitDifficulty;
       subjectId?: number | null;
       autoCompleteTime?: number | null;
+      badDayPlan?: string | null;
     }) => {
       const { data } = await api.patch(`/habits/${id}`, {
         name,
@@ -116,6 +119,7 @@ export const useUpdateHabit = () => {
         difficulty,
         subjectId,
         autoCompleteTime,
+        badDayPlan,
       });
       return data.data;
     },

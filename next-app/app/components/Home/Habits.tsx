@@ -21,6 +21,10 @@ export default function Habits() {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const completedHabitIds = new Set(todayStats.map((log: any) => log.habitId));
+
+  const badDayPlanHabitIds = new Set(
+    todayStats.filter((log: any) => log.isBadDayPlan).map((log: any) => log.habitId),
+  );
   const isPerfectDay = completedHabitIds.size >= 4;
 
   const openEditDialog = (habit: Habit) => {
@@ -54,12 +58,14 @@ export default function Habits() {
         {habits.length > 0 ? (
           habits.map((habit) => {
             const isCompleted = completedHabitIds.has(habit.id);
+            const isCompletedMinimum = badDayPlanHabitIds.has(habit.id);
             const linkedSubject = subjects?.find((s) => s.id === habit.subjectId);
             return (
               <HabitCard
                 key={habit.id}
                 habit={habit}
                 isCompleted={isCompleted}
+                isCompletedMinimum={isCompletedMinimum}
                 linkedSubject={linkedSubject}
                 onEdit={openEditDialog}
               />

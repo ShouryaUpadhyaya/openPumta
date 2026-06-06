@@ -8,11 +8,18 @@ import { Habit, useToggleHabitCompletion } from '@/hooks/useHabits';
 interface HabitCardProps {
   habit: Habit;
   isCompleted: boolean;
+  isCompletedMinimum: boolean;
   linkedSubject?: { id: number; name: string };
   onEdit: (habit: Habit) => void;
 }
 
-export function HabitCard({ habit, isCompleted, linkedSubject, onEdit }: HabitCardProps) {
+export function HabitCard({
+  habit,
+  isCompleted,
+  isCompletedMinimum,
+  linkedSubject,
+  onEdit,
+}: HabitCardProps) {
   const toggleHabit = useToggleHabitCompletion();
 
   return (
@@ -30,6 +37,11 @@ export function HabitCard({ habit, isCompleted, linkedSubject, onEdit }: HabitCa
           >
             {habit.name}
           </span>
+          {habit.badDayPlan && (
+            <span className="text-[10px] text-muted-foreground/80 truncate mb-0.5">
+              Minimum: {habit.badDayPlan}
+            </span>
+          )}
           {linkedSubject && (
             <span className="text-[10px] text-muted-foreground truncate">{linkedSubject.name}</span>
           )}
@@ -44,9 +56,26 @@ export function HabitCard({ habit, isCompleted, linkedSubject, onEdit }: HabitCa
           >
             <Pencil className="h-3 w-3" />
           </Button>
+
+          {habit.badDayPlan && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => toggleHabit.mutate({ habitId: habit.id, isBadDayPlan: true })}
+              disabled={toggleHabit.isPending || isCompleted}
+              className={`h-7 px-2 text-[10px] transition-all ${
+                isCompletedMinimum
+                  ? 'bg-primary/20 text-primary border-primary/30 opacity-100'
+                  : 'opacity-0 group-hover:opacity-100 text-muted-foreground'
+              }`}
+            >
+              Min
+            </Button>
+          )}
+
           <Checkbox
             checked={isCompleted}
-            onCheckedChange={() => toggleHabit.mutate(habit.id)}
+            onCheckedChange={() => toggleHabit.mutate({ habitId: habit.id, isBadDayPlan: false })}
             disabled={toggleHabit.isPending}
           />
         </div>

@@ -36,12 +36,14 @@ export function AddHabitDialog({ subjects, habitsCount }: AddHabitDialogProps) {
   const [addDifficulty, setAddDifficulty] = useState<HabitDifficulty>('MID');
   const [addSubject, setAddSubject] = useState<string>('none');
   const [addAutoCompleteMins, setAddAutoCompleteMins] = useState<string>('2');
+  const [addBadDayPlan, setAddBadDayPlan] = useState('');
 
   const resetAddForm = () => {
     setAddName('');
     setAddDifficulty('MID');
     setAddSubject('none');
     setAddAutoCompleteMins('2');
+    setAddBadDayPlan('');
   };
 
   const handleOpenChange = (open: boolean) => {
@@ -63,6 +65,7 @@ export function AddHabitDialog({ subjects, habitsCount }: AddHabitDialogProps) {
         name: addName.trim(),
         difficulty: addDifficulty,
         subjectId: addSubject !== 'none' ? parseInt(addSubject) : undefined,
+        badDayPlan: addBadDayPlan.trim() || undefined,
         autoCompleteTime:
           addSubject !== 'none' && addAutoCompleteMins
             ? Math.max(1, parseInt(addAutoCompleteMins)) * 60
@@ -163,6 +166,22 @@ export function AddHabitDialog({ subjects, habitsCount }: AddHabitDialogProps) {
               />
             </div>
           )}
+
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 text-xs text-primary/90 mt-2 leading-relaxed">
+            <strong>Pro Tip:</strong>
+            {` On days when you have zero energy, complete a minimum baseline (e.g., "Do 1 pushup") to keep your streak alive. The goal is to never throw up a zero.`}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Bad Day Plan <span className="normal-case opacity-70">(Optional)</span>
+            </Label>
+            <Input
+              placeholder="e.g. Do 1 pushup"
+              value={addBadDayPlan}
+              onChange={(e) => setAddBadDayPlan(e.target.value)}
+            />
+          </div>
 
           <DialogFooter className="gap-2 sm:gap-0 mt-1">
             <Button type="button" variant="ghost" onClick={() => setIsOpen(false)}>

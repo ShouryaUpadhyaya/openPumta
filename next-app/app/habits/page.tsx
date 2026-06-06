@@ -44,6 +44,7 @@ import {
   SlidersHorizontal,
   ChevronDown,
   ChevronUp,
+  BookOpen,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -53,12 +54,14 @@ interface Habit {
   difficulty?: HabitDifficulty;
   subjectId?: number;
   autoCompleteTime?: number | null;
+  badDayPlan?: string | null;
 }
 
 interface HabitLog {
   id: number;
   habitId: number;
   startedAt: string;
+  isBadDayPlan?: boolean;
 }
 
 interface DetailedHabit extends Habit {
@@ -122,6 +125,7 @@ export default function HabitsPage() {
   const [selectedSubject, setSelectedSubject] = useState<string>('none');
   const [selectedDifficulty, setSelectedDifficulty] = useState<HabitDifficulty>('MID');
   const [addAutoCompleteMins, setAddAutoCompleteMins] = useState<string>('2');
+  const [addBadDayPlan, setAddBadDayPlan] = useState('');
 
   // Edit habit dialog state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -130,6 +134,10 @@ export default function HabitsPage() {
   const [editSubject, setEditSubject] = useState<string>('none');
   const [editDifficulty, setEditDifficulty] = useState<HabitDifficulty>('MID');
   const [editAutoCompleteMins, setEditAutoCompleteMins] = useState<string>('');
+  const [editBadDayPlan, setEditBadDayPlan] = useState('');
+
+  // System Guide
+  const [guideOpen, setGuideOpen] = useState(false);
 
   // Build from date based on filter
   const fromDateString = useMemo(() => {
@@ -159,6 +167,7 @@ export default function HabitsPage() {
     setSelectedSubject('none');
     setSelectedDifficulty('MID');
     setAddAutoCompleteMins('2');
+    setAddBadDayPlan('');
   };
 
   const handleAddHabit = (e: React.FormEvent) => {
@@ -175,6 +184,7 @@ export default function HabitsPage() {
         name: newTaskTitle.trim(),
         difficulty: selectedDifficulty,
         subjectId: selectedSubject !== 'none' ? parseInt(selectedSubject) : undefined,
+        badDayPlan: addBadDayPlan.trim() || undefined,
         autoCompleteTime:
           selectedSubject !== 'none' && addAutoCompleteMins
             ? Math.max(1, parseInt(addAutoCompleteMins)) * 60
@@ -199,6 +209,7 @@ export default function HabitsPage() {
     setEditAutoCompleteMins(
       habit.autoCompleteTime ? String(Math.floor(habit.autoCompleteTime / 60)) : '',
     );
+    setEditBadDayPlan(habit.badDayPlan || '');
     setEditDialogOpen(true);
   };
 
@@ -212,6 +223,7 @@ export default function HabitsPage() {
         name: editName.trim(),
         difficulty: editDifficulty,
         subjectId: editSubject !== 'none' ? parseInt(editSubject) : null,
+        badDayPlan: editBadDayPlan.trim() || null,
         autoCompleteTime:
           editSubject !== 'none' && editAutoCompleteMins
             ? Math.max(1, parseInt(editAutoCompleteMins)) * 60
@@ -295,6 +307,16 @@ export default function HabitsPage() {
             Monitor your habit cycles and maintain your perfect days.
           </p>
         </div>
+
+        <Button
+          variant="ghost"
+          className="text-primary hover:text-primary hover:bg-primary/10 gap-2 font-semibold"
+          onClick={() => setGuideOpen(true)}
+        >
+          <BookOpen className="h-4 w-4" />
+          Learn the System
+        </Button>
+
         {completedHabitIds.size >= 4 && (
           <div className="ml-auto bg-primary text-primary-foreground px-4 py-2 rounded-full font-bold shadow-lg flex items-center gap-2 animate-in fade-in zoom-in">
             <Flame className="h-4 w-4" />
@@ -302,6 +324,69 @@ export default function HabitsPage() {
           </div>
         )}
       </div>
+
+      {/* System Guide Modal */}
+      <Dialog open={guideOpen} onOpenChange={setGuideOpen}>
+        <DialogContent className="max-w-2xl rounded-2xl p-0 gap-0 overflow-hidden border-none shadow-2xl">
+          <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="bg-primary p-2.5 rounded-xl text-primary-foreground shadow-lg">
+                <BookOpen className="h-6 w-6" />
+              </div>
+              <DialogTitle className="text-2xl font-bold tracking-tight">
+                The Science of Habits
+              </DialogTitle>
+            </div>
+
+            <div className="space-y-6 text-sm leading-relaxed">
+              <div className="bg-background/60 p-5 rounded-2xl border border-border/50 shadow-sm">
+                <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
+                  <span className="text-primary">1.</span> The Minimum Viable Habit
+                </h3>
+                <p className="text-muted-foreground mb-3">
+                  {`Motivation is unreliable. When you have zero energy, the friction to start a
+                  1-hour workout is too high. By shrinking the habit down to a 2-minute version
+                  (e.g., "Do 1 pushup"), you eliminate the friction of starting.`}
+                </p>
+                <p className="font-medium">
+                  <strong>The Goal:</strong> Never throw up a zero. Complete the minimum baseline to
+                  keep your streak alive.
+                </p>
+              </div>
+
+              <div className="bg-background/60 p-5 rounded-2xl border border-border/50 shadow-sm">
+                <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
+                  <span className="text-primary">2.</span> Never Miss Twice
+                </h3>
+                <p className="text-muted-foreground">
+                  {`Missing one day is an accident. Missing two days is the start of a new (bad)
+                  habit. Don't aim for perfection; aim to bounce back immediately. A "minimum"
+                  completion counts as a win.`}
+                </p>
+              </div>
+
+              <div className="bg-background/60 p-5 rounded-2xl border border-border/50 shadow-sm">
+                <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
+                  <span className="text-primary">3.</span> Identity Over Outcomes
+                </h3>
+                <p className="text-muted-foreground">
+                  Every time you complete a habit—even the minimum version—you cast a vote for the
+                  type of person you want to become. You are building proof of your identity, not
+                  just chasing a number.
+                </p>
+              </div>
+            </div>
+            <DialogFooter className="mt-8">
+              <Button
+                onClick={() => setGuideOpen(false)}
+                className="rounded-xl px-8 shadow-lg shadow-primary/20"
+              >
+                Got It
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Toolbar: Add + Filter toggle */}
       <div className="flex items-center gap-2 mb-3">
@@ -415,6 +500,28 @@ export default function HabitsPage() {
                     />
                   </div>
                 )}
+
+                <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 text-xs text-primary/90 mt-2 leading-relaxed">
+                  <strong>Pro Tip:</strong>
+                  {`On days when you have zero energy, complete a minimum
+                  baseline (e.g., "Do 1 pushup") to keep your streak alive. The goal is to never
+                  throw up a zero.`}
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Bad Day Plan
+                    <span className="ml-1 normal-case font-normal text-muted-foreground/60">
+                      (optional)
+                    </span>
+                  </Label>
+                  <Input
+                    placeholder="e.g. Do 1 pushup"
+                    value={addBadDayPlan}
+                    onChange={(e) => setAddBadDayPlan(e.target.value)}
+                    className="bg-muted/30 border-muted-foreground/20 focus-visible:ring-primary"
+                  />
+                </div>
               </div>
 
               <DialogFooter className="p-6 pt-0 gap-2 sm:gap-2">
@@ -506,13 +613,20 @@ export default function HabitsPage() {
           habits.map((habit: Habit) => {
             const isCompletedToday = completedHabitIds.has(habit.id);
             const detailedHabit = habitsWithLogs?.find((h: DetailedHabit) => h.id === habit.id);
-            const completionDates = new Set(
-              (detailedHabit as DetailedHabit)?.log?.map(
-                (l: HabitLog) => new Date(l.startedAt).toISOString().split('T')[0],
-              ) || [],
-            );
+            const completionDates = new Map<string, boolean>();
 
-            if (isCompletedToday) completionDates.add(new Date().toISOString().split('T')[0]);
+            detailedHabit?.log?.forEach((l: HabitLog) => {
+              const dateStr = new Date(l.startedAt).toISOString().split('T')[0];
+              completionDates.set(dateStr, l.isBadDayPlan || false);
+            });
+
+            if (isCompletedToday) {
+              const todayLog = todayStats.find((l: HabitLog) => l.habitId === habit.id);
+              completionDates.set(
+                new Date().toISOString().split('T')[0],
+                todayLog?.isBadDayPlan || false,
+              );
+            }
 
             const linkedSubject = subjects?.find((s) => s.id === habit.subjectId);
 
@@ -554,7 +668,9 @@ export default function HabitsPage() {
                     </Button>
                     <Checkbox
                       checked={isCompletedToday}
-                      onCheckedChange={() => toggleHabit.mutate(habit.id)}
+                      onCheckedChange={() =>
+                        toggleHabit.mutate({ habitId: habit.id, isBadDayPlan: false })
+                      }
                       className="h-5 w-5 rounded-md"
                     />
                     <Button
@@ -579,13 +695,14 @@ export default function HabitsPage() {
                   <div className={`grid ${gridCols} gap-1`}>
                     {daysArray.map((dateStr, i) => {
                       const done = completionDates.has(dateStr);
+                      const isBadDayPlan = done ? completionDates.get(dateStr) : false;
                       const isToday = dateStr === new Date().toISOString().split('T')[0];
                       return (
                         <div
                           key={i}
                           title={dateStr}
                           className={`aspect-square rounded-sm transition-colors ${
-                            done ? 'bg-primary' : 'bg-muted/40'
+                            done ? (isBadDayPlan ? 'bg-primary/50' : 'bg-primary') : 'bg-muted/40'
                           } ${isToday && !done ? 'border-2 border-primary/40' : ''}`}
                         />
                       );
@@ -683,6 +800,28 @@ export default function HabitsPage() {
                   />
                 </div>
               )}
+
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 text-xs text-primary/90 mt-2 leading-relaxed">
+                <strong>Pro Tip:</strong>{' '}
+                {`On days when you have zero energy, complete a minimum
+                baseline (e.g., "Do 1 pushup") to keep your streak alive. The goal is to never throw
+                up a zero.`}
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Bad Day Plan
+                  <span className="ml-1 normal-case font-normal text-muted-foreground/60">
+                    (optional)
+                  </span>
+                </Label>
+                <Input
+                  placeholder="e.g. Do 1 pushup"
+                  value={editBadDayPlan}
+                  onChange={(e) => setEditBadDayPlan(e.target.value)}
+                  className="bg-muted/30 border-muted-foreground/20 focus-visible:ring-primary"
+                />
+              </div>
             </div>
 
             <DialogFooter className="p-6 pt-0 gap-2 sm:gap-2">

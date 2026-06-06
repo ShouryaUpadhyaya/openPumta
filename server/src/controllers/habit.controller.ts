@@ -37,7 +37,7 @@ const getAllHabits = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const createHabit = asyncHandler(async (req: Request, res: Response) => {
-  const { name, description, difficulty, subjectId, autoCompleteTime } = req.body;
+  const { name, description, difficulty, subjectId, autoCompleteTime, badDayPlan } = req.body;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userId = (req as any).user?.id;
 
@@ -62,6 +62,7 @@ const createHabit = asyncHandler(async (req: Request, res: Response) => {
       userId: Number(userId),
       description: description || '',
       difficulty: difficulty || 'MID',
+      badDayPlan: badDayPlan || null,
       subjectId: subjectId ? parseInt(subjectId) : null,
       autoCompleteTime:
         autoCompleteTime !== undefined && autoCompleteTime !== null
@@ -75,7 +76,8 @@ const createHabit = asyncHandler(async (req: Request, res: Response) => {
 
 const updateHabit = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name, description, difficulty, subjectId, deleted, autoCompleteTime } = req.body;
+  const { name, description, difficulty, subjectId, deleted, autoCompleteTime, badDayPlan } =
+    req.body;
   const idNum = Number(id);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userId = (req as any).user?.id;
@@ -113,6 +115,7 @@ const updateHabit = asyncHandler(async (req: Request, res: Response) => {
       ...(name !== undefined && { name }),
       ...(description !== undefined && { description }),
       ...(difficulty !== undefined && { difficulty }),
+      ...(badDayPlan !== undefined && { badDayPlan }),
       ...(resolvedSubjectId !== undefined && { subjectId: resolvedSubjectId }),
       ...(resolvedAutoCompleteTime !== undefined && { autoCompleteTime: resolvedAutoCompleteTime }),
       ...(deleted !== undefined && { deleted }),
@@ -329,6 +332,7 @@ const getHabitDashboardData = asyncHandler(async (req: Request, res: Response) =
 
 const toggleHabitCompletion = asyncHandler(async (req: Request, res: Response) => {
   const { habitId } = req.params;
+  const { isBadDayPlan } = req.body;
   const habitIdNum = Number(habitId);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userId = (req as any).user?.id;
@@ -367,6 +371,7 @@ const toggleHabitCompletion = asyncHandler(async (req: Request, res: Response) =
         habitId: habitIdNum,
         startedAt: new Date(),
         endedAt: new Date(), // Instant completion
+        isBadDayPlan: isBadDayPlan || false,
       },
     });
     return res

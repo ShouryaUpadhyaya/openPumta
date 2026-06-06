@@ -34,6 +34,7 @@ export function EditHabitDialog({ habit, isOpen, onOpenChange, subjects }: EditH
   const [editDifficulty, setEditDifficulty] = useState<HabitDifficulty>('MID');
   const [editSubject, setEditSubject] = useState<string>('none');
   const [editAutoCompleteMins, setEditAutoCompleteMins] = useState<string>('');
+  const [editBadDayPlan, setEditBadDayPlan] = useState('');
 
   useEffect(() => {
     if (habit && isOpen) {
@@ -47,6 +48,8 @@ export function EditHabitDialog({ habit, isOpen, onOpenChange, subjects }: EditH
       setEditAutoCompleteMins(
         habit.autoCompleteTime ? String(Math.floor(habit.autoCompleteTime / 60)) : '',
       );
+
+      setEditBadDayPlan(habit.badDayPlan || '');
     }
   }, [habit, isOpen]);
 
@@ -60,6 +63,7 @@ export function EditHabitDialog({ habit, isOpen, onOpenChange, subjects }: EditH
         name: editName.trim(),
         difficulty: editDifficulty,
         subjectId: editSubject !== 'none' ? parseInt(editSubject) : null,
+        badDayPlan: editBadDayPlan.trim() || null,
         autoCompleteTime:
           editSubject !== 'none' && editAutoCompleteMins
             ? Math.max(1, parseInt(editAutoCompleteMins)) * 60
@@ -149,6 +153,22 @@ export function EditHabitDialog({ habit, isOpen, onOpenChange, subjects }: EditH
               />
             </div>
           )}
+
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 text-xs text-primary/90 mt-2 leading-relaxed">
+            <strong>Pro Tip:</strong>
+            {` On days when you have zero energy, complete a minimum baseline (e.g., "Do 1 pushup") to keep your streak alive. The goal is to never throw up a zero.`}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Bad Day Plan <span className="normal-case opacity-70">(Optional)</span>
+            </Label>
+            <Input
+              placeholder="e.g. Do 1 pushup"
+              value={editBadDayPlan}
+              onChange={(e) => setEditBadDayPlan(e.target.value)}
+            />
+          </div>
 
           <DialogFooter className="gap-2 sm:gap-0 mt-1">
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>

@@ -116,7 +116,7 @@ export default function DailyRating() {
 
           <Textarea
             placeholder="Journal a brief description of your day..."
-            className="text-sm resize-none min-h-[60px]"
+            className="text-sm resize-none min-h-15"
             defaultValue={stats?.description}
             onChange={(e) => setDescription(e.target.value)}
           />

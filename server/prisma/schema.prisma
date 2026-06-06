@@ -111,6 +111,7 @@ model Habit {
   description      String         @default("")
   difficulty       difficulty     @default(MID)
   autoCompleteTime Int?
+  badDayPlan       String?
   deleted          Boolean        @default(false)
   log              HabitTimeLog[]
   createdAt        DateTime       @default(now())
@@ -133,6 +134,7 @@ model HabitTimeLog {
   endedAt   DateTime?
   habit     Habit     @relation(fields: [habitId], references: [id], onDelete: Cascade)
   habitId   Int
+  isBadDayPlan Boolean @default(false)
   deleted   Boolean   @default(false)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
