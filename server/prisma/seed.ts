@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 import { PrismaClient } from '../generated/prisma/client.js';
-import { ToDoStatus, difficulty } from '../generated/prisma/enums.js';
+import { ToDoStatus, difficulty, BlockType } from '../generated/prisma/enums.js';
 
 const connectionString = process.env.DATABASE_URL;
 const pool = new pg.Pool({ connectionString });
@@ -27,9 +27,12 @@ async function main() {
 
   // 2. Subjects
   const subjectsData = [
-    { name: 'Coding', color: '#3b82f6', goalWorkSecs: 7200 },
-    { name: 'Reading', color: '#10b981', goalWorkSecs: 3600 },
-    { name: 'Gym', color: '#ef4444', goalWorkSecs: 5400 },
+    { name: 'coding', color: '#3b82f6', goalWorkSecs: 10800 }, // 3 hours
+    { name: 'dsa', color: '#10b981', goalWorkSecs: 7200 }, // 2 hours
+    { name: 'backend', color: '#ef4444', goalWorkSecs: 5400 }, // 1.5 hours
+    { name: 'frontend', color: '#f59e0b', goalWorkSecs: 5400 }, // 1.5 hours
+    { name: 'devops', color: '#8b5cf6', goalWorkSecs: 5400 }, // 1.5 hours
+    { name: 'exam', color: '#ec4899', goalWorkSecs: 7200 },
   ];
 
   const subjects = [];
@@ -45,29 +48,46 @@ async function main() {
   // 3. Habits
   const habitsData = [
     {
-      name: 'Write Code',
-      description: 'At least 1 hour',
+      name: 'dsa 2 question 0',
+      description: 'Solve 2 DSA questions',
       difficulty: difficulty.MID,
-      subjectId: subjects[0].id,
-    },
-    { name: 'Drink Water', description: '2 Liters', difficulty: difficulty.LOW, subjectId: null },
-    {
-      name: 'Read 20 pages',
-      description: 'Daily reading goal',
-      difficulty: difficulty.MID,
-      subjectId: subjects[1].id,
+      subjectId: subjects[1].id, // dsa
+      badDayPlan: 'Read 1 DSA concept',
     },
     {
-      name: 'Workout',
-      description: 'Heavy lifting',
+      name: 'coding 3hr project .5',
+      description: 'Work on coding project',
       difficulty: difficulty.HIGH,
-      subjectId: subjects[2].id,
+      subjectId: subjects[0].id, // coding
+      badDayPlan: 'Write 1 line of code',
     },
     {
-      name: 'Meditate',
-      description: '10 mins mindfulness',
+      name: 'devops 1.5hr 2',
+      description: 'DevOps practice',
+      difficulty: difficulty.MID,
+      subjectId: subjects[4].id, // devops
+      badDayPlan: 'Read 1 devops article',
+    },
+    {
+      name: 'backend 1.5hr 0',
+      description: 'Backend practice',
+      difficulty: difficulty.MID,
+      subjectId: subjects[2].id, // backend
+      badDayPlan: 'Watch 1 backend video',
+    },
+    {
+      name: 'gym',
+      description: 'Daily workout',
+      difficulty: difficulty.HIGH,
+      subjectId: null,
+      badDayPlan: 'Do 10 pushups',
+    },
+    {
+      name: 'call',
+      description: 'Daily check-in call',
       difficulty: difficulty.LOW,
       subjectId: null,
+      badDayPlan: 'Send a message instead',
     },
   ];
 
@@ -79,6 +99,7 @@ async function main() {
         description: h.description,
         difficulty: h.difficulty,
         subjectId: h.subjectId,
+        badDayPlan: h.badDayPlan,
         deleted: false,
       },
       create: { ...h, userId },
@@ -151,6 +172,67 @@ async function main() {
     }
   }
 
+  // 4.5 Spaces & Columns
+  const space = await prisma.space.upsert({
+    where: { id: 1 },
+    update: { name: 'Daily Planner', icon: '📋', deleted: false },
+    create: { name: 'Daily Planner', icon: '📋', userId },
+  });
+
+  // Delete existing columns to avoid duplicates on re-seed
+  await prisma.column.deleteMany({ where: { spaceId: space.id } });
+
+  const col1 = await prisma.column.create({
+    data: {
+      spaceId: space.id,
+      title: 'to do a session',
+      order: 0,
+      blocks: {
+        create: [
+          { type: BlockType.TODO, content: 'Q1', order: 0 },
+          { type: BlockType.TODO, content: 'Q2', order: 1 },
+        ],
+      },
+    },
+  });
+
+  const col2 = await prisma.column.create({
+    data: {
+      spaceId: space.id,
+      title: 'to do today',
+      order: 1,
+      blocks: {
+        create: [
+          { type: BlockType.TODO, content: 'dsa 2 questions 10-1 (30min minimum)', order: 0 },
+          {
+            type: BlockType.TODO,
+            content: '1:30-3:30 devops(kubernetes 30min), sql(30min)',
+            order: 1,
+          },
+          {
+            type: BlockType.TODO,
+            content:
+              '4-7 project (see how catching is working fe and improve it, see how to improve backend to make it scalable, nginx implement, deploy somewhere)',
+            order: 2,
+          },
+          { type: BlockType.TODO, content: 'gym', order: 3 },
+          {
+            type: BlockType.TODO,
+            content: '9-11 apply for jobs(5 job apply), make a resume or freelance profile plan',
+            order: 4,
+          },
+          { type: BlockType.TODO, content: '12 max gf', order: 5 },
+          {
+            type: BlockType.TODO,
+            content: '12-1 2 post , 20 replies + post resume on reddit + to do tommorow',
+            order: 6,
+          },
+          { type: BlockType.TODO, content: 'sleep at 1', order: 7 },
+        ],
+      },
+    },
+  });
+
   // 5. Logs (Subject & Habit)
   const today = new Date();
   for (let i = 0; i < 7; i++) {
@@ -194,6 +276,7 @@ async function main() {
           habitId: habits[0].id,
           startedAt: date,
           endedAt: new Date(date.getTime() + 1800000), // 30 mins
+          isBadDayPlan: i % 3 === 0, // Every 3rd log is a minimum completion
         },
       });
     }

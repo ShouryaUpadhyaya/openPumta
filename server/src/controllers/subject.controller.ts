@@ -143,6 +143,18 @@ const startSubjectLog = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(404, 'Subject not found');
   }
 
+  // End any currently active logs for this user before starting a new one
+  await prisma.subjectLog.updateMany({
+    where: {
+      subject: { userId: Number(userId) },
+      endedAt: null,
+      deleted: false,
+    },
+    data: {
+      endedAt: new Date(),
+    },
+  });
+
   const log = await prisma.subjectLog.create({
     data: {
       subjectId: subjectIdNum,
