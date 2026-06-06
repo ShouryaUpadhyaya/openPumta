@@ -1,26 +1,19 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-} from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useAuthStore } from '@/store/useAuthStore';
-import { useDashboardStats } from '@/hooks/useStats';
+import React, { useEffect, useState, useMemo } from 'react';
+import { useDashboardStats, useSubjectsWithLogs } from '@/hooks/useStats';
+import { computeSessionStats, computeDayOfWeekPattern } from '@/app/stats/lib/metrics';
+import { StatsSkeleton } from './Stats/StatsSkeleton';
+import { FocusTimeChart } from './Stats/FocusTimeChart';
+import { HabitConsistencyChart } from './Stats/HabitConsistencyChart';
+import { WeeklyPatternChart } from './Stats/WeeklyPatternChart';
+import { SessionStatsCard } from './Stats/SessionStatsCard';
 
 const FALLBACK_COLORS = ['#0088FE', '#FF8042', '#00C49F', '#FFBB28', '#FF8042'];
 
 function Stats() {
-  const { user } = useAuthStore();
-  const { data: statsData, isLoading } = useDashboardStats();
+  const { data: statsData, isLoading: isLoadingDashboard } = useDashboardStats();
+  const { data: subjects, isLoading: isLoadingSubjects } = useSubjectsWithLogs();
+
   const [chartColors, setChartColors] = useState<string[]>(FALLBACK_COLORS);
 
   useEffect(() => {
@@ -40,37 +33,11 @@ function Stats() {
     }
   }, []);
 
-  if (isLoading) {
-    return (
-      <section className="flex flex-col h-full p-4 overflow-hidden">
-        <div className="flex justify-between items-center mb-4 shrink-0">
-          <Skeleton className="h-8 w-40" />
-          <Skeleton className="h-4 w-28" />
-        </div>
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
-          <Card className="bg-background border-border/40 overflow-hidden flex flex-col shadow-none">
-            <CardHeader className="py-2 px-4">
-              <Skeleton className="h-4 w-32" />
-            </CardHeader>
-            <CardContent className="flex-1 p-4">
-              <div className="flex items-end gap-1 h-full">
-                {[60, 45, 80, 35, 70, 50, 90].map((h, i) => (
-                  <Skeleton key={i} className="flex-1 rounded-sm" style={{ height: `${h}%` }} />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-background border-border/40 overflow-hidden flex flex-col shadow-none">
-            <CardHeader className="py-2 px-4">
-              <Skeleton className="h-4 w-32" />
-            </CardHeader>
-            <CardContent className="flex-1 p-4">
-              <Skeleton className="h-full w-full rounded-xl" />
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-    );
+  const sessionStats = useMemo(() => computeSessionStats(subjects || []), [subjects]);
+  const dayOfWeek = useMemo(() => computeDayOfWeekPattern(subjects || []), [subjects]);
+
+  if (isLoadingDashboard || isLoadingSubjects) {
+    return <StatsSkeleton />;
   }
 
   const focusData =
@@ -90,7 +57,7 @@ function Stats() {
       .slice(-7) || [];
 
   return (
-    <section className="flex flex-col h-full p-4 overflow-hidden">
+    <section className="flex flex-col h-full p-4 overflow-hidden overflow-y-auto">
       <div className="flex justify-between items-center mb-4 shrink-0">
         <h1 className="text-2xl font-bold">21-Day Analytics</h1>
         {statsData?.summary && (
@@ -103,61 +70,14 @@ function Stats() {
         )}
       </div>
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
-        <Card className="bg-background border-border/40 overflow-hidden flex flex-col shadow-none">
-          <CardHeader className="py-2 px-4">
-            <CardTitle className="text-sm font-medium">Focus Time (Days)</CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 p-0 pb-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={focusData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-                <XAxis dataKey="date" fontSize={10} axisLine={false} tickLine={false} />
-                <YAxis fontSize={10} axisLine={false} tickLine={false} />
-                <Tooltip
-                  cursor={{ fill: 'rgba(0,0,0,0.05)' }}
-                  contentStyle={{ borderRadius: '8px', border: 'none' }}
-                />
-                <Bar dataKey="hours" fill={chartColors[0]} radius={[4, 4, 0, 0]} name="Hours" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-75 lg:h-100 mb-4 shrink-0">
+        <FocusTimeChart data={focusData} color={chartColors[0]} />
+        <HabitConsistencyChart data={habitData} color={chartColors[1]} />
+      </div>
 
-        <Card className="bg-background border-border/40 overflow-hidden flex flex-col shadow-none">
-          <CardHeader className="py-2 px-4">
-            <CardTitle className="text-sm font-medium">Habit Consistency</CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 p-0 pb-2">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={habitData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorRate" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={chartColors[1]} stopOpacity={0.8} />
-                    <stop offset="95%" stopColor={chartColors[1]} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
-                <XAxis dataKey="date" fontSize={10} axisLine={false} tickLine={false} />
-                <YAxis
-                  fontSize={10}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={(value) => `${value}%`}
-                />
-                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none' }} />
-                <Area
-                  type="monotone"
-                  dataKey="rate"
-                  stroke={chartColors[1]}
-                  fillOpacity={1}
-                  fill="url(#colorRate)"
-                  name="Completion %"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-62.5 lg:h-75 shrink-0">
+        <WeeklyPatternChart data={dayOfWeek} color={chartColors[2] || FALLBACK_COLORS[2]} />
+        <SessionStatsCard stats={sessionStats} color={chartColors[0] || FALLBACK_COLORS[0]} />
       </div>
     </section>
   );
