@@ -5,6 +5,7 @@ import Stats from './components/Home/Stats';
 import Subjects from './components/Home/Subjects';
 import DailyRating from './components/Home/DailyRating';
 import { useAuthStore } from '@/store/useAuthStore';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { LogIn, LogOut, User } from 'lucide-react';
@@ -35,7 +36,9 @@ export default function Home() {
                 <Button asChild variant="outline" size="icon" className="rounded-full shrink-0">
                   <Link href="/profile">
                     {user.avatarUrl ? (
-                      <img
+                      <Image
+                        width={100}
+                        height={100}
                         src={user.avatarUrl}
                         alt="Avatar"
                         className="h-full w-full rounded-full object-cover"
@@ -60,25 +63,24 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Main Content Area */}
       <main className="flex-1 flex flex-col lg:grid lg:grid-cols-12 lg:grid-rows-12 gap-4 min-h-0">
         {/* Top Row - Clock and Subjects */}
-        <div className="lg:col-span-4 lg:row-span-5 bg-background rounded-xl border shadow-sm overflow-clip flex flex-col items-center justify-center p-4 min-h-[260px] lg:min-h-0">
+        <div className="lg:col-span-4 lg:row-span-5 bg-background rounded-xl border shadow-sm overflow-clip flex flex-col items-center justify-center p-4 min-h-65 lg:min-h-0">
           <Clock />
         </div>
         {/* Middle Row - Habits and General Subjects/Stats space */}
-        <div className="lg:col-span-8 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-clip flex flex-col min-h-[280px] lg:min-h-0">
+        <div className="lg:col-span-8 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-clip flex flex-col min-h-70 lg:min-h-0">
           <Subjects />
         </div>
-        <div className="lg:col-span-4 lg:row-span-7 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[280px] lg:min-h-0">
+        <div className="lg:col-span-4 lg:row-span-7 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-70 lg:min-h-0">
           <Habits />
         </div>
 
         {/* Bottom Row - Rating and Stats */}
-        <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[220px] lg:min-h-0">
+        <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-55 lg:min-h-0">
           <DailyRating />
         </div>
-        <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[220px] lg:min-h-0">
+        <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-55 lg:min-h-0">
           <Stats />
         </div>
       </main>
