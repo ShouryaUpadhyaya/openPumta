@@ -19,6 +19,8 @@ import {
   computeFocusTrend,
   computeTaskCompletion,
   computeHabitStreaks,
+  computeBounceBacks,
+  computeIdentityMilestones,
 } from '../../stats/lib/metrics';
 import {
   ListChecks,
@@ -182,6 +184,11 @@ function HabitsSection({ habitsData, accent }: { habitsData: any; accent: string
     [habitsData],
   );
   const habitTimeOfDay = useMemo(() => computeHabitTimeOfDay(habitsData || []), [habitsData]);
+  const bounceBacks = useMemo(() => computeBounceBacks(habitsData || []), [habitsData]);
+  const identityMilestones = useMemo(
+    () => computeIdentityMilestones(habitsData || []),
+    [habitsData],
+  );
 
   return (
     <div className="space-y-4">
@@ -228,6 +235,50 @@ function HabitsSection({ habitsData, accent }: { habitsData: any; accent: string
                 No habits with difficulty assigned
               </p>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Identity Milestones & Bounce Backs */}
+        <Card className="bg-card border-border/40">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Dumbbell className="h-3.5 w-3.5" style={{ color: accent }} /> Habit Systems
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between border-b border-border/40 pb-3">
+              <div className="text-sm text-muted-foreground">Bounce Back Rate</div>
+              <div className="font-bold text-lg" style={{ color: accent }}>
+                {bounceBacks.rate}%
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-1">
+              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Identity Milestones
+              </div>
+              {identityMilestones.length > 0 ? (
+                identityMilestones.map((idM: any, i: number) => (
+                  <div key={i} className="flex flex-col gap-1">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-medium truncate max-w-[120px]">{idM.name}</span>
+                      <span className="font-mono">{idM.currentTier}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-1.5 bg-muted/50 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-700"
+                          style={{ width: `${idM.progressToNext}%`, backgroundColor: accent }}
+                        />
+                      </div>
+                      <span className="text-[9px] text-muted-foreground">Next: {idM.nextTier}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-muted-foreground">No habits tracked</p>
+              )}
+            </div>
           </CardContent>
         </Card>
 

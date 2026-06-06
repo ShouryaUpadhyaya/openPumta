@@ -47,6 +47,8 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { SystemGuideModal } from './components/SystemGuideModal';
+import { HabitHeatmapCard } from './components/HabitHeatmapCard';
 
 interface Habit {
   id: number;
@@ -325,68 +327,7 @@ export default function HabitsPage() {
         )}
       </div>
 
-      {/* System Guide Modal */}
-      <Dialog open={guideOpen} onOpenChange={setGuideOpen}>
-        <DialogContent className="max-w-2xl rounded-2xl p-0 gap-0 overflow-hidden border-none shadow-2xl">
-          <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-primary p-2.5 rounded-xl text-primary-foreground shadow-lg">
-                <BookOpen className="h-6 w-6" />
-              </div>
-              <DialogTitle className="text-2xl font-bold tracking-tight">
-                The Science of Habits
-              </DialogTitle>
-            </div>
-
-            <div className="space-y-6 text-sm leading-relaxed">
-              <div className="bg-background/60 p-5 rounded-2xl border border-border/50 shadow-sm">
-                <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
-                  <span className="text-primary">1.</span> The Minimum Viable Habit
-                </h3>
-                <p className="text-muted-foreground mb-3">
-                  {`Motivation is unreliable. When you have zero energy, the friction to start a
-                  1-hour workout is too high. By shrinking the habit down to a 2-minute version
-                  (e.g., "Do 1 pushup"), you eliminate the friction of starting.`}
-                </p>
-                <p className="font-medium">
-                  <strong>The Goal:</strong> Never throw up a zero. Complete the minimum baseline to
-                  keep your streak alive.
-                </p>
-              </div>
-
-              <div className="bg-background/60 p-5 rounded-2xl border border-border/50 shadow-sm">
-                <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
-                  <span className="text-primary">2.</span> Never Miss Twice
-                </h3>
-                <p className="text-muted-foreground">
-                  {`Missing one day is an accident. Missing two days is the start of a new (bad)
-                  habit. Don't aim for perfection; aim to bounce back immediately. A "minimum"
-                  completion counts as a win.`}
-                </p>
-              </div>
-
-              <div className="bg-background/60 p-5 rounded-2xl border border-border/50 shadow-sm">
-                <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
-                  <span className="text-primary">3.</span> Identity Over Outcomes
-                </h3>
-                <p className="text-muted-foreground">
-                  Every time you complete a habit—even the minimum version—you cast a vote for the
-                  type of person you want to become. You are building proof of your identity, not
-                  just chasing a number.
-                </p>
-              </div>
-            </div>
-            <DialogFooter className="mt-8">
-              <Button
-                onClick={() => setGuideOpen(false)}
-                className="rounded-xl px-8 shadow-lg shadow-primary/20"
-              >
-                Got It
-              </Button>
-            </DialogFooter>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <SystemGuideModal open={guideOpen} onOpenChange={setGuideOpen} />
 
       {/* Toolbar: Add + Filter toggle */}
       <div className="flex items-center gap-2 mb-3">
@@ -630,86 +571,25 @@ export default function HabitsPage() {
 
             const linkedSubject = subjects?.find((s) => s.id === habit.subjectId);
 
+            const isCompletedMinimum = isCompletedToday
+              ? !!todayStats.find((l: HabitLog) => l.habitId === habit.id)?.isBadDayPlan
+              : false;
+
             return (
-              <Card
+              <HabitHeatmapCard
                 key={habit.id}
-                className={`transition-all group ${
-                  isCompletedToday
-                    ? 'border-primary/50 bg-primary/5'
-                    : 'bg-background border-border/40'
-                } flex flex-col`}
-              >
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 pb-2">
-                  <div className="flex flex-col gap-0.5 min-w-0">
-                    <CardTitle className="text-base leading-tight truncate">{habit.name}</CardTitle>
-                    <div className="flex items-center gap-1.5">
-                      {getDifficultyBadge(habit.difficulty)}
-                      {linkedSubject && (
-                        <>
-                          {habit.difficulty && (
-                            <span className="text-muted-foreground/40 text-[10px]">·</span>
-                          )}
-                          <span className="text-[10px] text-muted-foreground font-medium truncate">
-                            {linkedSubject.name}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-0.5 shrink-0 ml-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => openEditDialog(habit)}
-                      className="text-muted-foreground hover:text-foreground h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="Edit Habit"
-                    >
-                      <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                    <Checkbox
-                      checked={isCompletedToday}
-                      onCheckedChange={() =>
-                        toggleHabit.mutate({ habitId: habit.id, isBadDayPlan: false })
-                      }
-                      className="h-5 w-5 rounded-md"
-                    />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => deleteHabit.mutate(habit.id)}
-                      className="text-destructive hover:bg-destructive/10 h-8 w-8"
-                      title="Delete Habit"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-4 pt-2">
-                  <div className="text-xs text-muted-foreground mb-2 flex justify-between font-medium">
-                    <span>{filterRange === 'all' ? 'All Time' : `Last ${filterRange} Days`}</span>
-                    <span>
-                      {completionDates.size} /{' '}
-                      {filterRange === 'all' ? daysArray.length : filterRange}
-                    </span>
-                  </div>
-                  <div className={`grid ${gridCols} gap-1`}>
-                    {daysArray.map((dateStr, i) => {
-                      const done = completionDates.has(dateStr);
-                      const isBadDayPlan = done ? completionDates.get(dateStr) : false;
-                      const isToday = dateStr === new Date().toISOString().split('T')[0];
-                      return (
-                        <div
-                          key={i}
-                          title={dateStr}
-                          className={`aspect-square rounded-sm transition-colors ${
-                            done ? (isBadDayPlan ? 'bg-primary/50' : 'bg-primary') : 'bg-muted/40'
-                          } ${isToday && !done ? 'border-2 border-primary/40' : ''}`}
-                        />
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
+                habit={habit}
+                isCompletedToday={isCompletedToday}
+                isCompletedMinimum={isCompletedMinimum}
+                completionDates={completionDates}
+                linkedSubject={linkedSubject}
+                daysArray={daysArray}
+                gridCols={gridCols}
+                filterRange={filterRange}
+                onEdit={openEditDialog}
+                onDelete={(id) => deleteHabit.mutate(id)}
+                onToggle={(id, isBadDayPlan) => toggleHabit.mutate({ habitId: id, isBadDayPlan })}
+              />
             );
           })
         )}

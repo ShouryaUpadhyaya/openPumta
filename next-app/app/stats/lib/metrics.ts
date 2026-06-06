@@ -85,6 +85,99 @@ export function computeHabitStreaks(habits: any[]) {
       consistency,
       difficulty: h.difficulty,
       daysCompleted: doneDays.size,
+      id: h.id, // helpful for rendering
+      badDayPlans: logs.filter((l: any) => l.isBadDayPlan).length, // count of MVH completions
+    };
+  });
+}
+
+export function computeBounceBacks(habits: any[]) {
+  if (!habits?.length) return { total: 0, rate: 0, byHabit: [] };
+
+  let totalBounceBacks = 0;
+  let totalMissedDays = 0;
+
+  const byHabit = habits.map((h: any) => {
+    const logs = (h.log || []).filter((l: any) => !l.deleted);
+    if (!logs.length) return { name: h.name, bounceBacks: 0, missedDays: 0, rate: 0 };
+
+    // Sort logs by date ascending
+    const sortedDates = [
+      ...new Set<string>(logs.map((l: any) => new Date(l.startedAt).toISOString().split('T')[0])),
+    ].sort();
+
+    const firstDate = new Date(sortedDates[0]);
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+
+    let bounceBacks = 0;
+    let missedDays = 0;
+
+    let curDate = new Date(firstDate);
+    const dateSet = new Set(sortedDates);
+
+    let wasMissedYesterday = false;
+
+    while (curDate <= today) {
+      const dStr = curDate.toISOString().split('T')[0];
+      const isCompleted = dateSet.has(dStr);
+
+      if (!isCompleted) {
+        missedDays++;
+        wasMissedYesterday = true;
+      } else {
+        if (wasMissedYesterday) {
+          bounceBacks++;
+        }
+        wasMissedYesterday = false;
+      }
+      curDate.setDate(curDate.getDate() + 1);
+    }
+
+    totalBounceBacks += bounceBacks;
+    totalMissedDays += missedDays;
+
+    return {
+      name: h.name,
+      bounceBacks,
+      missedDays,
+      rate: missedDays > 0 ? Math.round((bounceBacks / missedDays) * 100) : 100,
+    };
+  });
+
+  return {
+    total: totalBounceBacks,
+    missed: totalMissedDays,
+    rate: totalMissedDays > 0 ? Math.round((totalBounceBacks / totalMissedDays) * 100) : 100,
+    byHabit,
+  };
+}
+
+export function computeIdentityMilestones(habits: any[]) {
+  if (!habits?.length) return [];
+
+  const MILESTONES = [
+    { threshold: 365, title: 'Unstoppable' },
+    { threshold: 100, title: 'Identity Forged' },
+    { threshold: 50, title: 'System Builder' },
+    { threshold: 21, title: 'Consistent' },
+    { threshold: 7, title: 'Initiate' },
+    { threshold: 0, title: 'Novice' },
+  ];
+
+  return habits.map((h: any) => {
+    const completions = (h.log || []).filter((l: any) => !l.deleted).length;
+    const currentTier = MILESTONES.find((m) => completions >= m.threshold) || MILESTONES[5];
+    const nextTier = MILESTONES.slice()
+      .reverse()
+      .find((m) => m.threshold > completions);
+
+    return {
+      name: h.name,
+      completions,
+      currentTier: currentTier.title,
+      nextTier: nextTier ? nextTier.title : 'Max Level',
+      progressToNext: nextTier ? Math.round((completions / nextTier.threshold) * 100) : 100,
     };
   });
 }
@@ -541,6 +634,8 @@ export function computeAllMetricsBundle(
       taskWorkTime: computeTaskWorkTime(todos),
       habitDifficultyBreakdown: computeHabitDifficultyBreakdown(habitsData),
       habitTimeOfDay: computeHabitTimeOfDay(habitsData),
+      habitBounceBacks: computeBounceBacks(habitsData),
+      habitIdentity: computeIdentityMilestones(habitsData),
     },
     mood: ratingStats,
   };

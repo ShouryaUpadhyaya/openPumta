@@ -416,43 +416,76 @@ export default function OverviewGrid({
         </CardContent>
       </Card>
 
-      <Card className="col-span-1 bg-card border-border/40">
+      <Card className="col-span-1 md:col-span-2 lg:col-span-3 bg-card border-border/40">
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <Flame className="h-4 w-4" style={{ color: c[3] }} /> Habit Streaks
+            <Flame className="h-4 w-4" style={{ color: c[3] }} /> 21-Day Habit Consistency
             <Badge variant="outline" className="ml-auto text-xs font-mono">
-              {overallHabitConsistency}%
+              Overall: {overallHabitConsistency}%
             </Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {habitStreaks.length > 0 ? (
-            <div className="space-y-2.5">
-              {habitStreaks.map((h, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div
-                    className="flex flex-col items-center justify-center w-10 h-10 rounded-lg font-bold text-sm shrink-0"
-                    style={{ backgroundColor: `${c[i % c.length]}20`, color: c[i % c.length] }}
-                  >
-                    {h.streak}
-                    <span className="text-[7px] font-normal uppercase opacity-70">days</span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-semibold truncate">{h.name}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all duration-500"
-                          style={{ width: `${h.consistency}%`, backgroundColor: c[i % c.length] }}
+          {habitsData && habitsData.length > 0 ? (
+            <div className="space-y-4">
+              {habitsData.map((habit: any, i: number) => {
+                const logs = habit.log || [];
+                const completionMap = new Map<string, boolean>();
+                logs.forEach((l: any) => {
+                  if (!l.deleted) {
+                    const dStr = new Date(l.startedAt).toISOString().split('T')[0];
+                    completionMap.set(dStr, l.isBadDayPlan || false);
+                  }
+                });
+
+                // Generate last 21 days
+                const daysArray = [];
+                for (let j = 20; j >= 0; j--) {
+                  const d = new Date();
+                  d.setDate(d.getDate() - j);
+                  daysArray.push(d.toISOString().split('T')[0]);
+                }
+
+                // Find consistency for this habit from habitStreaks
+                const streakData = habitStreaks.find((hs: any) => hs.name === habit.name);
+
+                return (
+                  <div key={habit.id} className="flex flex-col gap-1.5">
+                    <div className="flex justify-between items-center text-xs">
+                      <div className="flex items-center gap-2 font-medium">
+                        <span
+                          className="w-2 h-2 rounded-full shrink-0"
+                          style={{ backgroundColor: c[i % c.length] }}
                         />
+                        <span className="truncate max-w-[120px] md:max-w-xs">{habit.name}</span>
                       </div>
-                      <span className="text-[10px] text-muted-foreground font-mono">
-                        {h.consistency}%
-                      </span>
+                      <div className="flex items-center gap-2 text-muted-foreground font-mono">
+                        {streakData && <span>🔥 {streakData.streak}</span>}
+                        <span>{streakData ? streakData.consistency : 0}%</span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-[repeat(21,minmax(0,1fr))] gap-1">
+                      {daysArray.map((dateStr, idx) => {
+                        const done = completionMap.has(dateStr);
+                        const isBadDayPlan = done ? completionMap.get(dateStr) : false;
+                        const isToday = dateStr === new Date().toISOString().split('T')[0];
+                        return (
+                          <div
+                            key={idx}
+                            title={`${dateStr}${isBadDayPlan ? ' (Minimum)' : ''}`}
+                            className={`aspect-square rounded-sm transition-colors ${
+                              done ? (isBadDayPlan ? 'opacity-50' : 'opacity-100') : 'bg-muted/40'
+                            } ${isToday && !done ? 'border border-primary/40' : ''}`}
+                            style={{
+                              backgroundColor: done ? c[i % c.length] : undefined,
+                            }}
+                          />
+                        );
+                      })}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <p className="text-muted-foreground text-sm py-4 text-center">No habits tracked yet</p>
