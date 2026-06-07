@@ -54,6 +54,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 const CustomizedLabel = (props: any) => {
   const { x, y, width, height, value, name, payload } = props;
 
+  if (!payload) return null;
+
   // Find the max subject for this day to only show one label per bar
   let maxSubject = '';
   let maxVal = 0;
