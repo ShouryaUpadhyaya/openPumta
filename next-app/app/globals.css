@@ -46,6 +46,11 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+  --color-heatmap-0: var(--heatmap-0);
+  --color-heatmap-1: var(--heatmap-1);
+  --color-heatmap-2: var(--heatmap-2);
+  --color-heatmap-3: var(--heatmap-3);
+  --color-heatmap-4: var(--heatmap-4);
 }
 
 :root {
@@ -81,6 +86,11 @@
   --sidebar-accent-foreground: oklch(0.98 0.016 73.684);
   --sidebar-border: oklch(0.923 0.003 48.717);
   --sidebar-ring: oklch(0.709 0.01 56.259);
+  --heatmap-0: oklch(0.646 0.222 41.116 / 0.1);
+  --heatmap-1: oklch(0.646 0.222 41.116 / 0.3);
+  --heatmap-2: oklch(0.646 0.222 41.116 / 0.6);
+  --heatmap-3: oklch(0.646 0.222 41.116 / 0.85);
+  --heatmap-4: oklch(0.646 0.222 41.116 / 1);
 }
 
 .dark {
@@ -116,6 +126,11 @@
   --sidebar-accent-foreground: oklch(0.98 0.016 73.684);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.553 0.013 58.071);
+  --heatmap-0: oklch(0.705 0.213 47.604 / 0.1);
+  --heatmap-1: oklch(0.705 0.213 47.604 / 0.3);
+  --heatmap-2: oklch(0.705 0.213 47.604 / 0.6);
+  --heatmap-3: oklch(0.705 0.213 47.604 / 0.85);
+  --heatmap-4: oklch(0.705 0.213 47.604 / 1);
 }
 
 @layer base {
