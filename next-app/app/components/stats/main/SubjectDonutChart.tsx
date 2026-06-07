@@ -106,7 +106,7 @@ export default function SubjectDonutChart({
                 ))}
               </Pie>
               <RechartsTooltip
-                formatter={(value: number) => formatTime(value)}
+                formatter={(value: any) => formatTime(value || 0)}
                 contentStyle={{
                   backgroundColor: 'var(--popover)',
                   borderColor: 'var(--border)',
@@ -150,7 +150,7 @@ export default function SubjectDonutChart({
                 ))}
               </Pie>
               <RechartsTooltip
-                formatter={(value: number) => formatTime(value)}
+                formatter={(value: any) => formatTime(value || 0)}
                 contentStyle={{
                   backgroundColor: 'var(--popover)',
                   borderColor: 'var(--border)',

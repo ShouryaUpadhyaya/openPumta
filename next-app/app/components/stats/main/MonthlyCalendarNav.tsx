@@ -33,7 +33,7 @@ export default function MonthlyCalendarNav({
   // Adjust so Monday is 0, Sunday is 6
   const startOffset = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
 
-  const days = [];
+  const days: (Date | null)[] = [];
   // padding empty days at the start
   for (let i = 0; i < startOffset; i++) {
     days.push(null);

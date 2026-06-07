@@ -401,7 +401,7 @@ export default function StatsPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <GoalRealityBars data={goalRealityData} />
-            <BurnoutRiskAssessment data={burnout} />
+            <BurnoutRiskAssessment data={burnout as any} />
           </div>
         </div>
       )}

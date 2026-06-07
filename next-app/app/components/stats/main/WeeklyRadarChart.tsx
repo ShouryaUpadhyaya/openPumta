@@ -35,7 +35,7 @@ export default function WeeklyRadarChart({ data }: WeeklyRadarChartProps) {
                 borderRadius: '8px',
               }}
               itemStyle={{ color: 'var(--foreground)' }}
-              formatter={(value: number) => [`${value} hours`, 'Focus']}
+              formatter={(value: any) => [`${value || 0} hours`, 'Focus']}
             />
             <Radar
               name="Focus"
