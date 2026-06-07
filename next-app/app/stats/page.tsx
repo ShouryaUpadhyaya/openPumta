@@ -1,5 +1,5 @@
 'use client';
-
+import { Subject, SubjectLog } from '@/types/subject';
 import React, { useMemo, useState } from 'react';
 import {
   useDashboardStats,
@@ -76,10 +76,10 @@ export default function StatsPage() {
   // Daily Subject Focus (for Stacked Bar & Radar)
   const dailySubjectMap = useMemo(() => {
     const map = new Map<string, Record<string, number>>();
-    subjects.forEach((s: any) => {
-      (s.subjectLogs || []).forEach((log: any) => {
+    subjects.forEach((s: Subject) => {
+      (s.subjectLogs || []).forEach((log: SubjectLog) => {
         if (!log.endedAt) return;
-        const dStr = log.startedAt.split('T')[0];
+        const dStr = log.startedAt.toString().split('T')[0];
         const dur =
           (new Date(log.endedAt).getTime() - new Date(log.startedAt).getTime()) / 1000 / 3600; // hours
         if (!map.has(dStr)) map.set(dStr, {});
