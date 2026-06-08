@@ -1,43 +1,144 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
+import type { Habit } from '@/types/habit';
 
 interface ConsistencyTrackerProps {
-  data: { date: string; goalMet: boolean }[];
-  currentStreak: number;
+  habits: Habit[];
+  selectedDate: Date;
 }
 
-export default function ConsistencyTracker({ data, currentStreak }: ConsistencyTrackerProps) {
+export default function ConsistencyTracker({ habits, selectedDate }: ConsistencyTrackerProps) {
+  const [startDateStr, setStartDateStr] = useState<string>('');
+
+  const daysArray = useMemo(() => {
+    const arr: string[] = [];
+    const end = new Date(selectedDate);
+    end.setHours(0, 0, 0, 0);
+
+    let start = new Date(end);
+    if (startDateStr) {
+      start = new Date(startDateStr);
+      start.setHours(0, 0, 0, 0);
+      if (start > end) {
+        start = new Date(end);
+        start.setDate(start.getDate() - 20); // Fallback if start is after end
+      }
+    } else {
+      start.setDate(start.getDate() - 20); // Default to 21 days
+    }
+
+    const d = new Date(start);
+    while (d <= end) {
+      arr.push(d.toISOString().split('T')[0]);
+      d.setDate(d.getDate() + 1);
+    }
+    return arr;
+  }, [selectedDate, startDateStr]);
+
+  const totalDays = daysArray.length;
+
+  let totalPossible = 0;
+  let totalDone = 0;
+
+  const habitsWithCompletion = useMemo(() => {
+    return habits.map((habit) => {
+      const completionDates = new Map<string, boolean>();
+      habit.log?.forEach((l) => {
+        if (l.deleted) return;
+        const dateStr = new Date(l.startedAt).toISOString().split('T')[0];
+        completionDates.set(dateStr, l.isBadDayPlan || false);
+      });
+
+      let doneCount = 0;
+      daysArray.forEach((d) => {
+        if (completionDates.has(d)) doneCount++;
+      });
+
+      const percent = totalDays > 0 ? Math.round((doneCount / totalDays) * 100) : 0;
+
+      return { ...habit, completionDates, percent, doneCount };
+    });
+  }, [habits, daysArray, totalDays]);
+
+  habitsWithCompletion.forEach((h) => {
+    totalPossible += totalDays;
+    totalDone += h.doneCount;
+  });
+
+  const overallPercent = totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0;
+
   return (
-    <div className="bg-card border border-border rounded-xl p-4 flex flex-col w-full">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-foreground">21-Day Consistency</h3>
-        <span className="text-sm font-semibold text-primary">
-          Current streak: {currentStreak} day{currentStreak !== 1 ? 's' : ''}
-        </span>
+    <div className="bg-card border border-border rounded-xl p-4 flex flex-col w-full h-full ">
+      <div className="flex flex-col gap-3 mb-4 shrink-0">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bold text-foreground">Habit Tracking</h3>
+          <span className="text-sm font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+            {overallPercent}% Overall
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xs font-medium text-muted-foreground">Start Date:</span>
+          <input
+            type="date"
+            value={startDateStr}
+            onChange={(e) => setStartDateStr(e.target.value)}
+            className="text-xs px-2 py-1.5 bg-muted/30 border border-muted-foreground/20 rounded-md focus:outline-none focus:ring-1 focus:ring-primary text-foreground"
+          />
+        </div>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-2 items-center justify-between">
-        {data.map((item, idx) => {
-          const dateObj = new Date(item.date);
-          const dayNum = dateObj.getDate();
+      <div className="flex flex-col gap-4 overflow-y-auto pr-1 custom-scrollbar">
+        {habitsWithCompletion.length === 0 ? (
+          <div className="text-sm text-muted-foreground text-center py-4">No active habits.</div>
+        ) : (
+          habitsWithCompletion.map((habit) => {
+            return (
+              <div key={habit.id} className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <span
+                    className="text-xs font-semibold text-foreground truncate"
+                    title={habit.name}
+                  >
+                    {habit.name}
+                  </span>
+                  <span className="text-xs font-bold text-muted-foreground">{habit.percent}%</span>
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-2 items-center justify-between custom-scrollbar">
+                  {daysArray.map((dateStr, i) => {
+                    const dateObj = new Date(dateStr);
+                    const dayNum = dateObj.getDate();
+                    const done = habit.completionDates.has(dateStr);
+                    const isBadDayPlan = done ? habit.completionDates.get(dateStr) : false;
+                    const isToday = dateStr === new Date().toISOString().split('T')[0];
 
-          return (
-            <div key={item.date} className="flex flex-col items-center gap-1 group relative">
-              <div
-                className={`w-8 h-8 rounded-md transition-colors ${
-                  item.goalMet ? 'bg-primary' : 'bg-muted/50 border border-border/50'
-                }`}
-                title={`${item.date}: ${item.goalMet ? 'Goal Met' : 'Missed'}`}
-              />
-              <span className="text-[10px] text-muted-foreground">{dayNum}</span>
+                    return (
+                      <div
+                        key={dateStr}
+                        className="flex flex-col items-center gap-1 group relative shrink-0"
+                      >
+                        <div
+                          className={`w-8 h-8 rounded-md transition-colors ${
+                            done
+                              ? isBadDayPlan
+                                ? 'bg-primary/50'
+                                : 'bg-primary'
+                              : 'bg-muted/50 border border-border/50'
+                          } ${isToday && !done ? 'border-2 border-primary/40' : ''}`}
+                        />
+                        <span className="text-[10px] text-muted-foreground">{dayNum}</span>
 
-              {/* Tooltip */}
-              <div className="absolute bottom-full mb-2 hidden group-hover:block z-10 w-max bg-popover text-popover-foreground text-xs px-2 py-1 rounded shadow-md border border-border">
-                {dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}:{' '}
-                {item.goalMet ? 'Goal Met' : 'Goal Missed'}
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full mb-2 hidden group-hover:block z-10 w-max bg-popover text-popover-foreground text-xs px-2 py-1 rounded shadow-md border border-border">
+                          {dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}:{' '}
+                          {done ? (isBadDayPlan ? 'Minimum Met' : 'Goal Met') : 'Missed'}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </div>
   );

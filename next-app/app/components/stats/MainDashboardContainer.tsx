@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import type { Subject, SubjectLog } from '@/types/subject';
 import type { ToDo } from '@/types/todo';
+import type { Habit } from '@/types/habit';
 import type { DailyRating } from '@/types/rating';
 import { TimelineItem } from '@/hooks/useStats';
 import {
@@ -8,6 +9,7 @@ import {
   computeFocusStreak,
   computeHabitStreaks,
   computeBurnoutRisk,
+  computeGoalProgress,
 } from '../../stats/lib/metrics';
 
 // Main Components
@@ -20,6 +22,8 @@ import SubjectDonutChart from './main/SubjectDonutChart';
 import SessionStatsPanel from './main/SessionStatsPanel';
 import MoodOverviewPanel from './main/MoodOverviewPanel';
 import TasksProgressRing from './main/TasksProgressRing';
+import GoalRealityBars from './deep-dive/GoalRealityBars';
+import AdvancedPeriodTrends from './deep-dive/AdvancedPeriodTrends';
 
 interface MainDashboardContainerProps {
   selectedDate: Date;
@@ -29,6 +33,7 @@ interface MainDashboardContainerProps {
   subjects: Subject[];
   ratingStats: { ratings: DailyRating[]; weeklyAverage: number } | undefined;
   todos: ToDo[];
+  habitsData: Habit[];
 }
 
 export default function MainDashboardContainer({
@@ -39,6 +44,7 @@ export default function MainDashboardContainer({
   subjects,
   ratingStats,
   todos,
+  habitsData,
 }: MainDashboardContainerProps) {
   const focusTrend = useMemo(() => computeFocusTrend(focusLogs), [focusLogs]);
   const focusStreak = useMemo(() => computeFocusStreak(subjects), [subjects]);
@@ -147,7 +153,14 @@ export default function MainDashboardContainer({
     }
     return { studySecs: study, breakSecs: brk, otherSecs: other };
   }, [timeline]);
-
+  const goalRealityData = useMemo(() => {
+    return computeGoalProgress(subjects).map((g) => ({
+      subject: g.name,
+      actual: g.actual / 3600,
+      goal: g.goal / 3600,
+      color: g.color,
+    }));
+  }, [subjects]);
   // C7: Session Stats Panel
   const sessionStats = useMemo(() => {
     const subjLogs = timeline.filter((t) => t.type === 'subject' && t.endedAt);
@@ -218,10 +231,13 @@ export default function MainDashboardContainer({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <WeeklyRadarChart data={weeklyRadarData} />
-        <div className="flex flex-col justify-end h-full">
-          <ConsistencyTracker data={consistencyData} currentStreak={focusStreak} />
+      <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
+        <div className="flex flex-col justify-end h-full lg:col-span-4">
+          <ConsistencyTracker habits={habitsData} selectedDate={selectedDate} />
+        </div>
+        <div className="flex flex-col lg:col-span-2 justify-end gap-6">
+          <WeeklyRadarChart data={weeklyRadarData} />
+          <GoalRealityBars data={goalRealityData} />
         </div>
       </div>
 
@@ -244,7 +260,7 @@ export default function MainDashboardContainer({
           />
         </div>
         <div className="lg:col-span-8 flex flex-col gap-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-[220px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
             <SessionStatsPanel stats={sessionStats} />
             <MoodOverviewPanel
               moodRating={moodData.rating}
@@ -252,9 +268,15 @@ export default function MainDashboardContainer({
               energyLevel={moodData.energy}
             />
           </div>
-          <div className="h-[220px]">
-            <TasksProgressRing {...taskStats} />
-          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-4">
+          <TasksProgressRing {...taskStats} />
+        </div>
+
+        <div className="lg:col-span-4">
+          <AdvancedPeriodTrends trendData={focusTrend} />
         </div>
       </div>
     </div>

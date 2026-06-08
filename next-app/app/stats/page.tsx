@@ -64,6 +64,7 @@ export default function StatsPage() {
         subjects={subjects}
         ratingStats={ratingStats}
         todos={todos}
+        habitsData={habitsData}
       />
 
       <div className="mt-8 mb-6">
