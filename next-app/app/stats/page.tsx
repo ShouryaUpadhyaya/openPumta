@@ -51,7 +51,7 @@ export default function StatsPage() {
           <BarChart3 className="h-6 w-6" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">FocusFlow Stats</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Stats</h1>
           <p className="text-muted-foreground text-sm">Comprehensive performance dashboard</p>
         </div>
       </div>

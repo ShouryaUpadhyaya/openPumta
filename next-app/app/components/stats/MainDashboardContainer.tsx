@@ -271,7 +271,7 @@ export default function MainDashboardContainer({
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-4">
+        <div className="lg:col-span-3">
           <TasksProgressRing {...taskStats} />
         </div>
 

@@ -89,86 +89,107 @@ export default function DailySummaryCard({
     <div className="bg-card border border-border rounded-xl p-4 flex flex-col w-full h-full">
       <h3 className="text-lg font-bold text-foreground mb-4">{dateStr}</h3>
 
-      <div className="flex flex-col xl:flex-row gap-6">
+      <div className="flex flex-row gap-4 h-full">
         {/* Left Side: Avatar & Metrics */}
-        <div className="flex flex-col gap-6 xl:w-1/2">
+        <div className="flex flex-col gap-4 w-1/2 justify-center">
           {/* Avatar Area */}
-          <div className="flex justify-center items-center h-40 bg-muted/30 rounded-xl border border-border/50">
+          <div className="flex justify-center items-center h-32 lg:h-56 bg-muted/20 rounded-2xl border border-border/50 shrink-0">
             {avatarState === 'fire' && (
-              <div className="flex flex-col items-center gap-2 text-orange-500">
-                <Flame className="w-16 h-16 animate-pulse" />
-                <span className="font-semibold text-sm">On Fire!</span>
+              <div className="flex flex-col items-center gap-1 lg:gap-3 text-orange-500 animate-in zoom-in duration-500">
+                <Flame className="w-10 h-10 lg:w-20 lg:h-20 animate-pulse drop-shadow-md" />
+                <span className="font-bold text-[10px] lg:text-base tracking-wide">On Fire!</span>
               </div>
             )}
             {avatarState === 'struggling' && (
-              <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                <BatteryWarning className="w-16 h-16" />
-                <span className="font-semibold text-sm">Recovering</span>
+              <div className="flex flex-col items-center gap-1 lg:gap-3 text-muted-foreground animate-in zoom-in duration-500">
+                <BatteryWarning className="w-10 h-10 lg:w-20 lg:h-20 opacity-80" />
+                <span className="font-bold text-[10px] lg:text-base tracking-wide">Recovering</span>
               </div>
             )}
             {avatarState === 'standard' && (
-              <div className="flex flex-col items-center gap-2 text-primary">
-                <BookOpen className="w-16 h-16" />
-                <span className="font-semibold text-sm">Consistent</span>
+              <div className="flex flex-col items-center gap-1 lg:gap-3 text-primary animate-in zoom-in duration-500">
+                <BookOpen className="w-10 h-10 lg:w-20 lg:h-20 drop-shadow-sm" />
+                <span className="font-bold text-[10px] lg:text-base tracking-wide">Consistent</span>
               </div>
             )}
           </div>
 
           {/* 2x2 Metrics Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col">
-              <span className="text-sm text-primary font-medium">Total study time</span>
-              <span className="text-2xl font-bold">{formatSecs(totalStudySecs)}</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 lg:gap-4 shrink-0">
+            <div className="flex flex-col bg-muted/10 p-2 lg:p-4 rounded-xl border border-border/30">
+              <span className="text-[10px] lg:text-xs text-primary font-bold uppercase tracking-wider mb-1">
+                Total study
+              </span>
+              <span className="text-sm lg:text-2xl font-black text-foreground">
+                {formatSecs(totalStudySecs)}
+              </span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm text-primary font-medium">Max focus time</span>
-              <span className="text-2xl font-bold">{formatSecs(maxFocusSecs)}</span>
+            <div className="flex flex-col bg-muted/10 p-2 lg:p-4 rounded-xl border border-border/30">
+              <span className="text-[10px] lg:text-xs text-primary font-bold uppercase tracking-wider mb-1">
+                Max focus
+              </span>
+              <span className="text-sm lg:text-2xl font-black text-foreground">
+                {formatSecs(maxFocusSecs)}
+              </span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm text-primary font-medium">Start time</span>
-              <span className="text-xl font-bold">{formatTime(startTime)}</span>
+            <div className="flex flex-col bg-muted/10 p-2 lg:p-4 rounded-xl border border-border/30 hidden md:flex">
+              <span className="text-[10px] lg:text-xs text-primary font-bold uppercase tracking-wider mb-1">
+                Start time
+              </span>
+              <span className="text-sm lg:text-xl font-bold text-foreground">
+                {formatTime(startTime)}
+              </span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm text-primary font-medium">End time</span>
-              <span className="text-xl font-bold">{formatTime(endTime)}</span>
+            <div className="flex flex-col bg-muted/10 p-2 lg:p-4 rounded-xl border border-border/30 hidden md:flex">
+              <span className="text-[10px] lg:text-xs text-primary font-bold uppercase tracking-wider mb-1">
+                End time
+              </span>
+              <span className="text-sm lg:text-xl font-bold text-foreground">
+                {formatTime(endTime)}
+              </span>
             </div>
           </div>
         </div>
 
         {/* Right Side: Timetable Grid */}
-        <div className="flex flex-col xl:w-1/2 overflow-x-auto">
-          <div className="min-w-[400px]">
-            {/* Header row (Hours) */}
-            <div className="flex mb-1">
+        <div className="flex flex-col w-1/2 overflow-y-auto max-h-[350px] lg:max-h-[450px] custom-scrollbar pr-1 lg:pr-3">
+          <div className="flex gap-2 w-full justify-center lg:justify-start">
+            {/* Header column (Hours) */}
+            <div className="flex flex-col gap-1 w-12 shrink-0">
               {Array.from({ length: 24 }).map((_, h) => (
-                <div key={h} className="flex-1 text-[10px] text-muted-foreground text-center">
-                  {h % 2 === 0 ? h : ''}
+                <div
+                  key={h}
+                  className="h-10 text-[10px] font-semibold text-muted-foreground/80 text-right pr-2 flex items-center justify-end shrink-0"
+                >
+                  {h.toString().padStart(2, '0')}:00
                 </div>
               ))}
             </div>
 
             {/* Grid */}
-            <div className="flex flex-col gap-[2px]">
-              {Array.from({ length: 6 }).map((_, rowIdx) => (
-                <div key={rowIdx} className="flex gap-[2px]">
-                  {Array.from({ length: 24 }).map((_, colIdx) => {
-                    const isWorked = grid[colIdx][rowIdx];
+            <div className="flex flex-col gap-1 flex-1 max-w-[280px]">
+              {Array.from({ length: 24 }).map((_, h) => (
+                <div key={h} className="flex gap-1 h-10 shrink-0">
+                  {Array.from({ length: 6 }).map((_, m) => {
+                    const isWorked = grid[h][m];
                     return (
                       <div
-                        key={`${colIdx}-${rowIdx}`}
-                        className={`flex-1 aspect-square rounded-[2px] ${
-                          isWorked ? 'bg-primary' : 'bg-muted/50'
+                        key={`${h}-${m}`}
+                        className={`flex-1 rounded-[4px] transition-all duration-300 ${
+                          isWorked
+                            ? 'bg-primary shadow-sm scale-[1.02]'
+                            : 'bg-muted/40 hover:bg-muted/60'
                         }`}
-                        title={`${colIdx.toString().padStart(2, '0')}:${(rowIdx * 10).toString().padStart(2, '0')}`}
+                        title={`${h.toString().padStart(2, '0')}:${(m * 10).toString().padStart(2, '0')}`}
                       />
                     );
                   })}
                 </div>
               ))}
             </div>
-            <div className="text-center text-xs text-muted-foreground mt-2">
-              Each block represents 10 minutes
-            </div>
+          </div>
+          <div className="text-center text-[10px] font-medium uppercase tracking-wider text-muted-foreground mt-6 shrink-0">
+            Each block represents 10 minutes
           </div>
         </div>
       </div>
