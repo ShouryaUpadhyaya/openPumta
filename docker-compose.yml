@@ -17,7 +17,7 @@ services:
   db:
     ports:
       - '5450:5432'
-    image: postgres
+    image: postgres:16
     restart: always
     # set shared memory limit when using docker compose
     shm_size: 128mb
