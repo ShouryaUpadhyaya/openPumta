@@ -7,18 +7,18 @@ services:
       - server/.env
     environment:
       DATABASE_URL: postgresql://user:password@db:5432/openpumta
-      FRONTEND_URL: http://localhost
-      BACKEND_URL: http://localhost
-      # FRONTEND_URL: https://openpumta.com
-      # BACKEND_URL: https://openpumta.com
+      FRONTEND_URL: https://openpumta.com
+      BACKEND_URL: https://openpumta.com
       PORT: 4000
     depends_on:
       - db
-    restart: always
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:4000:4000'
 
   db:
     image: postgres:16
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_PASSWORD: password
       POSTGRES_USER: user
@@ -29,30 +29,16 @@ services:
   web:
     build:
       context: .
-      dockerfile: next-app/dockerfile
-      args:
-        NEXT_PUBLIC_BACKEND_URL: http://localhost
-        # NEXT_PUBLIC_BACKEND_URL: https://openpumta.com
-    environment:
-      NEXT_PUBLIC_BACKEND_URL: http://localhost
-      # NEXT_PUBLIC_BACKEND_URL: https://openpumta.com
+      dockerfile: next-app/Dockerfile
     env_file:
       - next-app/.env
+    environment:
+      NEXT_PUBLIC_BACKEND_URL: https://openpumta.com
     depends_on:
       - api
-    restart: always
-
-  nginx:
-    image: nginx:alpine
+    restart: unless-stopped
     ports:
-      - '80:80'
-      - '443:443'
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    depends_on:
-      - web
-      - api
-    restart: always
+      - '127.0.0.1:3000:3000'
 
 volumes:
-  postgres_data:
+  postgres_data:ostgres_data:
