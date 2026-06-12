@@ -41,4 +41,4 @@ services:
       - '127.0.0.1:3000:3000'
 
 volumes:
-  postgres_data:ostgres_data:
+  postgres_data:
