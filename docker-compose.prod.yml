@@ -8,9 +8,9 @@ services:
     environment:
       DATABASE_URL: postgresql://user:password@db:5432/openpumta
       FRONTEND_URL: http://localhost
-      BACKEND_URL: http://localhost/api
+      BACKEND_URL: http://localhost
       # FRONTEND_URL: https://openpumta.com
-      # BACKEND_URL: https://openpumta.com/api
+      # BACKEND_URL: https://openpumta.com
       PORT: 4000
     depends_on:
       - db
@@ -31,11 +31,11 @@ services:
       context: .
       dockerfile: next-app/dockerfile
       args:
-        NEXT_PUBLIC_BACKEND_URL: http://localhost/api
-        # NEXT_PUBLIC_BACKEND_URL: https://openpumta.com/api
+        NEXT_PUBLIC_BACKEND_URL: http://localhost
+        # NEXT_PUBLIC_BACKEND_URL: https://openpumta.com
     environment:
-      NEXT_PUBLIC_BACKEND_URL: http://localhost/api
-      # NEXT_PUBLIC_BACKEND_URL: https://openpumta.com/api
+      NEXT_PUBLIC_BACKEND_URL: http://localhost
+      # NEXT_PUBLIC_BACKEND_URL: https://openpumta.com
     env_file:
       - next-app/.env
     depends_on:
