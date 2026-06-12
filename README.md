@@ -9,7 +9,7 @@ It combines Pomodoro focus tracking, subject-wise analytics, habit tracking, dai
 
 ## Live Demo
 
-[https://open-pumta.vercel.app/](https://open-pumta.vercel.app/)
+[https://openpumta.com/](https://openpumta.com/)
 
 ## Why openPumta?
 
