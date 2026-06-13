@@ -25,7 +25,7 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       callbackURL:
-        process.env.NODE_ENV == 'development'
+        process.env.NODE_ENV === 'development'
           ? `${backendUrl}/api/auth/google/callback`
           : `${backendUrl}/auth/google/callback`,
       passReqToCallback: true,

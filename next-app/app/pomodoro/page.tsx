@@ -146,16 +146,15 @@ function PomodoroPage() {
 
   return (
     <section className="flex flex-col justify-between items-center h-[calc(100dvh-4rem)] lg:h-screen w-full p-4 md:p-6 lg:p-8 relative overflow-hidden bg-background">
-      {/* Header Bar */}
       <div className="w-full max-w-md flex items-center justify-center px-4 py-2 shrink-0">
         {runningSubject && (
-          <h1 className="text-lg sm:text-2xl  font-bold tracking-tight text-center truncate mx-2 text-foreground">
+          <h1 className="text-xl sm:text-2xl  font-bold tracking-tight text-center truncate mx-2 text-foreground">
             {runningSubject.name}
           </h1>
         )}
       </div>
 
-      <div className="flex-1 flex flex-col justify-center items-center w-full max-w-lg px-4 md:px-10 gap-2 overflow-hidden">
+      <div className="flex-1 flex flex-col justify-center items-center w-full px-4 md:px-10 gap-2 overflow-hidden">
         <ClockCircle
           percent={cyclePercent}
           size="lg"
