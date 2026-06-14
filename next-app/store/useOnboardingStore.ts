@@ -9,6 +9,12 @@ export interface GettingStartedTask {
   completed: boolean;
 }
 
+export interface DemoDataIds {
+  subjects: number[];
+  habits: number[];
+  spaces: number[];
+}
+
 interface OnboardingState {
   // Has the user seen the onboarding modal?
   hasSeenOnboarding: boolean;
@@ -18,12 +24,18 @@ interface OnboardingState {
   gettingStartedDismissed: boolean;
   // Track individual getting-started checklist items
   gettingStartedTasks: GettingStartedTask[];
+  // Track if confetti was fired
+  hasSeenConfetti: boolean;
+  // Track temporarily generated demo data during the tour
+  demoDataIds: DemoDataIds | null;
 
   // Actions
   markOnboardingComplete: (choice: OnboardingChoice) => void;
   dismissGettingStarted: () => void;
   completeTask: (id: GettingStartedTask['id']) => void;
   resetOnboarding: () => void;
+  markConfettiSeen: () => void;
+  setDemoDataIds: (ids: DemoDataIds | null) => void;
 }
 
 const DEFAULT_TASKS: GettingStartedTask[] = [
@@ -40,6 +52,8 @@ export const useOnboardingStore = create<OnboardingState>()(
       onboardingChoice: null,
       gettingStartedDismissed: false,
       gettingStartedTasks: DEFAULT_TASKS,
+      hasSeenConfetti: false,
+      demoDataIds: null,
 
       markOnboardingComplete: (choice) =>
         set({ hasSeenOnboarding: true, onboardingChoice: choice }),
@@ -53,12 +67,17 @@ export const useOnboardingStore = create<OnboardingState>()(
           ),
         })),
 
+      markConfettiSeen: () => set({ hasSeenConfetti: true }),
+      setDemoDataIds: (ids) => set({ demoDataIds: ids }),
+
       resetOnboarding: () =>
         set({
           hasSeenOnboarding: false,
           onboardingChoice: null,
           gettingStartedDismissed: false,
           gettingStartedTasks: DEFAULT_TASKS,
+          hasSeenConfetti: false,
+          demoDataIds: null,
         }),
     }),
     {

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { X } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useOnboardingStore } from '@/store/useOnboardingStore';
 import { ONBOARDING_SLIDES } from './onboarding-content';
@@ -12,27 +12,61 @@ import { OnboardingSlidePanel } from './onboarding-slide';
 import { OnboardingTourCard } from './onboarding-tour-card';
 import { OnboardingSpotlight } from './onboarding-spotlight';
 import { OnboardingCompletion } from './onboarding-completion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { generateDemoData, removeDemoData } from './demo-data-generator';
 
 const TOTAL = ONBOARDING_SLIDES.length;
 
 export function OnboardingModal() {
   const router = useRouter();
-  const { hasSeenOnboarding, markOnboardingComplete } = useOnboardingStore();
+  const { hasSeenOnboarding, markOnboardingComplete, demoDataIds, setDemoDataIds } =
+    useOnboardingStore();
 
   const [slideIndex, setSlideIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const [showCompletion, setShowCompletion] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const modalRef = useRef<HTMLDivElement>(null);
   const firstFocusableRef = useRef<HTMLButtonElement>(null);
+  const generationAttempted = useRef(false);
 
   // Hydration guard — deferred to avoid set-state-in-effect lint rule
   useEffect(() => {
     const id = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(id);
   }, []);
+
+  // ── Auto-generate temporary demo data for the tour ────────────────────────
+  useEffect(() => {
+    if (!mounted || hasSeenOnboarding || demoDataIds || generationAttempted.current) return;
+    generationAttempted.current = true;
+    requestAnimationFrame(() => setIsGenerating(true));
+    generateDemoData()
+      .then((ids) => {
+        setDemoDataIds(ids);
+        setIsGenerating(false);
+      })
+      .catch(() => {
+        setIsGenerating(false);
+      });
+  }, [mounted, hasSeenOnboarding, demoDataIds, setDemoDataIds]);
+
+  // ── Cleanup temporary demo data ───────────────────────────────────────────
+  const cleanupDemoData = useCallback(async () => {
+    if (demoDataIds) {
+      const ids = demoDataIds;
+      setDemoDataIds(null); // Clear immediately to prevent double-calls
+      await removeDemoData(ids);
+    }
+  }, [demoDataIds, setDemoDataIds]);
+
+  // Remove data when reaching the last slide
+  useEffect(() => {
+    if (slideIndex >= TOTAL - 1) {
+      cleanupDemoData();
+    }
+  }, [slideIndex, cleanupDemoData]);
 
   const currentSlide = ONBOARDING_SLIDES[slideIndex];
   const isFullMode = currentSlide?.mode === 'full' || showCompletion;
@@ -66,18 +100,19 @@ export function OnboardingModal() {
 
   // ── Keyboard navigation ────────────────────────────────────────────────────
   const handleSkip = useCallback(() => {
+    cleanupDemoData();
     markOnboardingComplete('fresh');
-  }, [markOnboardingComplete]);
+  }, [markOnboardingComplete, cleanupDemoData]);
 
   const handleNext = useCallback(() => {
-    if (showCompletion) return;
+    if (showCompletion || isGenerating) return;
     if (slideIndex === TOTAL - 1) {
       setShowCompletion(true);
       return;
     }
     setDirection(1);
     setSlideIndex((i) => Math.min(i + 1, TOTAL - 1));
-  }, [slideIndex, showCompletion]);
+  }, [slideIndex, showCompletion, isGenerating]);
 
   const handlePrev = useCallback(() => {
     if (showCompletion) {
@@ -213,11 +248,21 @@ export function OnboardingModal() {
                     <Button
                       size="sm"
                       onClick={handleNext}
+                      disabled={isGenerating}
                       aria-label={currentSlide.cta}
                       className="gap-1.5 bg-primary hover:bg-primary/90 min-w-[110px]"
                     >
-                      {currentSlide.cta}
-                      <ChevronRight className="h-4 w-4" />
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Loading...
+                        </>
+                      ) : (
+                        <>
+                          {currentSlide.cta}
+                          <ChevronRight className="h-4 w-4" />
+                        </>
+                      )}
                     </Button>
                   </div>
                 )}

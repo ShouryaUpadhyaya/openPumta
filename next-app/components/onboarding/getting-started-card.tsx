@@ -14,8 +14,10 @@ export function GettingStartedCard() {
     onboardingChoice,
     gettingStartedDismissed,
     gettingStartedTasks,
+    hasSeenConfetti,
     completeTask,
     dismissGettingStarted,
+    markConfettiSeen,
   } = useOnboardingStore();
 
   const confettiFired = useRef(false);
@@ -53,8 +55,9 @@ export function GettingStartedCard() {
   const allDone = gettingStartedTasks.every((t) => t.completed);
 
   useEffect(() => {
-    if (!allDone || confettiFired.current) return;
+    if (!allDone || hasSeenConfetti || confettiFired.current) return;
     confettiFired.current = true;
+    markConfettiSeen();
 
     confetti({
       particleCount: 120,
@@ -66,7 +69,7 @@ export function GettingStartedCard() {
     // Auto-dismiss after 4s
     const timer = setTimeout(() => dismissGettingStarted(), 4000);
     return () => clearTimeout(timer);
-  }, [allDone, dismissGettingStarted]);
+  }, [allDone, hasSeenConfetti, markConfettiSeen, dismissGettingStarted]);
 
   // Only show for "fresh" starters who haven't dismissed
   const shouldShow = onboardingChoice === 'fresh' && !gettingStartedDismissed && !allDone;

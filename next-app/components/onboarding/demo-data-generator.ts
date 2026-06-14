@@ -1,10 +1,13 @@
 import api from '@/lib/api';
+import { DemoDataIds } from '@/store/useOnboardingStore';
 
 /**
  * Seeds realistic demo data for new users who choose "Use Demo Data".
- * All data can be edited or deleted later.
+ * Returns the IDs of the generated data so it can be cleaned up if needed.
  */
-export async function generateDemoData(): Promise<void> {
+export async function generateDemoData(): Promise<DemoDataIds> {
+  const generatedIds: DemoDataIds = { subjects: [], habits: [], spaces: [] };
+
   // ─── 1. Subjects ────────────────────────────────────────────────────────────
   const subjectDefs = [
     { name: 'Data Structures', color: '#f97316', goalWorkSecs: 7200 },
@@ -17,6 +20,7 @@ export async function generateDemoData(): Promise<void> {
     try {
       const { data } = await api.post('/subject', def);
       subjects.push(data.data);
+      generatedIds.subjects.push(data.data.id);
     } catch (e) {
       console.warn('Demo: failed to create subject', def.name, e);
     }
@@ -46,7 +50,8 @@ export async function generateDemoData(): Promise<void> {
 
   for (const def of habitDefs) {
     try {
-      await api.post('/habits', def);
+      const { data } = await api.post('/habits', def);
+      generatedIds.habits.push(data.data.id);
     } catch (e) {
       console.warn('Demo: failed to create habit', def.name, e);
     }
@@ -99,6 +104,7 @@ export async function generateDemoData(): Promise<void> {
     try {
       const { data: spaceData } = await api.post('/spaces', ws.space);
       const spaceId = spaceData.data.id;
+      generatedIds.spaces.push(spaceId);
 
       for (let ci = 0; ci < ws.columns.length; ci++) {
         const col = ws.columns[ci];
@@ -151,6 +157,39 @@ export async function generateDemoData(): Promise<void> {
       // depends on backend support — silently skipped if not available
     } catch (e) {
       console.warn('Demo: failed to create daily rating', e);
+    }
+  }
+
+  return generatedIds;
+}
+
+export async function removeDemoData(ids: DemoDataIds | null): Promise<void> {
+  if (!ids) return;
+
+  // We delete the entities in reverse order of creation or dependency
+  // Spaces usually cascade delete columns and blocks.
+  // Ratings we might not be able to easily delete without a specific endpoint, so we skip for now.
+  for (const id of ids.spaces) {
+    try {
+      await api.delete(`/spaces/${id}`);
+    } catch (e) {
+      console.warn('Demo: failed to delete space', id, e);
+    }
+  }
+
+  for (const id of ids.habits) {
+    try {
+      await api.delete(`/habits/${id}`);
+    } catch (e) {
+      console.warn('Demo: failed to delete habit', id, e);
+    }
+  }
+
+  for (const id of ids.subjects) {
+    try {
+      await api.delete(`/subject/${id}`);
+    } catch (e) {
+      console.warn('Demo: failed to delete subject', id, e);
     }
   }
 }
