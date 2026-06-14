@@ -23,6 +23,7 @@ export default function Habits() {
   const completedHabitIds = new Set(todayStats.map((log: any) => log.habitId));
 
   const badDayPlanHabitIds = new Set(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     todayStats.filter((log: any) => log.isBadDayPlan).map((log: any) => log.habitId),
   );
   const isPerfectDay = completedHabitIds.size >= 4;

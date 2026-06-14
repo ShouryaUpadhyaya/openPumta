@@ -15,12 +15,13 @@ import { Habit } from '@/hooks/useHabits';
 import { useAuthStore } from '@/store/useAuthStore';
 import { ColorPicker } from './ColorPicker';
 import { HabitSelector } from './HabitSelector';
-
+import { cn } from '@/lib/utils';
 interface AddSubjectDialogProps {
   habits: Habit[];
+  empty: boolean;
 }
 
-export function AddSubjectDialog({ habits }: AddSubjectDialogProps) {
+export function AddSubjectDialog({ habits, empty }: AddSubjectDialogProps) {
   const { user } = useAuthStore();
   const createSubject = useCreateSubject();
 
@@ -51,10 +52,17 @@ export function AddSubjectDialog({ habits }: AddSubjectDialogProps) {
     setIsOpen(false);
   };
 
+  console.log('empty ', empty);
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="rounded-xl bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90 font-medium">
+        <Button
+          className={cn(
+            'rounded-xl bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90 font-medium',
+            empty && 'animate-pulse',
+          )}
+        >
           + Add Subject
         </Button>
       </DialogTrigger>
