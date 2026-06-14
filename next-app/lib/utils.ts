@@ -24,3 +24,11 @@ export function ConvertTimerToSecs({ hr, min, sec }: { hr: number; min: number; 
   return hr * 3600 + min * 60 + sec;
 }
 export const pad = (n: number) => String(n).padStart(2, '0');
+
+export function getLocalIsoDate(date: Date | string | number = new Date()): string {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = pad(d.getMonth() + 1);
+  const day = pad(d.getDate());
+  return `${year}-${month}-${day}`;
+}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Flame, BatteryWarning, BookOpen } from 'lucide-react';
 import { TimelineItem } from '@/hooks/useStats';
 
@@ -22,6 +22,19 @@ export default function DailySummaryCard({
     month: 'short',
     day: 'numeric',
   });
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      // Row height is h-10 (40px) + gap-1 (4px) = 44px
+      const currentHour = new Date().getHours();
+      const rowHeight = 44;
+      const scrollPos =
+        currentHour * rowHeight - scrollRef.current.clientHeight / 2 + rowHeight / 2;
+      scrollRef.current.scrollTo({ top: Math.max(0, scrollPos), behavior: 'smooth' });
+    }
+  }, [selectedDate]);
 
   // Calculate dynamic avatar state
   let avatarState = 'standard';
@@ -152,7 +165,10 @@ export default function DailySummaryCard({
         </div>
 
         {/* Right Side: Timetable Grid */}
-        <div className="flex flex-col w-1/2 overflow-y-auto max-h-[350px] lg:max-h-[450px] custom-scrollbar pr-1 lg:pr-3">
+        <div
+          ref={scrollRef}
+          className="flex flex-col w-1/2 overflow-y-auto max-h-[350px] lg:max-h-[450px] custom-scrollbar pr-1 lg:pr-3"
+        >
           <div className="flex gap-2 w-full justify-center lg:justify-start">
             {/* Header column (Hours) */}
             <div className="flex flex-col gap-1 w-12 shrink-0">

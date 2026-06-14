@@ -16,6 +16,7 @@ import FocusHabitsCorrelation from './deep-dive/FocusHabitsCorrelation';
 import GoalRealityBars from './deep-dive/GoalRealityBars';
 import BurnoutRiskAssessment from './deep-dive/BurnoutRiskAssessment';
 import AdvancedPeriodTrends from './deep-dive/AdvancedPeriodTrends';
+import { getLocalIsoDate } from '@/lib/utils';
 
 interface DeepDiveContainerProps {
   focusLogs: { date: string; focusTimeSecs: number }[];
@@ -69,7 +70,7 @@ export default function DeepDiveContainer({
     });
 
     for (let i = 0; i < 30; i++) {
-      const dStr = d.toISOString().split('T')[0];
+      const dStr = getLocalIsoDate(d);
       const log = focusLogs.find((l) => l.date === dStr);
       const focusHours = log ? log.focusTimeSecs / 3600 : 0;
       const hData = habitMap.get(dStr) || { total: 0, done: 0 };

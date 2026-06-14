@@ -1,3 +1,4 @@
+import { getLocalIsoDate } from '@/lib/utils';
 // ─── Pure metric computation functions ──────────────────────────────────────
 // No side effects, no React, no API calls. Just math on data.
 
@@ -42,7 +43,7 @@ export function computeSubjectDistribution(subjects: any[]) {
 
 export function computeGoalProgress(subjects: any[]) {
   if (!subjects?.length) return [];
-  const today = new Date().toISOString().split('T')[0];
+  const today = getLocalIsoDate(new Date());
   return subjects
     .filter((s: any) => s.goalWorkSecs > 0)
     .map((s: any) => {
@@ -68,13 +69,11 @@ export function computeHabitStreaks(habits: any[]) {
   if (!habits?.length) return [];
   return habits.map((h: any) => {
     const logs = (h.log || []).filter((l: any) => !l.deleted);
-    const doneDays = new Set(
-      logs.map((l: any) => new Date(l.startedAt).toISOString().split('T')[0]),
-    );
+    const doneDays = new Set(logs.map((l: any) => getLocalIsoDate(new Date(l.startedAt))));
     let streak = 0;
     const d = new Date();
     d.setHours(0, 0, 0, 0);
-    while (doneDays.has(d.toISOString().split('T')[0])) {
+    while (doneDays.has(getLocalIsoDate(d))) {
       streak++;
       d.setDate(d.getDate() - 1);
     }
@@ -103,7 +102,7 @@ export function computeBounceBacks(habits: any[]) {
 
     // Sort logs by date ascending
     const sortedDates = [
-      ...new Set<string>(logs.map((l: any) => new Date(l.startedAt).toISOString().split('T')[0])),
+      ...new Set<string>(logs.map((l: any) => getLocalIsoDate(new Date(l.startedAt)))),
     ].sort();
 
     const firstDate = new Date(sortedDates[0]);
@@ -119,7 +118,7 @@ export function computeBounceBacks(habits: any[]) {
     let wasMissedYesterday = false;
 
     while (curDate <= today) {
-      const dStr = curDate.toISOString().split('T')[0];
+      const dStr = getLocalIsoDate(curDate);
       const isCompleted = dateSet.has(dStr);
 
       if (!isCompleted) {
@@ -263,7 +262,7 @@ export function computeSessionStats(subjects: any[]) {
   const longest = Math.max(...allLogs.map((l) => l.durationSecs)) / 60;
   const byDay: Record<string, number> = {};
   allLogs.forEach((l) => {
-    const k = l.start.toISOString().split('T')[0];
+    const k = getLocalIsoDate(l.start);
     byDay[k] = (byDay[k] || 0) + 1;
   });
   const sessionsPerDay = Object.entries(byDay)
@@ -328,13 +327,13 @@ export function computeFocusStreak(subjects: any[]) {
     (s.subjectLogs || [])
       .filter((l: any) => l.endedAt)
       .forEach((l: any) => {
-        allDays.add(new Date(l.startedAt).toISOString().split('T')[0]);
+        allDays.add(getLocalIsoDate(new Date(l.startedAt)));
       });
   });
   let streak = 0;
   const d = new Date();
   d.setHours(0, 0, 0, 0);
-  while (allDays.has(d.toISOString().split('T')[0])) {
+  while (allDays.has(getLocalIsoDate(d))) {
     streak++;
     d.setDate(d.getDate() - 1);
   }
@@ -348,7 +347,7 @@ export function computeImplicitBreaks(subjects: any[]) {
     (s.subjectLogs || [])
       .filter((l: any) => l.endedAt)
       .forEach((l: any) => {
-        const key = new Date(l.startedAt).toISOString().split('T')[0];
+        const key = getLocalIsoDate(new Date(l.startedAt));
         if (!logsByDay[key]) logsByDay[key] = [];
         logsByDay[key].push({
           start: new Date(l.startedAt).getTime(),
@@ -379,7 +378,7 @@ export function computeContextSwitching(subjects: any[]) {
     (s.subjectLogs || [])
       .filter((l: any) => l.endedAt)
       .forEach((l: any) => {
-        const k = new Date(l.startedAt).toISOString().split('T')[0];
+        const k = getLocalIsoDate(new Date(l.startedAt));
         countByDay[k] = (countByDay[k] || 0) + 1;
       });
   });

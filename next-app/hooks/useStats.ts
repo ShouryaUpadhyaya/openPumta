@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
+import { getLocalIsoDate } from '@/lib/utils';
 
 export interface TimelineItem {
   id: string;
@@ -75,7 +76,7 @@ export const useHabitsWithLogs21 = () => {
   from.setDate(from.getDate() - 21);
 
   return useQuery({
-    queryKey: ['habitsWithLogs', from.toISOString().split('T')[0]],
+    queryKey: ['habitsWithLogs', getLocalIsoDate(from)],
     queryFn: async () => {
       const { data } = await api.get(`/habits/logs`, {
         params: { from: from.toISOString() },

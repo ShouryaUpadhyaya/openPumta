@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { Habit } from '@/types/habit';
+import { getLocalIsoDate } from '@/lib/utils';
 
 interface ConsistencyTrackerProps {
   habits: Habit[];
@@ -28,7 +29,7 @@ export default function ConsistencyTracker({ habits, selectedDate }: Consistency
 
     const d = new Date(start);
     while (d <= end) {
-      arr.push(d.toISOString().split('T')[0]);
+      arr.push(getLocalIsoDate(d));
       d.setDate(d.getDate() + 1);
     }
     return arr;
@@ -44,7 +45,7 @@ export default function ConsistencyTracker({ habits, selectedDate }: Consistency
       const completionDates = new Map<string, boolean>();
       habit.log?.forEach((l) => {
         if (l.deleted) return;
-        const dateStr = new Date(l.startedAt).toISOString().split('T')[0];
+        const dateStr = getLocalIsoDate(new Date(l.startedAt));
         completionDates.set(dateStr, l.isBadDayPlan || false);
       });
 
@@ -108,7 +109,7 @@ export default function ConsistencyTracker({ habits, selectedDate }: Consistency
                     const dayNum = dateObj.getDate();
                     const done = habit.completionDates.has(dateStr);
                     const isBadDayPlan = done ? habit.completionDates.get(dateStr) : false;
-                    const isToday = dateStr === new Date().toISOString().split('T')[0];
+                    const isToday = dateStr === getLocalIsoDate(new Date());
 
                     return (
                       <div

@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import type { Subject, SubjectLog } from '@/types/subject';
 import type { ToDo } from '@/types/todo';
 import type { Habit } from '@/types/habit';
 import type { DailyRating } from '@/types/rating';
 import { TimelineItem } from '@/hooks/useStats';
+import { useTimerStore } from '@/store/useTimerStore';
 import {
   computeFocusTrend,
   computeFocusStreak,
@@ -24,6 +25,7 @@ import MoodOverviewPanel from './main/MoodOverviewPanel';
 import TasksProgressRing from './main/TasksProgressRing';
 import GoalRealityBars from './deep-dive/GoalRealityBars';
 import AdvancedPeriodTrends from './deep-dive/AdvancedPeriodTrends';
+import { getLocalIsoDate } from '@/lib/utils';
 
 interface MainDashboardContainerProps {
   selectedDate: Date;
@@ -46,6 +48,49 @@ export default function MainDashboardContainer({
   todos,
   habitsData,
 }: MainDashboardContainerProps) {
+  const store = useTimerStore();
+  const [localNow, setLocalNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (store.phase === 'work' && store.running) {
+      const interval = setInterval(() => setLocalNow(Date.now()), 10000);
+      return () => clearInterval(interval);
+    }
+  }, [store.phase, store.running]);
+
+  const activeTimelineItem = useMemo(() => {
+    if (store.phase === 'work' && store.running && store.activeSubjectId && store.phaseStartedAt) {
+      const isToday = getLocalIsoDate(new Date()) === getLocalIsoDate(selectedDate);
+      if (!isToday) return null;
+
+      const subject = subjects.find((s) => s.id === store.activeSubjectId);
+      return {
+        id: 'active-timer',
+        type: 'subject' as const,
+        name: subject?.name || 'Active Focus',
+        startedAt: new Date(store.phaseStartedAt).toISOString(),
+        endedAt: new Date(localNow).toISOString(),
+        duration: Math.floor((localNow - store.phaseStartedAt) / 1000),
+      };
+    }
+    return null;
+  }, [
+    store.phase,
+    store.running,
+    store.activeSubjectId,
+    store.phaseStartedAt,
+    localNow,
+    selectedDate,
+    subjects,
+  ]);
+
+  const augmentedTimeline = useMemo(() => {
+    if (activeTimelineItem) {
+      return [...timeline, activeTimelineItem];
+    }
+    return timeline;
+  }, [timeline, activeTimelineItem]);
+
   const focusTrend = useMemo(() => computeFocusTrend(focusLogs), [focusLogs]);
   const focusStreak = useMemo(() => computeFocusStreak(subjects), [subjects]);
 
@@ -63,15 +108,28 @@ export default function MainDashboardContainer({
         dayData[s.name] = (dayData[s.name] || 0) + dur;
       });
     });
+
+    if (activeTimelineItem) {
+      const dStr = getLocalIsoDate(new Date(activeTimelineItem.startedAt));
+      if (!map.has(dStr)) map.set(dStr, {});
+      const dayData = map.get(dStr)!;
+      dayData[activeTimelineItem.name] =
+        (dayData[activeTimelineItem.name] || 0) + activeTimelineItem.duration / 3600;
+    }
+
     return map;
-  }, [subjects]);
+  }, [subjects, activeTimelineItem]);
 
   // C2: Daily Hours for selected date
   const dailyHours = useMemo(() => {
-    const dStr = selectedDate.toISOString().split('T')[0];
+    const dStr = getLocalIsoDate(selectedDate);
     const item = focusLogs.find((l) => l.date === dStr);
-    return item ? item.focusTimeSecs / 3600 : 0;
-  }, [focusLogs, selectedDate]);
+    let hours = item ? item.focusTimeSecs / 3600 : 0;
+    if (activeTimelineItem) {
+      hours += activeTimelineItem.duration / 3600;
+    }
+    return hours;
+  }, [focusLogs, selectedDate, activeTimelineItem]);
 
   // C3: Weekly Radar Data
   const weeklyRadarData = useMemo(() => {
@@ -80,7 +138,7 @@ export default function MainDashboardContainer({
     const d = new Date(selectedDate);
     d.setDate(d.getDate() - 6);
     for (let i = 0; i < 7; i++) {
-      const dStr = d.toISOString().split('T')[0];
+      const dStr = getLocalIsoDate(d);
       const log = focusLogs.find((l) => l.date === dStr);
       data.push({
         day: dayNames[d.getDay()],
@@ -97,7 +155,7 @@ export default function MainDashboardContainer({
     const d = new Date(selectedDate);
     d.setDate(d.getDate() - 20);
     for (let i = 0; i < 21; i++) {
-      const dStr = d.toISOString().split('T')[0];
+      const dStr = getLocalIsoDate(d);
       const log = focusLogs.find((l) => l.date === dStr);
       data.push({
         date: dStr,
@@ -114,7 +172,7 @@ export default function MainDashboardContainer({
     const d = new Date();
     d.setDate(d.getDate() - 20);
     for (let i = 0; i < 21; i++) {
-      const dStr = d.toISOString().split('T')[0];
+      const dStr = getLocalIsoDate(d);
       const sMap = dailySubjectMap.get(dStr) || {};
       data.push({ date: dStr, ...sMap });
       d.setDate(d.getDate() + 1);
@@ -124,7 +182,7 @@ export default function MainDashboardContainer({
 
   // C6: Subject Donut Chart Data
   const selectedDateSubjectData = useMemo(() => {
-    const dStr = selectedDate.toISOString().split('T')[0];
+    const dStr = getLocalIsoDate(selectedDate);
     const sMap = dailySubjectMap.get(dStr) || {};
     return Object.entries(sMap).map(([name, value]) => {
       const subj = subjects.find((s) => s.name === name);
@@ -137,7 +195,7 @@ export default function MainDashboardContainer({
     let brk = 0;
     let other = 0;
 
-    const t = [...timeline].sort(
+    const t = [...augmentedTimeline].sort(
       (a, b) => new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime(),
     );
 
@@ -152,7 +210,7 @@ export default function MainDashboardContainer({
       }
     }
     return { studySecs: study, breakSecs: brk, otherSecs: other };
-  }, [timeline]);
+  }, [augmentedTimeline]);
   const goalRealityData = useMemo(() => {
     return computeGoalProgress(subjects).map((g) => ({
       subject: g.name,
@@ -163,7 +221,7 @@ export default function MainDashboardContainer({
   }, [subjects]);
   // C7: Session Stats Panel
   const sessionStats = useMemo(() => {
-    const subjLogs = timeline.filter((t) => t.type === 'subject' && t.endedAt);
+    const subjLogs = augmentedTimeline.filter((t) => t.type === 'subject' && t.endedAt);
     const avg = subjLogs.length
       ? subjLogs.reduce((s, l) => s + l.duration, 0) / subjLogs.length
       : 0;
@@ -183,11 +241,11 @@ export default function MainDashboardContainer({
       },
       { label: 'Context Switches', value: `${Math.max(0, subjLogs.length - 1)}` },
     ];
-  }, [timeline, focusStreak, breakSecs]);
+  }, [augmentedTimeline, focusStreak, breakSecs]);
 
   // C8: Mood Overview
   const moodData = useMemo(() => {
-    const dStr = selectedDate.toISOString().split('T')[0];
+    const dStr = getLocalIsoDate(selectedDate);
     const todayRating = ratingStats?.ratings?.find((r) => r.date.toString().startsWith(dStr));
     return {
       rating: todayRating?.rating || null,
@@ -198,7 +256,7 @@ export default function MainDashboardContainer({
 
   // C9: Tasks Progress Ring
   const taskStats = useMemo(() => {
-    const dStr = selectedDate.toISOString().split('T')[0];
+    const dStr = getLocalIsoDate(selectedDate);
     const todayTodos = todos.filter(
       (t) => t.dueDate?.toString().startsWith(dStr) || t.createdAt?.toString().startsWith(dStr),
     );
@@ -223,7 +281,7 @@ export default function MainDashboardContainer({
         <div className="lg:col-span-7">
           <DailySummaryCard
             selectedDate={selectedDate}
-            timeline={timeline}
+            timeline={augmentedTimeline}
             dailyHours={dailyHours}
             avgDailyHours={focusTrend.avgDaily / 3600}
             currentStreak={focusStreak}

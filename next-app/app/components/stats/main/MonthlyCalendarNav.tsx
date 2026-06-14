@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { getLocalIsoDate } from '@/lib/utils';
 
 interface MonthlyCalendarNavProps {
   selectedDate: Date;
@@ -64,7 +65,7 @@ export default function MonthlyCalendarNav({
     let total = 0;
     days.forEach((day) => {
       if (!day) return;
-      const dStr = day.toISOString().split('T')[0];
+      const dStr = getLocalIsoDate(day);
       total += focusMap.get(dStr) || 0;
     });
     return total;
@@ -107,10 +108,10 @@ export default function MonthlyCalendarNav({
         {days.map((day, idx) => {
           if (!day) return <div key={`empty-${idx}`} className="h-14" />;
 
-          const dStr = day.toISOString().split('T')[0];
+          const dStr = getLocalIsoDate(day);
           const hours = focusMap.get(dStr) || 0;
-          const isSelected = dStr === selectedDate.toISOString().split('T')[0];
-          const isToday = dStr === new Date().toISOString().split('T')[0];
+          const isSelected = dStr === getLocalIsoDate(selectedDate);
+          const isToday = dStr === getLocalIsoDate(new Date());
 
           const hrs = Math.floor(hours);
           const mins = Math.round((hours - hrs) * 60);

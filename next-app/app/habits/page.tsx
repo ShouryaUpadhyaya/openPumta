@@ -49,6 +49,7 @@ import {
 import { toast } from 'sonner';
 import { SystemGuideModal } from './components/SystemGuideModal';
 import { HabitHeatmapCard } from './components/HabitHeatmapCard';
+import { getLocalIsoDate } from '@/lib/utils';
 
 interface Habit {
   id: number;
@@ -248,7 +249,7 @@ export default function HabitsPage() {
       const allDates: string[] = [];
       habitsWithLogs?.forEach((h: DetailedHabit) => {
         h.log?.forEach((l: HabitLog) => {
-          allDates.push(new Date(l.startedAt).toISOString().split('T')[0]);
+          allDates.push(getLocalIsoDate(new Date(l.startedAt)));
         });
       });
       if (allDates.length === 0) {
@@ -256,7 +257,7 @@ export default function HabitsPage() {
         for (let i = 20; i >= 0; i--) {
           const d = new Date();
           d.setDate(d.getDate() - i);
-          arr.push(d.toISOString().split('T')[0]);
+          arr.push(getLocalIsoDate(d));
         }
         return arr;
       }
@@ -266,7 +267,7 @@ export default function HabitsPage() {
       const today = new Date();
       today.setHours(23, 59, 59, 999);
       while (cur <= today) {
-        arr.push(cur.toISOString().split('T')[0]);
+        arr.push(getLocalIsoDate(cur));
         cur = new Date(cur);
         cur.setDate(cur.getDate() + 1);
       }
@@ -276,7 +277,7 @@ export default function HabitsPage() {
     for (let i = filterRange - 1; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      arr.push(d.toISOString().split('T')[0]);
+      arr.push(getLocalIsoDate(d));
     }
     return arr;
   }, [filterRange, habitsWithLogs]);
@@ -557,16 +558,13 @@ export default function HabitsPage() {
             const completionDates = new Map<string, boolean>();
 
             detailedHabit?.log?.forEach((l: HabitLog) => {
-              const dateStr = new Date(l.startedAt).toISOString().split('T')[0];
+              const dateStr = getLocalIsoDate(new Date(l.startedAt));
               completionDates.set(dateStr, l.isBadDayPlan || false);
             });
 
             if (isCompletedToday) {
               const todayLog = todayStats.find((l: HabitLog) => l.habitId === habit.id);
-              completionDates.set(
-                new Date().toISOString().split('T')[0],
-                todayLog?.isBadDayPlan || false,
-              );
+              completionDates.set(getLocalIsoDate(new Date()), todayLog?.isBadDayPlan || false);
             }
 
             const linkedSubject = subjects?.find((s) => s.id === habit.subjectId);

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Pencil, Trash2 } from 'lucide-react';
 import { HabitDifficulty } from '@/hooks/useHabits';
+import { getLocalIsoDate } from '@/lib/utils';
 
 interface HabitHeatmapCardProps {
   habit: any;
@@ -130,7 +131,7 @@ export function HabitHeatmapCard({
           {daysArray.map((dateStr, i) => {
             const done = completionDates.has(dateStr);
             const isBadDayPlan = done ? completionDates.get(dateStr) : false;
-            const isToday = dateStr === new Date().toISOString().split('T')[0];
+            const isToday = dateStr === getLocalIsoDate(new Date());
             return (
               <div
                 key={i}

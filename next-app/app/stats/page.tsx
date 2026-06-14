@@ -14,12 +14,13 @@ import MainDashboardContainer from '../components/stats/MainDashboardContainer';
 import DeepDiveContainer from '../components/stats/DeepDiveContainer';
 
 import { BarChart3, ChevronDown, ChevronUp } from 'lucide-react';
+import { getLocalIsoDate } from '@/lib/utils';
 
 export default function StatsPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showDeepDive, setShowDeepDive] = useState(false);
 
-  const selectedDateStr = selectedDate.toISOString().split('T')[0];
+  const selectedDateStr = getLocalIsoDate(selectedDate);
 
   const { data: statsData, isLoading: isLoading1 } = useDashboardStats();
   const { data: timeline = [], isLoading: isLoading2 } = useDailyTimeline(selectedDateStr);
