@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useChartThemeStore, CHART_THEMES } from '@/store/useChartThemeStore';
+import { useOnboardingStore } from '@/store/useOnboardingStore';
 import { ConvertSecsToTimer } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ import {
   Timer,
   Zap,
   BarChart3,
+  RotateCcw,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
@@ -187,6 +189,7 @@ function ChartThemeSection() {
 export default function SettingsPage() {
   const { user } = useAuthStore();
   const store = useTimerStore();
+  const { resetOnboarding } = useOnboardingStore();
 
   const [isSaving, setIsSaving] = useState(false);
   const [isExportingStats, setIsExportingStats] = useState(false);
@@ -479,7 +482,10 @@ export default function SettingsPage() {
         </div>
 
         {/* ── Data Export (bottom) ─────────────────────────────── */}
-        <Card className="bg-background border-border/40 shadow-sm">
+        <Card
+          className="bg-background border-border/40 shadow-sm"
+          data-tour-highlight="export-section"
+        >
           <CardHeader>
             <div className="flex items-center gap-2">
               <Database className="h-5 w-5 text-primary" />
@@ -527,6 +533,30 @@ export default function SettingsPage() {
                   Export Stats
                 </>
               )}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* ── Restart Onboarding ─────────────────────────────── */}
+        <Card className="bg-background border-border/40 shadow-sm">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <RotateCcw className="h-5 w-5 text-primary" />
+              <CardTitle>Restart Onboarding</CardTitle>
+            </div>
+            <CardDescription>
+              Launch the welcome tour again to learn about OpenPumta&apos;s philosophy.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              type="button"
+              onClick={() => resetOnboarding()}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Restart Tour
             </Button>
           </CardContent>
         </Card>

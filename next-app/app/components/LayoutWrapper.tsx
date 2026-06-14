@@ -5,6 +5,8 @@ import Navigation from '@/components/Navigation';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import { cn } from '@/lib/utils';
 
+import { OnboardingModal } from '@/components/onboarding/onboarding-modal';
+
 const emptySubscribe = () => () => {};
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
@@ -18,6 +20,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
   return (
     <div className="flex min-h-screen w-full max-w-[100vw] overflow-x-hidden">
+      <OnboardingModal />
       <Navigation mounted={isMounted} />
       <main
         className={cn(

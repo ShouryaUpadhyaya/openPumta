@@ -38,7 +38,10 @@ export default function Habits() {
   }
 
   return (
-    <section className="flex flex-col h-full p-4 overflow-hidden relative">
+    <section
+      className="flex flex-col h-full p-4 overflow-hidden relative"
+      data-tour-highlight="habits-section"
+    >
       <div className="flex justify-between items-center mb-4 shrink-0">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold">Daily Habits</h1>

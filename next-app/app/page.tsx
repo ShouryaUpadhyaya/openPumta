@@ -10,6 +10,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { LogIn, LogOut, User } from 'lucide-react';
+import { GettingStartedCard } from '@/components/onboarding/getting-started-card';
 
 export default function Home() {
   const { user, logout, loading } = useAuthStore();
@@ -96,6 +97,7 @@ export default function Home() {
           </>
         )}
       </main>
+      <GettingStartedCard />
     </div>
   );
 }

@@ -45,7 +45,10 @@ export default function StatsPage() {
   }
 
   return (
-    <main className="min-h-screen p-4 md:p-6 pb-28 max-w-[1400px] mx-auto">
+    <main
+      className="min-h-screen p-4 md:p-6 pb-28 max-w-[1400px] mx-auto"
+      data-tour-highlight="stats-page"
+    >
       <div className="flex items-center gap-3 mb-6">
         <div className="p-3 rounded-xl bg-primary/20 text-primary">
           <BarChart3 className="h-6 w-6" />

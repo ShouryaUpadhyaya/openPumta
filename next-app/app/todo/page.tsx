@@ -71,7 +71,7 @@ function WorkspaceInner() {
   const activeSpace = spaces.find((s) => s.id === activeSpaceId);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" data-tour-highlight="workspace-page">
       {/* ── Top bar: Space name + Space tabs ── */}
       <div className="flex flex-col border-b border-border/30 pb-3 pt-4 gap-3">
         {/* Space title row */}

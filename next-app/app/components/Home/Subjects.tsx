@@ -59,7 +59,7 @@ function Subjects() {
 
   console.log('empty ', Subjects.length === 0);
   return (
-    <section className="rounded-xl bg-background p-4">
+    <section className="rounded-xl bg-background p-4" data-tour-highlight="subjects-section">
       {subjectsLoading && <SubjectSkeleton />}
 
       <div className="my-4 flex items-start justify-between">
