@@ -8,7 +8,7 @@ import { getLocalIsoDate } from '@/lib/utils';
 
 interface HabitHeatmapCardProps {
   habit: any;
-  isCompletedToday: boolean;
+  isCompletedOnSelectedDate: boolean;
   completionDates: Map<string, boolean>; // date -> isBadDayPlan
   linkedSubject?: any;
   daysArray: string[];
@@ -18,6 +18,7 @@ interface HabitHeatmapCardProps {
   onDelete: (habitId: number) => void;
   onToggle: (habitId: number, isBadDayPlan: boolean) => void;
   isCompletedMinimum: boolean;
+  selectedDateStr?: string;
 }
 
 const DIFFICULTY_OPTIONS: { label: string; value: HabitDifficulty; color: string }[] = [
@@ -28,7 +29,7 @@ const DIFFICULTY_OPTIONS: { label: string; value: HabitDifficulty; color: string
 
 export function HabitHeatmapCard({
   habit,
-  isCompletedToday,
+  isCompletedOnSelectedDate,
   completionDates,
   linkedSubject,
   daysArray,
@@ -38,6 +39,7 @@ export function HabitHeatmapCard({
   onDelete,
   onToggle,
   isCompletedMinimum,
+  selectedDateStr,
 }: HabitHeatmapCardProps) {
   const getDifficultyBadge = (difficulty?: HabitDifficulty) => {
     const opt = DIFFICULTY_OPTIONS.find((d) => d.value === difficulty);
@@ -52,7 +54,9 @@ export function HabitHeatmapCard({
   return (
     <Card
       className={`transition-all group ${
-        isCompletedToday ? 'border-primary/50 bg-primary/5' : 'bg-background border-border/40'
+        isCompletedOnSelectedDate
+          ? 'border-primary/50 bg-primary/5'
+          : 'bg-background border-border/40'
       } flex flex-col`}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 pb-2">
@@ -93,7 +97,7 @@ export function HabitHeatmapCard({
               variant="outline"
               size="sm"
               onClick={() => onToggle(habit.id, true)}
-              disabled={isCompletedToday}
+              disabled={isCompletedOnSelectedDate}
               className={`h-7 px-2 text-[10px] transition-all ${
                 isCompletedMinimum
                   ? 'bg-primary/20 text-primary border-primary/30 opacity-100'
@@ -105,7 +109,7 @@ export function HabitHeatmapCard({
           )}
 
           <Checkbox
-            checked={isCompletedToday}
+            checked={isCompletedOnSelectedDate}
             onCheckedChange={() => onToggle(habit.id, false)}
             className="h-5 w-5 rounded-md mx-1"
           />
@@ -132,13 +136,18 @@ export function HabitHeatmapCard({
             const done = completionDates.has(dateStr);
             const isBadDayPlan = done ? completionDates.get(dateStr) : false;
             const isToday = dateStr === getLocalIsoDate(new Date());
+            const isSelected = dateStr === selectedDateStr;
             return (
               <div
                 key={i}
                 title={dateStr}
                 className={`aspect-square rounded-sm transition-colors ${
                   done ? (isBadDayPlan ? 'bg-primary/50' : 'bg-primary') : 'bg-muted/40'
-                } ${isToday && !done ? 'border-2 border-primary/40' : ''}`}
+                } ${isToday && !done ? 'border-2 border-primary/40' : ''} ${
+                  isSelected && !isToday
+                    ? 'ring-2 ring-primary/50 ring-offset-1 ring-offset-background'
+                    : ''
+                }`}
               />
             );
           })}

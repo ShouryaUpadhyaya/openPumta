@@ -274,8 +274,12 @@ const getHabitDashboardData = asyncHandler(async (req: Request, res: Response) =
   }
 
   const userIdNum = Number(userId);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const { date } = req.query;
+
+  const targetDate = date ? new Date(date as string) : new Date();
+  targetDate.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(targetDate);
+  endOfDay.setHours(23, 59, 59, 999);
 
   const habits = await prisma.habit.findMany({
     where: {
@@ -294,7 +298,8 @@ const getHabitDashboardData = asyncHandler(async (req: Request, res: Response) =
         deleted: false,
       },
       startedAt: {
-        gte: today,
+        gte: targetDate,
+        lte: endOfDay,
       },
       deleted: false,
     },
@@ -332,7 +337,7 @@ const getHabitDashboardData = asyncHandler(async (req: Request, res: Response) =
 
 const toggleHabitCompletion = asyncHandler(async (req: Request, res: Response) => {
   const { habitId } = req.params;
-  const { isBadDayPlan } = req.body;
+  const { isBadDayPlan, date } = req.body;
   const habitIdNum = Number(habitId);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userId = (req as any).user?.id;
@@ -346,13 +351,16 @@ const toggleHabitCompletion = asyncHandler(async (req: Request, res: Response) =
     throw new ApiError(404, 'Habit not found');
   }
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const targetDateObj = date ? new Date(date as string) : new Date();
+  const startOfDay = new Date(targetDateObj);
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(targetDateObj);
+  endOfDay.setHours(23, 59, 59, 999);
 
   const existingLog = await prisma.habitTimeLog.findFirst({
     where: {
       habitId: habitIdNum,
-      startedAt: { gte: today },
+      startedAt: { gte: startOfDay, lte: endOfDay },
       deleted: false,
     },
   });
@@ -366,11 +374,14 @@ const toggleHabitCompletion = asyncHandler(async (req: Request, res: Response) =
       .status(200)
       .json(new ApiResponse(200, { completed: false }, 'Habit uncompleted for today'));
   } else {
+    // If retroactively logging for a past day, use noon of that day. Otherwise use current time.
+    const logTime = date ? new Date(new Date(date as string).setHours(12, 0, 0, 0)) : new Date();
+
     await prisma.habitTimeLog.create({
       data: {
         habitId: habitIdNum,
-        startedAt: new Date(),
-        endedAt: new Date(), // Instant completion
+        startedAt: logTime,
+        endedAt: logTime, // Instant completion
         isBadDayPlan: isBadDayPlan || false,
       },
     });

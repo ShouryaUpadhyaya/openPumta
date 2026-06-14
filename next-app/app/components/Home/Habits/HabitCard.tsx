@@ -10,6 +10,7 @@ interface HabitCardProps {
   isCompleted: boolean;
   isCompletedMinimum: boolean;
   linkedSubject?: { id: number; name: string };
+  selectedDateStr?: string;
   onEdit: (habit: Habit) => void;
 }
 
@@ -18,6 +19,7 @@ export function HabitCard({
   isCompleted,
   isCompletedMinimum,
   linkedSubject,
+  selectedDateStr,
   onEdit,
 }: HabitCardProps) {
   const toggleHabit = useToggleHabitCompletion();
@@ -61,7 +63,9 @@ export function HabitCard({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => toggleHabit.mutate({ habitId: habit.id, isBadDayPlan: true })}
+              onClick={() =>
+                toggleHabit.mutate({ habitId: habit.id, isBadDayPlan: true, date: selectedDateStr })
+              }
               disabled={toggleHabit.isPending || isCompleted}
               className={`h-7 px-2 text-[10px] transition-all ${
                 isCompletedMinimum
@@ -75,7 +79,9 @@ export function HabitCard({
 
           <Checkbox
             checked={isCompleted}
-            onCheckedChange={() => toggleHabit.mutate({ habitId: habit.id, isBadDayPlan: false })}
+            onCheckedChange={() =>
+              toggleHabit.mutate({ habitId: habit.id, isBadDayPlan: false, date: selectedDateStr })
+            }
             disabled={toggleHabit.isPending}
           />
         </div>

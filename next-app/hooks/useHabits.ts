@@ -51,11 +51,11 @@ export const useCreateHabit = () => {
   });
 };
 
-export const useHabitDashboard = () => {
+export const useHabitDashboard = (dateStr?: string) => {
   return useQuery({
-    queryKey: ['habitDashboard'],
+    queryKey: ['habitDashboard', dateStr],
     queryFn: async () => {
-      const { data } = await api.get(`/habits/dashboard`);
+      const { data } = await api.get(`/habits/dashboard`, { params: { date: dateStr } });
       return data.data; // { habits, todayStats, activeLog }
     },
   });
@@ -65,8 +65,16 @@ export const useToggleHabitCompletion = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ habitId, isBadDayPlan }: { habitId: number; isBadDayPlan?: boolean }) => {
-      const { data } = await api.patch(`/habits/${habitId}/toggle`, { isBadDayPlan });
+    mutationFn: async ({
+      habitId,
+      isBadDayPlan,
+      date,
+    }: {
+      habitId: number;
+      isBadDayPlan?: boolean;
+      date?: string;
+    }) => {
+      const { data } = await api.patch(`/habits/${habitId}/toggle`, { isBadDayPlan, date });
       return data.data; // { completed: boolean }
     },
     onSuccess: () => {

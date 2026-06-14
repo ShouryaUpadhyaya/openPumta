@@ -45,6 +45,8 @@ import {
   ChevronDown,
   ChevronUp,
   BookOpen,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { SystemGuideModal } from './components/SystemGuideModal';
@@ -117,7 +119,11 @@ function HabitCardSkeleton() {
 
 export default function HabitsPage() {
   const { user } = useAuthStore();
-  const { data: dashboardData, isLoading: dashboardLoading } = useHabitDashboard();
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const selectedDateStr = getLocalIsoDate(selectedDate);
+  const isToday = selectedDateStr === getLocalIsoDate(new Date());
+
+  const { data: dashboardData, isLoading: dashboardLoading } = useHabitDashboard(selectedDateStr);
 
   const [filterRange, setFilterRange] = useState<FilterRange>(21);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -304,9 +310,41 @@ export default function HabitsPage() {
         <div className="bg-primary/20 p-3 rounded-xl text-primary">
           <Activity className="h-6 w-6" />
         </div>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Behavior Tracking</h1>
-          <p className="text-muted-foreground text-sm">
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold tracking-tight">Behavior Tracking</h1>
+            <div className="flex items-center ml-4 bg-muted/30 rounded-full border border-muted-foreground/20 px-1 py-0.5">
+              <button
+                onClick={() =>
+                  setSelectedDate((d) => {
+                    const nd = new Date(d);
+                    nd.setDate(nd.getDate() - 1);
+                    return nd;
+                  })
+                }
+                className="p-1.5 hover:bg-muted rounded-full transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+              </button>
+              <span className="text-xs font-semibold px-2 w-24 text-center">
+                {isToday ? 'Today' : selectedDateStr}
+              </span>
+              <button
+                onClick={() =>
+                  setSelectedDate((d) => {
+                    const nd = new Date(d);
+                    nd.setDate(nd.getDate() + 1);
+                    return nd;
+                  })
+                }
+                disabled={isToday}
+                className="p-1.5 hover:bg-muted rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+              >
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+          </div>
+          <p className="text-muted-foreground text-sm mt-1">
             Monitor your habit cycles and maintain your perfect days.
           </p>
         </div>
@@ -577,16 +615,19 @@ export default function HabitsPage() {
               <HabitHeatmapCard
                 key={habit.id}
                 habit={habit}
-                isCompletedToday={isCompletedToday}
+                isCompletedOnSelectedDate={isCompletedToday}
                 isCompletedMinimum={isCompletedMinimum}
                 completionDates={completionDates}
                 linkedSubject={linkedSubject}
                 daysArray={daysArray}
                 gridCols={gridCols}
                 filterRange={filterRange}
+                selectedDateStr={selectedDateStr}
                 onEdit={openEditDialog}
                 onDelete={(id) => deleteHabit.mutate(id)}
-                onToggle={(id, isBadDayPlan) => toggleHabit.mutate({ habitId: id, isBadDayPlan })}
+                onToggle={(id, isBadDayPlan) =>
+                  toggleHabit.mutate({ habitId: id, isBadDayPlan, date: selectedDateStr })
+                }
               />
             );
           })
