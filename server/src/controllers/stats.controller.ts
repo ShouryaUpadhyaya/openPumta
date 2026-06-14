@@ -4,6 +4,12 @@ import asyncHandler from '../utils/asyncHandler.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { ApiError } from '../utils/ApiError.js';
 
+const pad = (n: number) => String(n).padStart(2, '0');
+function getLocalIsoDate(date: Date | string | number = new Date()): string {
+  const d = new Date(date);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
 const getDailyTimeline = asyncHandler(async (req: Request, res: Response) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userId = (req as any).user?.id;
@@ -120,12 +126,12 @@ const getDashboardStats = asyncHandler(async (req: Request, res: Response) => {
   for (let i = 0; i < 21; i++) {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
-    focusTimeByDate[d.toISOString().split('T')[0]] = 0;
+    focusTimeByDate[getLocalIsoDate(d)] = 0;
   }
 
   recentSubjectLogs.forEach((log: any) => {
     if (!log.endedAt) return;
-    const dateStr = log.startedAt.toISOString().split('T')[0];
+    const dateStr = getLocalIsoDate(log.startedAt);
     if (focusTimeByDate[dateStr] !== undefined) {
       focusTimeByDate[dateStr] += Math.floor(
         (log.endedAt.getTime() - log.startedAt.getTime()) / 1000,
@@ -141,7 +147,7 @@ const getDashboardStats = asyncHandler(async (req: Request, res: Response) => {
     }))
     .sort((a, b) => a.date.localeCompare(b.date));
 
-  const todayFocus = focusTimeByDate[today.toISOString().split('T')[0]] || 0;
+  const todayFocus = focusTimeByDate[getLocalIsoDate(today)] || 0;
   const weeklyFocusAverage =
     focusTimeArray.slice(-7).reduce((acc, curr) => acc + curr.focusTimeSecs, 0) / 7;
 
@@ -165,11 +171,11 @@ const getDashboardStats = asyncHandler(async (req: Request, res: Response) => {
   for (let i = 0; i < 21; i++) {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
-    habitsCompletedByDate[d.toISOString().split('T')[0]] = new Set();
+    habitsCompletedByDate[getLocalIsoDate(d)] = new Set();
   }
 
   recentHabitLogs.forEach((log) => {
-    const dateStr = log.startedAt.toISOString().split('T')[0];
+    const dateStr = getLocalIsoDate(log.startedAt);
     if (habitsCompletedByDate[dateStr] !== undefined) {
       habitsCompletedByDate[dateStr].add(log.habitId);
     }
@@ -194,7 +200,7 @@ const getDashboardStats = asyncHandler(async (req: Request, res: Response) => {
     })
     .sort((a, b) => a.date.localeCompare(b.date));
 
-  const todayHabitCompletion = habitsCompletedByDate[today.toISOString().split('T')[0]]?.size || 0;
+  const todayHabitCompletion = habitsCompletedByDate[getLocalIsoDate(today)]?.size || 0;
   const todayHabitRate =
     userHabits.length > 0
       ? Number(((todayHabitCompletion / userHabits.length) * 100).toFixed(0))
