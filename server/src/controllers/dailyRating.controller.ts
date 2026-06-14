@@ -126,6 +126,14 @@ const getDailyRatingStats = asyncHandler(async (req: Request, res: Response) => 
   const differenceFromYesterday =
     todayRating && yesterdayRating ? todayRating.rating - yesterdayRating.rating : null;
 
+  const history = last21DaysRatings
+    .map((r: any) => ({
+      date: r.date.toISOString(),
+      rating: r.rating,
+      description: r.description || '',
+    }))
+    .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
   res.status(200).json(
     new ApiResponse(
       200,
@@ -136,6 +144,7 @@ const getDailyRatingStats = asyncHandler(async (req: Request, res: Response) => 
         difference: differenceFromYesterday,
         weeklyAverage: Number(weeklyAverage.toFixed(1)),
         twentyOneDayAverage: Number(twentyOneDayAverage.toFixed(1)),
+        history,
       },
       'Daily rating stats fetched successfully',
     ),

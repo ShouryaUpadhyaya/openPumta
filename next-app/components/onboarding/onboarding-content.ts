@@ -13,6 +13,7 @@ export interface OnboardingSlide {
     | 'habits'
     | 'workspace'
     | 'analytics'
+    | 'dailyreview'
     | 'export'
     | 'opensource';
   cta: string;
@@ -89,6 +90,20 @@ export const ONBOARDING_SLIDES: OnboardingSlide[] = [
     route: '/stats',
     highlightTarget: 'stats-page',
     tourLabel: 'Deep analytics reveal patterns over time.',
+  },
+  {
+    id: 'dailyreview',
+    mode: 'tour',
+    title: 'Reflect and Improve',
+    body: [
+      'End each day by rating your focus and journaling your thoughts.',
+      'See your 21-day history and track long-term progress.',
+    ],
+    illustration: 'dailyreview',
+    cta: 'Continue',
+    route: '/',
+    highlightTarget: 'daily-review-section',
+    tourLabel: 'Reflect daily. Your reviews live here.',
   },
   {
     id: 'export',

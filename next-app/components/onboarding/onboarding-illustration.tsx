@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 12 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.4, delay, ease: 'easeOut' },
+  transition: { duration: 0.4, delay, ease: 'easeOut' as const },
 });
 
 // ─── Flow illustration (Slide 1 — Welcome) ────────────────────────────────────
@@ -250,6 +250,57 @@ function AnalyticsIllustration() {
   );
 }
 
+// ─── Daily Review illustration ───────────────────────────────────────────────
+
+function DailyReviewIllustration() {
+  return (
+    <div className="w-full space-y-3" aria-hidden="true">
+      <motion.div {...fadeUp(0.1)} className="bg-white/5 rounded-xl p-3 border border-white/10">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-[10px] font-semibold text-white/80">Daily Review</span>
+          <span className="text-[9px] text-orange-400 bg-orange-400/10 px-1.5 py-0.5 rounded-full">
+            Today
+          </span>
+        </div>
+        <div className="flex justify-center gap-1 my-3">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <motion.div
+              key={star}
+              initial={{ scale: 0, rotate: -30 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: star * 0.1 + 0.3, type: 'spring' }}
+              className={`w-5 h-5 rounded-sm flex items-center justify-center text-[10px] ${star <= 4 ? 'bg-yellow-400/20 text-yellow-400' : 'bg-white/5 text-white/20'}`}
+            >
+              ★
+            </motion.div>
+          ))}
+        </div>
+        <motion.div {...fadeUp(0.8)} className="space-y-1.5 mt-4">
+          <div className="h-1.5 bg-white/10 rounded-full w-full" />
+          <div className="h-1.5 bg-white/10 rounded-full w-4/5" />
+          <div className="h-1.5 bg-white/10 rounded-full w-2/3" />
+        </motion.div>
+      </motion.div>
+      <div className="flex gap-2">
+        <motion.div
+          {...fadeUp(1)}
+          className="flex-1 bg-white/5 border border-white/10 rounded-lg p-2 text-center"
+        >
+          <div className="text-[8px] text-white/40">vs Yesterday</div>
+          <div className="text-[10px] font-bold text-emerald-400 mt-0.5">+1.0</div>
+        </motion.div>
+        <motion.div
+          {...fadeUp(1.1)}
+          className="flex-1 bg-white/5 border border-white/10 rounded-lg p-2 text-center"
+        >
+          <div className="text-[8px] text-white/40">7-Day Avg</div>
+          <div className="text-[10px] font-bold text-white/80 mt-0.5">3.8 / 5</div>
+        </motion.div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Export illustration (Slide 6) ───────────────────────────────────────────
 
 function ExportIllustration() {
@@ -332,6 +383,7 @@ type IllustrationType =
   | 'habits'
   | 'workspace'
   | 'analytics'
+  | 'dailyreview'
   | 'export'
   | 'opensource';
 
@@ -342,6 +394,7 @@ export function OnboardingIllustration({ type }: { type: IllustrationType }) {
     habits: <HabitsIllustration />,
     workspace: <WorkspaceIllustration />,
     analytics: <AnalyticsIllustration />,
+    dailyreview: <DailyReviewIllustration />,
     export: <ExportIllustration />,
     opensource: <OpenSourceIllustration />,
   };
