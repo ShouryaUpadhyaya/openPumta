@@ -21,10 +21,11 @@ export default function DailyRating() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || rating === 0) return;
+    const finalRating = rating || stats?.today;
+    if (!user || !finalRating) return;
 
     submitRating.mutate(
-      { rating, description },
+      { rating: finalRating, description },
       {
         onSuccess: () => {
           toast.success('Rating saved for today!');
@@ -53,7 +54,7 @@ export default function DailyRating() {
               ))}
             </div>
             <Skeleton className="h-16 w-full rounded-xl" />
-            <Skeleton className="h-9 w-full rounded-xl" />
+            <Skeleton className="h-9 w-24 self-end rounded-xl" />
           </div>
           <div className="grid grid-cols-2 gap-3 mt-auto">
             <Skeleton className="h-20 rounded-xl" />
@@ -64,7 +65,7 @@ export default function DailyRating() {
     );
   }
 
-  const hasRatedToday = stats?.today !== null;
+  const hasRatedToday = stats?.today !== null && stats?.today !== undefined;
 
   return (
     <Card className="h-full flex flex-col bg-background shadow-none border-border/40">
@@ -121,14 +122,15 @@ export default function DailyRating() {
             onChange={(e) => setDescription(e.target.value)}
           />
 
-          <Button
-            type="submit"
-            size="sm"
-            disabled={(!rating && !stats?.today) || submitRating.isPending}
-            className="w-full"
-          >
-            {hasRatedToday ? 'Update Review' : 'Save Review'}
-          </Button>
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              size="sm"
+              disabled={(!rating && !stats?.today) || submitRating.isPending}
+            >
+              {hasRatedToday ? 'Update Review' : 'Save Review'}
+            </Button>
+          </div>
         </form>
 
         <div className="grid grid-cols-2 gap-3 mt-auto pt-2">

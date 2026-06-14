@@ -66,9 +66,7 @@ function Subjects() {
         <div className="space-y-1">
           <h1 className="text-2xl mb-2 font-semibold tracking-tight text-foreground">Subjects</h1>
         </div>
-        <div>
-          <AddSubjectDialog habits={habits} empty={Subjects.length === 0} />
-        </div>
+        <div>{Subjects.length > 0 && <AddSubjectDialog habits={habits} empty={false} />}</div>
       </div>
 
       <div className="flex my-2 justify-between items-end gap-1.5 pt-1">
@@ -81,7 +79,7 @@ function Subjects() {
       <div className="rounded-lg border border-border">
         {Subjects.length === 0 && (
           <div>
-            <CallToAction />
+            <CallToAction habits={habits} />
             {/* <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
             <Skeleton className="h-10 w-10 mb-2 opacity-20">
               <CheckCircle className="h-10 w-10 mb-2 opacity-20" />

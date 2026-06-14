@@ -5,6 +5,7 @@ import Stats from './components/Home/Stats';
 import Subjects from './components/Home/Subjects';
 import DailyRating from './components/Home/DailyRating';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useSubjects } from '@/hooks/useSubjects';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -12,11 +13,12 @@ import { LogIn, LogOut, User } from 'lucide-react';
 
 export default function Home() {
   const { user, logout, loading } = useAuthStore();
+  const { data: subjects = [], isLoading: subjectsLoading } = useSubjects();
 
   return (
     <div className="flex flex-col min-h-screen lg:h-screen lg:overflow-hidden p-4 bg-background text-foreground pb-24 lg:pb-4 w-full max-w-full overflow-x-hidden min-w-0">
       {/* Header */}
-      <header className="flex justify-between items-center mb-4 shrink-0">
+      <header className="flex justify-between items-center mb-4 shrink-0 lg:hidden">
         <h1 className="text-2xl font-bold tracking-tight">OpenPumta</h1>
         <div className="flex gap-2">
           {!loading && !user ? (
@@ -64,25 +66,35 @@ export default function Home() {
       </header>
 
       <main className="flex-1 flex flex-col lg:grid lg:grid-cols-12 lg:grid-rows-12 gap-4 min-h-0">
-        {/* Top Row - Clock and Subjects */}
-        <div className="lg:col-span-4 lg:row-span-5 bg-background rounded-xl border shadow-sm overflow-clip flex flex-col items-center justify-center p-4 min-h-65 lg:min-h-0">
-          <Clock />
-        </div>
-        {/* Middle Row - Habits and General Subjects/Stats space */}
-        <div className="lg:col-span-8 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-clip flex flex-col min-h-70 lg:min-h-0">
-          <Subjects />
-        </div>
-        <div className="lg:col-span-4 lg:row-span-7 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-70 lg:min-h-0">
-          <Habits />
-        </div>
+        {!subjectsLoading && subjects.length === 0 ? (
+          <div className="lg:col-span-12 lg:row-span-12 flex flex-col items-center justify-center h-full min-h-[60vh]">
+            <div className="w-full max-w-2xl bg-background rounded-xl border shadow-sm overflow-hidden p-4 lg:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <Subjects />
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Top Row - Clock and Subjects */}
+            <div className="lg:col-span-4 lg:row-span-5 bg-background rounded-xl border shadow-sm overflow-clip flex flex-col items-center justify-center p-4 min-h-65 lg:min-h-0">
+              <Clock />
+            </div>
+            {/* Middle Row - Habits and General Subjects/Stats space */}
+            <div className="lg:col-span-8 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-clip flex flex-col min-h-70 lg:min-h-0">
+              <Subjects />
+            </div>
+            <div className="lg:col-span-4 lg:row-span-7 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-70 lg:min-h-0">
+              <Habits />
+            </div>
 
-        {/* Bottom Row - Rating and Stats */}
-        <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-55 lg:min-h-0">
-          <DailyRating />
-        </div>
-        <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-55 lg:min-h-0">
-          <Stats />
-        </div>
+            {/* Bottom Row - Rating and Stats */}
+            <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-55 lg:min-h-0">
+              <DailyRating />
+            </div>
+            <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-55 lg:min-h-0">
+              <Stats />
+            </div>
+          </>
+        )}
       </main>
     </div>
   );

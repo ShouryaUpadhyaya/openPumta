@@ -17,6 +17,8 @@ import { useEffect } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import Image from 'next/image';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { LogOut } from 'lucide-react';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: Home },
@@ -30,7 +32,7 @@ const navItems = [
 export default function Navigation({ mounted }: { mounted: boolean }) {
   const pathname = usePathname();
   const { isSidebarCollapsed, toggleSidebar } = useLayoutStore();
-  const { user, fetchUser, loading } = useAuthStore();
+  const { user, fetchUser, loading, logout } = useAuthStore();
 
   useEffect(() => {
     fetchUser();
@@ -64,113 +66,181 @@ export default function Navigation({ mounted }: { mounted: boolean }) {
       </div>
 
       {/* Desktop Left Sidebar */}
-      <aside
-        className={cn(
-          'hidden lg:flex flex-col fixed left-0 top-0 bottom-0 border-r bg-card/50 backdrop-blur-xl z-40 p-4 transition-all duration-300',
-          isSidebarCollapsed ? 'w-20' : 'w-64',
-        )}
-      >
-        <div
+      <TooltipProvider delayDuration={0}>
+        <aside
           className={cn(
-            'flex items-center mb-6 py-4 transition-all duration-300',
-            isSidebarCollapsed ? 'justify-center' : 'justify-between',
+            'hidden lg:flex flex-col fixed left-0 top-0 bottom-0 border-r bg-card/50 backdrop-blur-xl z-40 p-4 transition-all duration-300',
+            isSidebarCollapsed ? 'w-20' : 'w-64',
           )}
         >
-          {!isSidebarCollapsed && (
-            <div className="flex items-center gap-2 px-2">
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xl">O</span>
-              </div>
-              <span className="font-bold text-xl tracking-tight">OpenPumta</span>
-            </div>
-          )}
-          <Menu
-            className="cursor-pointer hover:text-primary transition-colors"
-            onClick={toggleSidebar}
-          />
-        </div>
-
-        <nav className="flex flex-1 flex-col space-y-2">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link key={item.href} href={item.href}>
-                <div
-                  className={cn(
-                    'flex items-center rounded-lg transition-all duration-200',
-                    isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-3 py-3',
-                    isActive
-                      ? 'bg-primary text-primary-foreground shadow-md'
-                      : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
-                  )}
-                >
-                  <item.icon className={cn('h-5 w-5 shrink-0', isActive && 'animate-pulse')} />
-                  {!isSidebarCollapsed && (
-                    <span className="font-medium text-sm whitespace-nowrap overflow-hidden transition-all duration-300">
-                      {item.label}
-                    </span>
-                  )}
+          <div
+            className={cn(
+              'flex items-center mb-6 py-4 transition-all duration-300',
+              isSidebarCollapsed ? 'justify-center' : 'justify-between',
+            )}
+          >
+            {!isSidebarCollapsed && (
+              <div className="flex items-center gap-2 px-2">
+                <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold text-xl">O</span>
                 </div>
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="mt-auto pt-4 border-t border-border/50">
-          {!loading && !user ? (
-            <Link href="/login">
-              <div
-                className={cn(
-                  'flex items-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-all duration-200',
-                  isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-3 py-2',
-                )}
-              >
-                <LogIn className="h-5 w-5 shrink-0" />
-                {!isSidebarCollapsed && <span className="font-medium text-sm">Login</span>}
+                <span className="font-bold text-xl tracking-tight">OpenPumta</span>
               </div>
-            </Link>
-          ) : (
-            user && (
-              <Link href={user.isGuest ? '/login' : '/profile'}>
-                <div
-                  className={cn(
-                    'flex items-center rounded-lg transition-all duration-200 text-muted-foreground hover:bg-secondary hover:text-foreground',
-                    isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-3 py-2',
-                    user.isGuest && 'border border-primary/20 bg-primary/5',
-                  )}
-                >
-                  {user.avatarUrl ? (
-                    <Image
-                      width={100}
-                      height={100}
-                      src={user.avatarUrl}
-                      alt="Avatar"
-                      className="h-6 w-6 rounded-full object-cover shrink-0"
-                    />
+            )}
+            <Menu
+              className="cursor-pointer hover:text-primary transition-colors"
+              onClick={toggleSidebar}
+            />
+          </div>
+
+          <nav className="flex flex-1 flex-col space-y-2">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              const navLink = (
+                <Link key={item.href} href={item.href} className="w-full">
+                  <div
+                    className={cn(
+                      'flex items-center rounded-lg transition-all duration-200 w-full',
+                      isSidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-3 py-3',
+                      isActive
+                        ? 'bg-primary text-primary-foreground shadow-md'
+                        : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+                    )}
+                  >
+                    <item.icon className={cn('h-5 w-5 shrink-0', isActive && 'animate-pulse')} />
+                    {!isSidebarCollapsed && (
+                      <span className="font-medium text-sm whitespace-nowrap overflow-hidden transition-all duration-300">
+                        {item.label}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              );
+
+              return isSidebarCollapsed ? (
+                <Tooltip key={item.href}>
+                  <TooltipTrigger asChild>{navLink}</TooltipTrigger>
+                  <TooltipContent side="right">{item.label}</TooltipContent>
+                </Tooltip>
+              ) : (
+                navLink
+              );
+            })}
+          </nav>
+
+          <div className="mt-auto pt-4 border-t border-border/50 flex flex-col gap-2">
+            {!loading && !user ? (
+              isSidebarCollapsed ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link href="/login" className="w-full">
+                      <div className="flex items-center justify-center p-3 rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-all duration-200">
+                        <LogIn className="h-5 w-5 shrink-0" />
+                      </div>
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Login</TooltipContent>
+                </Tooltip>
+              ) : (
+                <Link href="/login" className="w-full">
+                  <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-all duration-200">
+                    <LogIn className="h-5 w-5 shrink-0" />
+                    <span className="font-medium text-sm">Login</span>
+                  </div>
+                </Link>
+              )
+            ) : (
+              user && (
+                <>
+                  {isSidebarCollapsed ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Link href={user.isGuest ? '/login' : '/profile'} className="w-full">
+                          <div
+                            className={cn(
+                              'flex items-center justify-center p-3 rounded-lg transition-all duration-200 text-muted-foreground hover:bg-secondary hover:text-foreground',
+                              user.isGuest && 'border border-primary/20 bg-primary/5',
+                            )}
+                          >
+                            {user.avatarUrl ? (
+                              <Image
+                                width={100}
+                                height={100}
+                                src={user.avatarUrl}
+                                alt="Avatar"
+                                className="h-6 w-6 rounded-full object-cover shrink-0"
+                              />
+                            ) : (
+                              <User className="h-6 w-6 shrink-0" />
+                            )}
+                          </div>
+                        </Link>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">Profile</TooltipContent>
+                    </Tooltip>
                   ) : (
-                    <User className="h-6 w-6 shrink-0" />
+                    <Link href={user.isGuest ? '/login' : '/profile'} className="w-full">
+                      <div
+                        className={cn(
+                          'flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-muted-foreground hover:bg-secondary hover:text-foreground',
+                          user.isGuest && 'border border-primary/20 bg-primary/5',
+                        )}
+                      >
+                        {user.avatarUrl ? (
+                          <Image
+                            width={100}
+                            height={100}
+                            src={user.avatarUrl}
+                            alt="Avatar"
+                            className="h-6 w-6 rounded-full object-cover shrink-0"
+                          />
+                        ) : (
+                          <User className="h-6 w-6 shrink-0" />
+                        )}
+                        <div className="flex flex-col overflow-hidden">
+                          <span className="font-medium text-sm text-foreground truncate">
+                            {user.name || (user.isGuest ? 'Guest User' : 'User')}
+                          </span>
+                          <span className="text-xs truncate text-muted-foreground">
+                            {user.email || (user.isGuest ? 'Save progress' : '')}
+                          </span>
+                        </div>
+                        {user.isGuest && (
+                          <div className="ml-auto px-1.5 py-0.5 rounded-md bg-primary text-[10px] text-primary-foreground font-bold uppercase tracking-wider">
+                            Guest
+                          </div>
+                        )}
+                      </div>
+                    </Link>
                   )}
-                  {!isSidebarCollapsed && (
-                    <div className="flex flex-col overflow-hidden">
-                      <span className="font-medium text-sm text-foreground truncate">
-                        {user.name || (user.isGuest ? 'Guest User' : 'User')}
-                      </span>
-                      <span className="text-xs truncate">
-                        {user.email || (user.isGuest ? 'Save progress' : '')}
-                      </span>
+                  {/* Logout Button */}
+                  {isSidebarCollapsed ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div
+                          onClick={logout}
+                          className="flex items-center justify-center p-3 rounded-lg text-destructive hover:bg-destructive/10 transition-all duration-200 cursor-pointer"
+                        >
+                          <LogOut className="h-5 w-5 shrink-0" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">Logout</TooltipContent>
+                    </Tooltip>
+                  ) : (
+                    <div
+                      onClick={logout}
+                      className="flex items-center gap-3 px-3 py-2 rounded-lg text-destructive hover:bg-destructive/10 transition-all duration-200 cursor-pointer"
+                    >
+                      <LogOut className="h-5 w-5 shrink-0" />
+                      <span className="font-medium text-sm">Logout</span>
                     </div>
                   )}
-                  {user.isGuest && !isSidebarCollapsed && (
-                    <div className="ml-auto px-1.5 py-0.5 rounded-md bg-primary text-[10px] text-primary-foreground font-bold uppercase tracking-wider">
-                      Guest
-                    </div>
-                  )}
-                </div>
-              </Link>
-            )
-          )}
-        </div>
-      </aside>
+                </>
+              )
+            )}
+          </div>
+        </aside>
+      </TooltipProvider>
     </>
   );
 }
