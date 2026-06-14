@@ -14,6 +14,7 @@ interface TimerSettings {
   longBreakDuration: number;
   autoStartBreaks: boolean;
   autoStartWork: boolean;
+  notificationsEnabled: boolean;
 }
 
 interface TimerState {
@@ -58,11 +59,12 @@ export const useTimerStore = create<TimerState>()(
       completedPomodoros: 0,
 
       settings: {
-        workDuration: 25 * 60 * 1000,
+        workDuration: 60 * 60 * 1000,
         shortBreakDuration: 5 * 60 * 1000,
         longBreakDuration: 15 * 60 * 1000,
-        autoStartBreaks: true,
-        autoStartWork: true,
+        autoStartBreaks: false,
+        autoStartWork: false,
+        notificationsEnabled: false,
       },
       showProgressBar: true,
       workColor: '#f97316',

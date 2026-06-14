@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useShallow } from 'zustand/react/shallow';
+import { toast } from 'sonner';
 
 export function useTimerEngine() {
   const [hasHydrated, setHasHydrated] = useState(false);
@@ -51,54 +52,83 @@ export function useTimerEngine() {
     return elapsedMs;
   }, [mode, durationMs, elapsedMs]);
 
+  const notifiedRef = useRef(false);
+
+  useEffect(() => {
+    notifiedRef.current = false;
+  }, [phaseStartedAt, phase]);
+
   const handleTransition = useCallback(() => {
     if (phase === 'work') {
-      endWork(false); // Auto-transition
+      endWork(false);
     } else if (phase === 'shortBreak' || phase === 'longBreak') {
       completeBreak();
     }
   }, [phase, endWork, completeBreak]);
 
-  // Main tick loop
-  useEffect(() => {
-    console.log('inside main tick loop');
+  const checkCompletion = useCallback(() => {
+    if (mode !== 'pomodoro' || phase === 'idle' || !phaseStartedAt) return;
 
-    if (!running || !hasHydrated) return;
+    const now = Date.now();
+    const currentElapsed = now - phaseStartedAt;
 
-    const interval = setInterval(() => {
-      const now = Date.now();
-      setLocalNow(now);
+    if (currentElapsed >= durationMs) {
+      if (!notifiedRef.current) {
+        notifiedRef.current = true;
 
-      // Transition Logic
-      if (mode === 'pomodoro' && phase !== 'idle') {
-        const currentElapsed = now - (phaseStartedAt || now);
-        if (currentElapsed >= durationMs) {
-          if (phase === 'work' && settings.autoStartBreaks) {
-            handleTransition();
-          } else if ((phase === 'shortBreak' || phase === 'longBreak') && settings.autoStartWork) {
-            handleTransition();
+        if (settings.notificationsEnabled) {
+          const title = phase === 'work' ? 'Focus Session Complete!' : 'Break Complete!';
+          const body =
+            phase === 'work' ? 'Great job! Time for a break.' : 'Time to get back to work!';
+
+          toast.success(title, { description: body, duration: 8000 });
+
+          if ('Notification' in window && Notification.permission === 'granted') {
+            try {
+              new Notification(title, { body });
+            } catch (error) {
+              console.error('Failed to trigger browser notification:', error);
+            }
           }
         }
       }
-    }, 100);
 
-    return () => clearInterval(interval);
-  }, [running, mode, phase, phaseStartedAt, durationMs, handleTransition, hasHydrated, settings]);
-
-  // Check for missed transitions on hydration or visibility change
-  useEffect(() => {
-    if (!hasHydrated || !running || mode !== 'pomodoro' || phase === 'idle') return;
-
-    const now = Date.now();
-    const currentElapsed = now - (phaseStartedAt || now);
-    if (currentElapsed >= durationMs) {
       if (phase === 'work' && settings.autoStartBreaks) {
         handleTransition();
       } else if ((phase === 'shortBreak' || phase === 'longBreak') && settings.autoStartWork) {
         handleTransition();
       }
     }
-  }, [hasHydrated, running, mode, phase, phaseStartedAt, durationMs, handleTransition, settings]);
+  }, [mode, phase, phaseStartedAt, durationMs, settings, handleTransition]);
+
+  // Main tick loop
+  useEffect(() => {
+    if (!running || !hasHydrated) return;
+
+    const interval = setInterval(() => {
+      setLocalNow(Date.now());
+      checkCompletion();
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [running, hasHydrated, checkCompletion]);
+
+  // Check for missed transitions on hydration or visibility change
+  useEffect(() => {
+    if (!hasHydrated || !running) return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        setLocalNow(Date.now());
+        checkCompletion();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    checkCompletion(); // Check immediately
+
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [hasHydrated, running, checkCompletion]);
 
   return {
     elapsedMs,

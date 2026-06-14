@@ -426,6 +426,40 @@ export default function SettingsPage() {
                 onCheckedChange={(checked) => store.setSettings({ autoStartWork: checked })}
               />
             </div>
+            <Separator className="bg-border/40" />
+            <div className="flex items-center justify-between gap-4">
+              <div className="space-y-0.5">
+                <Label htmlFor="notifications-toggle" className="text-sm font-medium">
+                  Desktop Notifications
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Get notified when a session or break ends.
+                </p>
+              </div>
+              <Switch
+                id="notifications-toggle"
+                checked={store.settings.notificationsEnabled}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    if ('Notification' in window) {
+                      Notification.requestPermission().then((permission) => {
+                        if (permission === 'granted') {
+                          store.setSettings({ notificationsEnabled: true });
+                          toast.success('Notifications enabled');
+                        } else {
+                          toast.error('Notification permission denied by browser.');
+                          store.setSettings({ notificationsEnabled: false });
+                        }
+                      });
+                    } else {
+                      toast.error('Notifications are not supported in this browser.');
+                    }
+                  } else {
+                    store.setSettings({ notificationsEnabled: false });
+                  }
+                }}
+              />
+            </div>
           </CardContent>
         </Card>
 
