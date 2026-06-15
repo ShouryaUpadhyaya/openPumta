@@ -163,7 +163,7 @@ model Space {
   order      Int      @default(0)
   isArchived Boolean  @default(false)
   deleted    Boolean  @default(false)
-  columns    Column[]
+  textBoxes  TextBox[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -171,47 +171,16 @@ model Space {
   @@index([userId, deleted])
 }
 
-model Column {
-  id          Int      @id @default(autoincrement())
-  spaceId     Int
-  space       Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  title       String
-  order       Int      @default(0)
-  width       Int?
-  height      Int?
-  isCollapsed Boolean  @default(false)
-  deleted     Boolean  @default(false)
-  blocks      Block[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model TextBox {
+  id        Int      @id @default(autoincrement())
+  spaceId   Int
+  space     Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  content   Json     @default("[]")
+  layout    Json     @default("{}")
+  deleted   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([spaceId])
   @@index([spaceId, deleted])
-}
-
-enum BlockType {
-  HEADING
-  PARAGRAPH
-  TODO
-  DIVIDER
-}
-
-model Block {
-  id       Int       @id @default(autoincrement())
-  columnId Int
-  column   Column    @relation(fields: [columnId], references: [id], onDelete: Cascade)
-  type     BlockType @default(TODO)
-  content  String    @default("")
-  order    Int       @default(0)
-  deleted  Boolean   @default(false)
-
-  isCompleted Boolean   @default(false)
-  scheduledAt DateTime  @default(now())
-  dueAt       DateTime?
-  reminderAt  DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@index([columnId])
-  @@index([columnId, deleted])
 }

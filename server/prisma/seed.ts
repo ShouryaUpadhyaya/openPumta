@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 import { PrismaClient } from '../generated/prisma/client.js';
-import { ToDoStatus, difficulty, BlockType } from '../generated/prisma/enums.js';
+import { ToDoStatus, difficulty } from '../generated/prisma/enums.js';
 
 const connectionString = process.env.DATABASE_URL;
 const pool = new pg.Pool({ connectionString });
@@ -179,57 +179,65 @@ async function main() {
     create: { name: 'Daily Planner', icon: '📋', userId },
   });
 
-  // Delete existing columns to avoid duplicates on re-seed
-  await prisma.column.deleteMany({ where: { spaceId: space.id } });
+  // Delete existing textBoxes to avoid duplicates on re-seed
+  await prisma.textBox.deleteMany({ where: { spaceId: space.id } });
 
-  const col1 = await prisma.column.create({
+  function generateId() {
+    return Math.random().toString(36).substr(2, 9);
+  }
+
+  await prisma.textBox.create({
     data: {
       spaceId: space.id,
-      title: 'to do a session',
-      order: 0,
-      blocks: {
-        create: [
-          { type: BlockType.TODO, content: 'Q1', order: 0 },
-          { type: BlockType.TODO, content: 'Q2', order: 1 },
-        ],
+      layout: {
+        desktop: { x: 0, y: 0, width: 350, height: 400 },
+        tablet: { x: 0, y: 0, width: 300, height: 400 },
+        mobile: { x: 0, y: 0, width: '100%', height: 400 },
       },
+      content: [
+        { id: generateId(), type: 'heading', props: { level: 2 }, content: 'to do a session' },
+        { id: generateId(), type: 'checkListItem', props: { checked: false }, content: 'Q1' },
+        { id: generateId(), type: 'checkListItem', props: { checked: false }, content: 'Q2' },
+      ],
     },
   });
 
-  const col2 = await prisma.column.create({
+  await prisma.textBox.create({
     data: {
       spaceId: space.id,
-      title: 'to do today',
-      order: 1,
-      blocks: {
-        create: [
-          { type: BlockType.TODO, content: 'dsa 2 questions 10-1 (30min minimum)', order: 0 },
-          {
-            type: BlockType.TODO,
-            content: '1:30-3:30 devops(kubernetes 30min), sql(30min)',
-            order: 1,
-          },
-          {
-            type: BlockType.TODO,
-            content:
-              '4-7 project (see how catching is working fe and improve it, see how to improve backend to make it scalable, nginx implement, deploy somewhere)',
-            order: 2,
-          },
-          { type: BlockType.TODO, content: 'gym', order: 3 },
-          {
-            type: BlockType.TODO,
-            content: '9-11 apply for jobs(5 job apply), make a resume or freelance profile plan',
-            order: 4,
-          },
-          { type: BlockType.TODO, content: '12 max gf', order: 5 },
-          {
-            type: BlockType.TODO,
-            content: '12-1 2 post , 20 replies + post resume on reddit + to do tommorow',
-            order: 6,
-          },
-          { type: BlockType.TODO, content: 'sleep at 1', order: 7 },
-        ],
+      layout: {
+        desktop: { x: 370, y: 0, width: 350, height: 500 },
+        tablet: { x: 320, y: 0, width: 300, height: 500 },
+        mobile: { x: 0, y: 420, width: '100%', height: 500 },
       },
+      content: [
+        { id: generateId(), type: 'heading', props: { level: 2 }, content: 'to do today' },
+        {
+          id: generateId(),
+          type: 'checkListItem',
+          props: { checked: false },
+          content: 'dsa 2 questions 10-1 (30min minimum)',
+        },
+        {
+          id: generateId(),
+          type: 'checkListItem',
+          props: { checked: false },
+          content: '1:30-3:30 devops(kubernetes 30min), sql(30min)',
+        },
+        {
+          id: generateId(),
+          type: 'checkListItem',
+          props: { checked: false },
+          content: '4-7 project (see how catching is working fe and improve it)',
+        },
+        { id: generateId(), type: 'checkListItem', props: { checked: false }, content: 'gym' },
+        {
+          id: generateId(),
+          type: 'checkListItem',
+          props: { checked: false },
+          content: '9-11 apply for jobs',
+        },
+      ],
     },
   });
 
