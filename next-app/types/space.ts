@@ -13,47 +13,18 @@ export interface Space {
 
   // Relations
   user?: User;
-  columns?: Column[];
+  textBoxes?: TextBox[];
 }
 
-export interface Column {
+export interface TextBox {
   id: number;
   spaceId: number;
-  title: string;
-  order: number;
-  width: number | null;
-  height: number | null;
-  isCollapsed: boolean;
+  content: any[];
+  layout: any;
   deleted: boolean;
   createdAt: Date | string;
   updatedAt: Date | string;
 
   // Relations
   space?: Space;
-  blocks?: Block[];
-}
-
-export enum BlockType {
-  HEADING = 'HEADING',
-  PARAGRAPH = 'PARAGRAPH',
-  TODO = 'TODO',
-  DIVIDER = 'DIVIDER',
-}
-
-export interface Block {
-  id: number;
-  columnId: number;
-  type: BlockType;
-  content: string;
-  order: number;
-  deleted: boolean;
-  isCompleted: boolean;
-  scheduledAt: Date | string;
-  dueAt: Date | string | null;
-  reminderAt: Date | string | null;
-  createdAt: Date | string;
-  updatedAt: Date | string;
-
-  // Relations
-  column?: Column;
 }

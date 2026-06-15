@@ -7,7 +7,7 @@ import type { Persister } from '@tanstack/react-query-persist-client';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { TimerManager } from './pomodoro/TimerManager';
 import { toast } from 'sonner';
-import { Block } from '@/hooks/useBlocks';
+
 import { queryClient } from '@/lib/queryClient';
 
 const noopPersister: Persister = {
@@ -15,44 +15,6 @@ const noopPersister: Persister = {
   restoreClient: async () => undefined,
   removeClient: async () => undefined,
 };
-
-/** Checks all cached blocks every 60s for past reminderAt times and fires toasts */
-function ReminderWatcher() {
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    const check = () => {
-      const now = new Date();
-      const fiveMinAgo = new Date(now.getTime() - 5 * 60 * 1000);
-
-      // Walk all 'blocks' queries in the cache
-      const cache = queryClient.getQueryCache();
-      cache.getAll().forEach((query) => {
-        const key = query.queryKey;
-        if (!Array.isArray(key) || key[0] !== 'blocks') return;
-        const blocks = query.state.data as Block[] | undefined;
-        if (!blocks) return;
-
-        blocks.forEach((block) => {
-          if (!block.reminderAt || block.isCompleted) return;
-          const remAt = new Date(block.reminderAt);
-          if (remAt >= fiveMinAgo && remAt <= now) {
-            toast.info(`⏰ Reminder: ${block.content || 'Task'}`, {
-              description: 'This task has a reminder set.',
-              duration: 8000,
-            });
-          }
-        });
-      });
-    };
-
-    check(); // Run immediately
-    const interval = setInterval(check, 60_000);
-    return () => clearInterval(interval);
-  }, [queryClient]);
-
-  return null;
-}
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const persister = useMemo(() => {
@@ -71,7 +33,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       }}
     >
       <TimerManager />
-      <ReminderWatcher />
+
       {children}
     </PersistQueryClientProvider>
   );

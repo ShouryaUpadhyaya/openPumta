@@ -11,20 +11,20 @@ interface WorkspaceState {
   activeSpaceId: number | null;
   activeFilter: FilterType;
   dateRange: DateRange | undefined;
-  focusedColumnId: number | null;
+  focusedTextBoxId: number | null;
   // Actions
   setActiveSpace: (id: number | null) => void;
   setFilter: (filter: FilterType, dateRange?: DateRange) => void;
-  setFocusedColumn: (id: number | null) => void;
+  setFocusedTextBox: (id: number | null) => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({
   activeSpaceId: null,
   activeFilter: 'all',
   dateRange: undefined,
-  focusedColumnId: null,
+  focusedTextBoxId: null,
 
   setActiveSpace: (id) => set({ activeSpaceId: id }),
   setFilter: (filter, dateRange) => set({ activeFilter: filter, dateRange }),
-  setFocusedColumn: (id) => set({ focusedColumnId: id }),
+  setFocusedTextBox: (id) => set({ focusedTextBoxId: id }),
 }));

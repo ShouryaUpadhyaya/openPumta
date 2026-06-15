@@ -22,47 +22,11 @@ export function HeaderSkeleton() {
   );
 }
 
-export function FilterSkeleton() {
+export function CanvasSkeleton() {
   return (
-    <div className="py-2 border-b border-border/20 px-4 flex gap-2 items-center">
-      <Skeleton className="h-8 w-24 rounded-lg" />
-      <div className="h-4 w-px bg-border/40 mx-1" />
-      <Skeleton className="h-8 w-20 rounded-lg" />
-      <Skeleton className="h-8 w-20 rounded-lg" />
-      <Skeleton className="h-8 w-20 rounded-lg" />
-    </div>
-  );
-}
-
-export function BoardSkeleton() {
-  return (
-    <div className="flex-1 overflow-hidden pt-4 flex gap-4 px-4">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="w-[300px] flex-shrink-0 flex flex-col gap-4">
-          {/* Column Header */}
-          <div className="flex items-center justify-between">
-            <Skeleton className="h-7 w-32 rounded-lg" />
-            <div className="flex gap-1">
-              <Skeleton className="h-7 w-7 rounded-md" />
-              <Skeleton className="h-7 w-7 rounded-md" />
-            </div>
-          </div>
-
-          {/* Column Blocks */}
-          <div className="flex flex-col gap-2">
-            {[1, 2, 3, 4].map((j) => (
-              <Skeleton
-                key={j}
-                className="h-20 w-full rounded-xl"
-                style={{ opacity: 1 - j * 0.15 }}
-              />
-            ))}
-          </div>
-
-          {/* Add Block button skeleton */}
-          <Skeleton className="h-9 w-full rounded-lg opacity-40 mt-2" />
-        </div>
-      ))}
+    <div className="flex-1 overflow-hidden pt-4 flex gap-4 px-4 relative bg-dot-pattern bg-[length:24px_24px]">
+      <Skeleton className="absolute top-10 left-10 h-[300px] w-[350px] rounded-xl" />
+      <Skeleton className="absolute top-20 left-[400px] h-[400px] w-[350px] rounded-xl" />
     </div>
   );
 }
@@ -71,8 +35,7 @@ export function TodoSkeleton() {
   return (
     <div className="flex flex-col h-full animate-in fade-in duration-500">
       <HeaderSkeleton />
-      <FilterSkeleton />
-      <BoardSkeleton />
+      <CanvasSkeleton />
     </div>
   );
 }

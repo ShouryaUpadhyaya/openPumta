@@ -2,21 +2,18 @@
 
 import React, { useEffect, Suspense } from 'react';
 import { useSpaces, useCreateSpace } from '@/hooks/useSpaces';
-import { useColumns } from '@/hooks/useColumns';
-import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { SpaceNav } from './components/SpaceNav';
-import { FilterBar } from './components/FilterBar';
-import { SpaceBoard } from './components/SpaceBoard';
+import WorkspaceCanvas from './components/WorkspaceCanvas';
 import { SpaceSettingsMenu } from './components/SpaceSettingsMenu';
+import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { toast } from 'sonner';
 import { LayoutDashboard } from 'lucide-react';
 
-import { TodoSkeleton, BoardSkeleton } from './components/TodoSkeleton';
+import { TodoSkeleton } from './components/TodoSkeleton';
 
 function WorkspaceInner() {
-  const { activeSpaceId, activeFilter, dateRange, setActiveSpace } = useWorkspaceStore();
+  const { activeSpaceId, setActiveSpace } = useWorkspaceStore();
   const { data: spaces, isLoading: spacesLoading } = useSpaces();
-  const { data: columns, isLoading: columnsLoading } = useColumns(activeSpaceId);
   const createSpace = useCreateSpace();
 
   // Auto-select first space when loaded
@@ -93,26 +90,14 @@ function WorkspaceInner() {
         <SpaceNav spaces={spaces} onCreateSpace={handleCreateSpace} />
       </div>
 
-      {/* ── Filter bar ── */}
-      <div className="py-2 border-b border-border/20">
-        <FilterBar />
-      </div>
-
-      {/* ── Board ── */}
-      <div className="flex-1 overflow-hidden pt-4">
+      {/* ── Board / Canvas ── */}
+      <div className="flex-1 overflow-hidden">
         {!activeSpaceId ? (
           <div className="flex items-center justify-center h-40 text-muted-foreground text-sm">
             Select a space to get started
           </div>
-        ) : columnsLoading ? (
-          <BoardSkeleton />
         ) : (
-          <SpaceBoard
-            spaceId={activeSpaceId}
-            columns={columns ?? []}
-            filter={activeFilter}
-            dateRange={dateRange}
-          />
+          <WorkspaceCanvas />
         )}
       </div>
     </div>
