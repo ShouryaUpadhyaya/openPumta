@@ -3,6 +3,7 @@
 import { useTextBoxes, useCreateTextBox } from '@/hooks/useTextBoxes';
 import TextBoxContainer from './TextBoxContainer';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
+import { useViewport } from '@/hooks/useViewport';
 import { Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -10,6 +11,7 @@ export default function WorkspaceCanvas() {
   const { activeSpaceId } = useWorkspaceStore();
   const { data: textBoxes, isLoading } = useTextBoxes(activeSpaceId as number);
   const createTextBox = useCreateTextBox();
+  const viewport = useViewport();
 
   if (!activeSpaceId) {
     return (
@@ -42,9 +44,20 @@ export default function WorkspaceCanvas() {
 
   return (
     <div className="relative flex-1 w-full h-full overflow-hidden bg-dot-pattern bg-[length:24px_24px]">
-      <div className="absolute inset-0 w-full h-full">
+      <div
+        className={
+          viewport === 'mobile'
+            ? 'absolute inset-0 w-full h-full overflow-y-auto flex flex-col gap-4 p-4 pb-24'
+            : 'absolute inset-0 w-full h-full'
+        }
+      >
         {textBoxes?.map((box) => (
-          <TextBoxContainer key={box.id} textBox={box} spaceId={activeSpaceId} />
+          <TextBoxContainer
+            key={box.id}
+            textBox={box}
+            spaceId={activeSpaceId}
+            viewport={viewport}
+          />
         ))}
       </div>
 

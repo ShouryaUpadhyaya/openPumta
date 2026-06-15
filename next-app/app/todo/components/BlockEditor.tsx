@@ -12,6 +12,7 @@ export default function BlockEditor({
   textBoxId,
   spaceId,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   initialContent: any[];
   textBoxId: number;
   spaceId: number;
@@ -31,12 +32,8 @@ export default function BlockEditor({
   }, [editor, textBoxId, spaceId, updateContent]);
 
   return (
-    <div className="w-full h-full overflow-y-auto">
-      <BlockNoteView
-        editor={editor}
-        onChange={onChange}
-        theme="light" // Or you can dynamically match system theme
-      />
+    <div className="w-full h-full overflow-y-auto ">
+      <BlockNoteView editor={editor} onChange={onChange} theme="dark" color="black" />
     </div>
   );
 }

@@ -36,12 +36,10 @@ function WorkspaceInner() {
     );
   };
 
-  // ─── Loading state ─────────────────────────────────────────────────────────
   if (spacesLoading) {
     return <TodoSkeleton />;
   }
 
-  // ─── Empty state — no spaces ───────────────────────────────────────────────
   if (!spaces || spaces.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full min-h-[60vh] gap-5 text-center px-4">
@@ -75,7 +73,7 @@ function WorkspaceInner() {
         <div className="px-4 flex items-center justify-between gap-4">
           <div className="group flex items-center gap-2 min-w-0">
             {activeSpace?.icon && (
-              <span className="text-2xl leading-none flex-shrink-0">{activeSpace.icon}</span>
+              <span className="text-2xl leading-none shrink-0">{activeSpace.icon}</span>
             )}
             <h1 className="text-2xl font-bold tracking-tight truncate">
               {activeSpace?.name ?? 'Workspace'}
@@ -86,11 +84,9 @@ function WorkspaceInner() {
           </div>
         </div>
 
-        {/* Space nav tabs */}
         <SpaceNav spaces={spaces} onCreateSpace={handleCreateSpace} />
       </div>
 
-      {/* ── Board / Canvas ── */}
       <div className="flex-1 overflow-hidden">
         {!activeSpaceId ? (
           <div className="flex items-center justify-center h-40 text-muted-foreground text-sm">
