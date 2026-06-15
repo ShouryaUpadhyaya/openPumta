@@ -32,7 +32,7 @@ export function SpaceNav({ spaces, onCreateSpace }: SpaceNavProps) {
   };
 
   return (
-    <nav className="flex items-center gap-1 px-4 overflow-x-auto scrollbar-none flex-shrink-0">
+    <nav className="flex items-center gap-1 px-4 overflow-x-auto scrollbar-none shrink-0">
       {spaces.map((space) => (
         <div key={space.id} className="group relative flex items-center shrink-0">
           <button

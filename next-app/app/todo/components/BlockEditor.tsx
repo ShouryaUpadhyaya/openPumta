@@ -4,7 +4,7 @@ import { useCreateBlockNote } from '@blocknote/react';
 import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/core/fonts/inter.css';
 import '@blocknote/mantine/style.css';
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { useUpdateTextBoxContent } from '@/hooks/useTextBoxes';
 
 export default function BlockEditor({
