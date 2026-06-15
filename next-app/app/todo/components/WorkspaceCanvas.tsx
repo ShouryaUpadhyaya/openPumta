@@ -30,7 +30,6 @@ export default function WorkspaceCanvas() {
   }
 
   const handleAddTextBox = () => {
-    // Generate a new position somewhat randomly to avoid overlapping exactly
     const offset = (textBoxes?.length || 0) * 20;
     createTextBox.mutate({
       spaceId: activeSpaceId,
@@ -43,7 +42,7 @@ export default function WorkspaceCanvas() {
   };
 
   return (
-    <div className="relative flex-1 min-w-fit h-full overflow-hidden bg-dot-pattern bg-[length:24px_24px]">
+    <div className="relative flex-1 min-w-fit h-full overflow-hidden bg-dot-pattern bg-size-[24px_24px]">
       <div
         className={
           viewport === 'mobile'
