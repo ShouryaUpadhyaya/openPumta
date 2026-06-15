@@ -32,7 +32,7 @@ export default function BlockEditor({
   }, [editor, textBoxId, spaceId, updateContent]);
 
   return (
-    <div className="w-full h-full overflow-y-auto ">
+    <div className="w-full overflow-y-auto ">
       <BlockNoteView editor={editor} onChange={onChange} theme="dark" color="black" />
     </div>
   );

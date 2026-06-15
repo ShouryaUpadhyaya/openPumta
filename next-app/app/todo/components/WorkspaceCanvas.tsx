@@ -43,11 +43,11 @@ export default function WorkspaceCanvas() {
   };
 
   return (
-    <div className="relative flex-1 w-full h-full overflow-hidden bg-dot-pattern bg-[length:24px_24px]">
+    <div className="relative flex-1 min-w-fit h-full overflow-hidden bg-dot-pattern bg-[length:24px_24px]">
       <div
         className={
           viewport === 'mobile'
-            ? 'absolute inset-0 w-full h-full overflow-y-auto flex flex-col gap-4 p-4 pb-24'
+            ? 'absolute inset-0 w-fit h-full overflow-y-auto flex flex-col gap-4 p-4 pb-24'
             : 'absolute inset-0 w-full h-full'
         }
       >
