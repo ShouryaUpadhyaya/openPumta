@@ -12,6 +12,11 @@ const getSpaces = asyncHandler(async (req: Request, res: Response) => {
   const spaces = await prisma.space.findMany({
     where: { userId: Number(userId), deleted: false },
     orderBy: { order: 'asc' },
+    include: {
+      textBoxes: {
+        where: { deleted: false },
+      },
+    },
   });
 
   return res.status(200).json(new ApiResponse(200, spaces, 'Spaces fetched'));
