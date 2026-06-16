@@ -42,7 +42,7 @@ export default function WorkspaceCanvas() {
   };
 
   return (
-    <div className="relative flex-1 min-w-fit h-full overflow-hidden bg-dot-pattern bg-size-[24px_24px]">
+    <div className="relative flex-1 min-w-fit  min-h-full overflow-hidden bg-dot-pattern bg-size-[24px_24px]">
       <div
         className={
           viewport === 'mobile'

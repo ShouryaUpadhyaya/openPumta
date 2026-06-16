@@ -72,7 +72,7 @@ export default function TextBoxContainer({
         height: layout.height,
       }}
       position={isMobile ? { x: 0, y: 0 } : { x: layout.x, y: layout.y }}
-      size={{ width: isMobile ? '100%' : layout.width, height: isMobile ? 'auto' : layout.height }}
+      size={{ width: isMobile ? '100%' : layout.width, height: isMobile ? 'auto' : `auto` }}
       disableDragging={isMobile}
       enableResizing={isMobile ? false : true}
       onDragStop={handleDragStop}
@@ -80,7 +80,7 @@ export default function TextBoxContainer({
       minWidth={isMobile ? '100%' : 300}
       minHeight={150}
       bounds="parent"
-      className={`bg-[#1f1f1f] rounded-xl border border-border shadow-sm group hover:shadow-md transition-shadow flex flex-col z-10 ${isMobile ? 'relative! transform-none! h-auto! min-h-fit1 shrink-0' : ''}`}
+      className={`bg-[#1f1f1f] rounded-xl border border-border shadow-sm group hover:shadow-md transition-shadow flex flex-col z-10 ${isMobile ? 'relative! transform-none! h-auto! min-h-fit1 shrink-0' : 'min-h-fit!'}`}
       dragHandleClassName="drag-handle"
     >
       <div className="h-8 flex items-center justify-between px-3 border-b border-border/50 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -98,7 +98,7 @@ export default function TextBoxContainer({
           <Trash2 className="h-4 w-4" />
         </button>
       </div>
-      <div className="flex-1 p-2 overflow-y-auto cursor-text min-h-25">
+      <div className="flex-1 p-2 overflow-y-auto cursor-text min-h-25 lg:min-h-75">
         <BlockEditor
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           initialContent={textBox.content as any[]}
