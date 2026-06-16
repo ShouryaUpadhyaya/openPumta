@@ -25,6 +25,7 @@ function BlockEditor({
 
   const debouncedSave = useMemo(
     () =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       debounce((content: any) => {
         updateContent.mutate({
           id: textBoxId,
@@ -38,6 +39,7 @@ function BlockEditor({
   const onChange = useCallback(() => {
     debouncedSave(editor.document);
   }, [editor, debouncedSave]);
+
   return (
     <div className="w-full overflow-y-auto ">
       <BlockNoteView editor={editor} onChange={onChange} theme="dark" color="black" />

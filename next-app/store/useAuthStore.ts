@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import api from '@/lib/api';
+import { queryClient } from '@/lib/queryClient';
 
 interface User {
   id: number;
@@ -42,6 +43,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: async () => {
     try {
       await api.post('/auth/logout');
+
+      localStorage.removeItem('REACT_QUERY_OFFLINE_CACHE');
+      queryClient.clear();
+
       set({ user: null });
       window.location.href = '/login';
     } catch (error) {

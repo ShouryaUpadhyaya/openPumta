@@ -5,8 +5,31 @@ import { Button } from '@/components/ui/button';
 import { FieldDescription, FieldGroup } from '@/components/ui/field';
 import Link from 'next/link';
 import api from '@/lib/api';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
 
 export function SignupForm({ className, ...props }: React.ComponentProps<'div'>) {
+  const queryClient = useQueryClient();
+  const logoutMutation = useMutation({
+    mutationFn: async () => api.post('/auth/logout'),
+    onSuccess: async () => {
+      console.log('inside onSuccess');
+      localStorage.removeItem('REACT_QUERY_OFFLINE_CACHE');
+      queryClient.clear();
+      console.log('cleared cache');
+      setTimeout(() => {}, 1000);
+    },
+    onError: (error) => {
+      console.error('logout failed', error);
+    },
+
+    onSettled: () => {
+      console.log('mutation finished');
+    },
+  });
+  const handleLogout = () => {
+    logoutMutation.mutate();
+  };
+
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -22,12 +45,6 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'div'>)
 
   const handleGoogleSignup = () => {
     window.location.href = '/api/auth/google';
-  };
-
-  const handleLogout = () => {
-    api.post('/auth/logout').then(() => {
-      window.location.reload();
-    });
   };
 
   if (loading) {

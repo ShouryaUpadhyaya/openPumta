@@ -11,10 +11,10 @@ const backendUrl = process.env.BACKEND_URL || 'http://localhost:4000';
 
 const cookieExtractor = (req: any) => {
   let token = null;
-  console.log('All Cookies received:', req.cookies);
+  //console.log('All Cookies received:', req.cookies);
   if (req && req.cookies) {
     token = req.cookies['token'];
-    console.log('Extracted Token from cookie:', token ? 'Found' : 'Not Found');
+    //console.log('Extracted Token from cookie:', token ? 'Found' : 'Not Found');
   }
   return token || ExtractJwt.fromAuthHeaderAsBearerToken()(req);
 };
@@ -45,7 +45,7 @@ passport.use(
             const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as any;
             guestUser = await prisma.user.findUnique({ where: { id: decoded.id } });
           } catch (e) {
-            console.error('Error verifying guest token during Google callback:', e);
+            //console.error('Error verifying guest token during Google callback:', e);
           }
         }
 

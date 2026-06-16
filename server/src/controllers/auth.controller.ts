@@ -3,6 +3,7 @@ import asyncHandler from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../../prisma/prismaClient.js';
+import { ApiResponse } from '../utils/ApiResponse.js';
 
 const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
@@ -59,5 +60,6 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
     secure: true,
     sameSite: 'none',
   });
-  res.json({ message: 'Logged out' });
+  res.json(new ApiResponse(200, { message: 'very nice loggout success' }, 'logged out'));
+  //console.log('logged out !!!1');
 });
