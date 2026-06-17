@@ -1,84 +1,160 @@
-# openPumta
+<div align="center">
+  <!-- Place your logo or banner image here -->
+  <img src="https://via.placeholder.com/800x200?text=openPumta+Banner" alt="openPumta Banner" width="100%" />
 
-An open-source, desktop-first productivity system inspired by Yeolpumta.
-It combines Pomodoro focus tracking, subject-wise analytics, habit tracking, daily ratings, personal data export, and AI-assisted reflection.
+  <h1>openPumta</h1>
+  <p>An open-source, desktop-first productivity system integrating Pomodoro focus tracking, habit building, and AI-assisted reflection.</p>
+  <p><i>Inspired by Yeolpumta, Notion, and Atomic Habits.</i></p>
 
-![License](https://img.shields.io/badge/license-MIT-blue)
-![Status](https://img.shields.io/badge/status-active-development-green)
-![Stack](https://img.shields.io/badge/stack-Next.js%20%7C%20Express%20%7C%20Prisma-blue)
+  <p>
+    <a href="https://img.shields.io/badge/license-MIT-blue"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License" /></a>
+    <a href="https://img.shields.io/badge/status-active-development-green"><img src="https://img.shields.io/badge/status-active-development-green" alt="Status" /></a>
+    <a href="https://img.shields.io/badge/stack-Next.js%20%7C%20Express%20%7C%20Prisma-blue"><img src="https://img.shields.io/badge/stack-Next.js%20%7C%20Express%20%7C%20Prisma-blue" alt="Stack" /></a>
+    <a href="https://img.shields.io/github/stars/yourhandle/openPumta?style=social"><img src="https://img.shields.io/github/stars/yourhandle/openPumta?style=social" alt="Stars" /></a>
+  </p>
 
-## Live Demo
+  <h3><a href="https://openpumta.com/">View Live Demo</a></h3>
+  <p><i>You can try the app in Guest Mode without signing up (though sign-up is recommended to prevent data loss if your local storage is cleared).</i></p>
+</div>
 
-[https://openpumta.com/](https://openpumta.com/)
+<br />
+
+<!-- Place a screenshot/GIF of the app in action here -->
+<div align="center">
+  <img src="https://via.placeholder.com/800x450?text=App+Screenshot+Here" alt="openPumta Screenshot" width="80%" />
+</div>
+
+<br />
+
+## Table of Contents
+
+- [Table of Contents](#table-of-contents)
+- [Why openPumta?](#why-openpumta)
+- [Features](#features)
+  - [Dashboard \& Overview](#dashboard--overview)
+  - [Habits (21-Day Protocol)](#habits-21-day-protocol)
+  - [Workspace](#workspace)
+  - [Clock \& Focus](#clock--focus)
+  - [Stats](#stats)
+- [Architecture](#architecture)
+- [Deployment](#deployment)
+- [Getting Started (Local Development)](#getting-started-local-development)
+  - [1. Clone \& Configure](#1-clone--configure)
+  - [2. Run with Docker](#2-run-with-docker)
+  - [3. Database Migrations](#3-database-migrations)
+- [Contributing](#contributing)
+- [Community \& Support](#community--support)
+- [The Science \& Philosophy](#the-science--philosophy)
+- [Roadmap (Future Features)](#roadmap-future-features)
+- [License](#license)
+
+---
 
 ## Why openPumta?
 
-After using Yeolpumta for 2+ years, I wanted a productivity system with:
+After using Yeolpumta and various habit trackers for years, I realized that existing tools were either heavily mobile-focused, locked your data behind walled gardens, or were bloated with features I didn't need.
 
-- A desktop-first workflow
-- User-owned, exportable data
-- Serious analytics beyond simple streaks
-- Habits, focus sessions, todos, and daily reviews in one place
-- AI reports that explain patterns and suggest next actions
+**openPumta** takes the best elements of Notion (flexible workspaces), Yeolpumta (intense study tracking), and dedicated habit trackers, combining them into a **single, desktop-first workflow**.
+
+- **Own your data:** Full export capability at any time.
+- **Zero bloat:** Designed strictly for deep work and tracking what matters.
+- **Actionable AI:** Doesn't just track data; uses LLMs to identify burnout risks and suggest actionable plans based on your logs.
+
+---
 
 ## Features
 
-### Desktop-First Focus
+### Dashboard & Overview
 
-- **Pomodoro timer:** Built for long study and deep-work sessions.
-- **Subject assignment:** Categorize focus sessions by subject, such as DSA, Math, or System Design.
-- **Stats dashboard:** Track focus time, trends, performance deltas, and daily patterns.
+The central hub for your entire day.
 
-### Data Ownership
+- **Quick Actions:** Immediately start a timer for any subject.
+- **Habit Section:** Quickly check off your daily habits.
+- **Daily Review:** Use this section as a journal/diary, with the ability to review previous journals.
+- **Analytics:** View weekly and 21-day analysis charts of your study time and habits.
+- **Subject Setup:** Click and quickly configure tracking subjects with a name, goal time per day, color, and difficulty. Link habits directly to subjects so they auto-complete after a certain amount of time passes!
 
-- **Full export:** Export your logs at any time.
-- **Readable formats:** Use structured JSON for scripts or text summaries for review.
+<!-- Place a screenshot of the Dashboard here -->
+<div align="center">
+  <img src="https://via.placeholder.com/800x400?text=Dashboard+Screenshot" alt="Dashboard Screenshot" width="80%" />
+</div>
 
-### Habits And Daily Review
+### Habits (21-Day Protocol)
 
-- **Habit tracking:** Track habits with difficulty and optional subject links.
-- **Daily ratings:** Record how each day went and compare effort, mood, and output.
-- **Immediate feedback:** Small rewards and completion effects help maintain momentum.
+Designed around strict, achievable consistency.
 
-### Todo Workspace
+- **The 6-Habit Limit:** You are only allowed to track up to 6 habits at a time to prevent overwhelming yourself.
+- **The "Perfect Day":** Complete just 4 habits to achieve a "Perfect Day" score. We celebrate your momentum: completing 2 habits triggers small confetti, and hitting 4 triggers a massive celebration!
+- **21-Day Heatmap:** Your progress is shown in a 21-day heatmap by default (with more views available).
+- **Bad Day Plans:** Every habit can have a "Bad Day Plan" (a minimum baseline, e.g., "Do 1 pushup"). On low-energy days, do the baseline to keep the streak alive and never throw up a zero.
+- **Subject Linking:** Habits can be linked to subjects for automatic completion during focus sessions.
+- **Education:** Click the info button in the habit section to learn more about the neurobiology of habit formation.
 
-- **Spaces, columns, and blocks:** Organize work in a flexible workspace.
-- **Block types:** Todos, headings, paragraphs, and dividers.
-- **Scheduling fields:** Use due dates, reminders, and scheduled blocks.
+### Workspace
 
-### AI Reports
+A Notion-like canvas for your personal productivity systems.
 
-Use LLMs to turn raw logs into feedback loops:
+- **Rich Text Blocks:** Use todos, headings, paragraphs, and dividers.
+- **Build Your Systems:** Create custom pages like a "Daily Planner" with a section for today's todos and another for the week's priorities.
+- **Notion Compatibility:** Copy and paste your existing Notion templates directly into openPumta—they work seamlessly! No need to rebuild your systems. Pre-made templates are also available out-of-the-box.
 
-- Focus trend analysis
-- Habit consistency breakdowns
-- Burnout risk signals
-- Suggested weekly plans
+### Clock & Focus
 
-## Tech Stack
+- **Visual Progress:** See the current subject time, total time of the day, and a visual progress ring.
+- **Evolving Avatar:** Watch your avatar evolve as your focus time increases throughout the session!
 
-- **Frontend:** Next.js 16, React 19, TypeScript, Tailwind CSS, Zustand, TanStack Query, Recharts
-- **Backend:** Express, TypeScript, Prisma, PostgreSQL, Passport, JWT, Google OAuth
-- **Infrastructure:** Docker Compose
-- **AI:** LLM-powered reports and coaching helpers
+### Stats
 
-## Getting Started
+We believe in "Show, Don't Tell" when it comes to stats. Dive into detailed visual breakdowns of your performance.
 
-The easiest way to run the full app is Docker Compose. It starts:
+<!-- Place screenshots of the Stats page here -->
+<div align="center">
+  <img src="https://via.placeholder.com/400x300?text=Stats+Screenshot+1" alt="Stats 1" />
+  <img src="https://via.placeholder.com/400x300?text=Stats+Screenshot+2" alt="Stats 2" />
+</div>
 
-- Frontend: [http://localhost:3000](http://localhost:3000)
-- API: [http://localhost:4000](http://localhost:4000)
-- Postgres: `localhost:5450`
-- Adminer: [http://localhost:8080](http://localhost:8080)
+---
 
-### 1. Clone The Repository
+## Architecture
+
+openPumta utilizes a modern, decoupled architecture designed for scalability and developer experience.
+
+```mermaid
+graph TD;
+    Client[Next.js Client] -->|REST / OpenAPI| API[Express API];
+    API -->|Prisma| DB[(PostgreSQL)];
+    API <--> AI[LLM Provider - Groq];
+    Client <--> Auth[Google OAuth];
+```
+
+- **Frontend:** Next.js 16, React 19, TypeScript, Tailwind CSS, Zustand, TanStack Query, Recharts.
+- **Backend:** Express, TypeScript, Prisma, PostgreSQL, Passport, JWT, Google OAuth.
+- **Infrastructure:** Docker Compose.
+- **AI:** Groq API for fast LLM-powered reports.
+
+---
+
+## Deployment
+
+The system is containerized and ready for production deployment on platforms like Render, Railway, DigitalOcean, or an AWS EC2 instance.
+
+1. **Production Docker Compose:** Use `docker-compose.prod.yml` to spin up the API and Database securely.
+2. **Reverse Proxy:** Set up Nginx (configuration provided in the `/nginx` folder) to handle SSL/TLS termination and route traffic to the Next.js frontend and Express API.
+3. **Frontend Hosting:** The Next.js app can be deployed effortlessly on Vercel or Netlify; simply point `NEXT_PUBLIC_BACKEND_URL` to your hosted API domain.
+4. **Environment Variables:** Ensure production secrets (`JWT_SECRET`, database passwords) and OAuth keys are strictly managed via your hosting provider's secrets manager.
+
+---
+
+## Getting Started (Local Development)
+
+The easiest way to run the full app locally is via Docker Compose.
+
+### 1. Clone & Configure
 
 ```bash
 git clone https://github.com/yourhandle/openPumta.git
 cd openPumta
 ```
-
-### 2. Create Environment Files
 
 Create `server/.env`:
 
@@ -100,107 +176,67 @@ Create `next-app/.env`:
 NEXT_PUBLIC_BACKEND_URL="http://api:4000"
 ```
 
-### 3. Start Docker Compose
+### 2. Run with Docker
 
 ```bash
 docker compose up --build
 ```
 
-Postgres uses the named Docker volume `postgres_data`, so your database persists across container restarts.
+- Frontend: [http://localhost:3000](http://localhost:3000)
+- API: [http://localhost:4000](http://localhost:4000)
 
-### 4. Apply Database Migrations
-
-In another terminal:
+### 3. Database Migrations
 
 ```bash
 docker compose exec api pnpm prisma migrate deploy
 ```
 
-For local schema development, use:
+_(See `docs/` for backend API documentation and OpenAPI specs)_
 
-```bash
-docker compose exec api pnpm prisma migrate dev
-```
+---
 
-### 5. Open The App
+## Contributing
 
-Visit [http://localhost:3000](http://localhost:3000).
+We welcome contributions from the community! Whether it's a bug fix, a new feature, or improved documentation, your help is appreciated.
 
-## Common Docker Commands
+Please read our [**Contributing Guidelines (CONTRIBUTING.md)**](./CONTRIBUTING.md) to get started with setting up your local environment, coding standards, and the pull request process.
 
-```bash
-# Start services in the background
-docker compose up -d
+---
 
-# Rebuild images
-docker compose build
+## Community & Support
 
-# View logs
-docker compose logs -f api web
+- **Found a bug or have a feature request?** [Open an issue](https://github.com/yourhandle/openPumta/issues) on GitHub.
+- **Want to discuss features or get help?** Join the conversation in our GitHub Discussions (or Discord).
 
-# Stop containers without deleting the database volume
-docker compose down
+---
 
-# Stop containers and delete the database volume
-docker compose down -v
-```
+## The Science & Philosophy
 
-## Local Development Without Docker
+openPumta isn't just another timer. It is built upon proven psychological and neurobiological frameworks for productivity, allowing you to easily apply knowledge from thought leaders without getting distracted by the tool itself.
 
-Install dependencies from the workspace root:
+- **Deep Work (Cal Newport):** The Pomodoro timer and subject categorization are designed specifically for long, uninterrupted focus sessions. No distractions, just deep cognitive work.
+- **Atomic Habits (James Clear):** The habit tracking module is built around compounding consistency. Immediate feedback loops (small rewards/completion effects) help maintain momentum and build neurological pathways for habit formation.
+- **Huberman Lab Protocols:** The system encourages tracking effort vs. output and promotes daily ratings to analyze mood, helping you identify dopamine burnout risks and optimize your study/work windows. Specifically, the 21-day habit protocol synthesizes peer-reviewed research across neurobiology, behavioral psychology, and circadian science (Learn more from Dr. Andrew Huberman [here](https://youtu.be/Wcs2PFz5q6g?t=4702)).
+- **Reflective Journaling:** By logging how each day went, openPumta helps you find correlations between your focus time, mood, and completed habits.
 
-```bash
-pnpm install
-```
+---
 
-Run both apps together:
+## Roadmap (Future Features)
 
-```bash
-pnpm dev
-```
+- **Advanced AI Coach Agent:** An AI that acts as a real accountability coach. It will use data from your workspace, daily reviews, and focus logs to assess progress, set realistic goals, and keep you on track.
+  - _Proactive Messaging:_ Reach out via WhatsApp, Instagram, or Telegram for daily check-ups.
+  - _Web Research:_ Collect information relevant to your goals to build actionable plans, complete with source citations.
+  - _Editable Memory:_ The agent will have memory that you can edit—add important context or remove unimportant details to prevent clutter.
+  - _(Stretch Goal)_ Voice processing for real-time conversational check-ups and reviews.
+- **Voice-Activated Language Model:** Speak directly to the app to automate friction ("Add this todo to the Daily Planner space", "Check off my meditation habit").
+- **Mobile App & Screentime Tracking:** A companion mobile app that blocks distracting apps during focus sessions, pulls in your screentime stats, and potentially syncs with health data (like weight).
+- **Distraction-Blocking Web Extension:** A browser extension to block unnecessary websites and YouTube channels during deep work windows.
+- **Google Calendar Integration:** Schedule your Workspace todos directly onto your Google Calendar.
+- **Multi-Device Timer Sync:** WebSocket-based syncing for the Pomodoro timer across devices.
+- **Modular Dashboard:** Drag-and-drop dashboard blocks for ultimate customization.
 
-Or run them separately:
-
-```bash
-pnpm --filter server dev
-pnpm --filter next-app dev
-```
-
-When running outside Docker, use the host-mapped Postgres port in `server/.env`:
-
-```env
-DATABASE_URL="postgresql://user:password@localhost:5450/openpumta"
-```
-
-Then apply migrations:
-
-```bash
-pnpm --filter server prisma migrate dev
-```
-
-## Project Structure
-
-```text
-.
-├── docker-compose.yml
-├── next-app/         # Next.js frontend
-├── server/           # Express API and Prisma schema
-├── docs/             # API docs and OpenAPI spec
-└── pnpm-workspace.yaml
-```
-
-## Roadmap
-
-- [ ] WebSocket-based multi-device timer sync
-- [ ] Modular drag-and-drop dashboard blocks
-- [ ] AI forecasting engine
-- [ ] Mobile app site-blocking during focus sessions
-
-## Documentation
-
-- [Backend API Documentation](./docs/BACKEND_API.md)
-- [OpenAPI Spec](./docs/openapi.yaml)
+---
 
 ## License
 
-MIT
+Distributed under the MIT License. See `LICENSE` for more information.

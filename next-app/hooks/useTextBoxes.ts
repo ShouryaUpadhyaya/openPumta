@@ -40,8 +40,32 @@ export const useUpdateTextBoxLayout = () => {
       const { data } = await api.patch(`/spaces/${spaceId}/textboxes/${id}/layout`, { layout });
       return data.data as TextBox;
     },
-    onSuccess: (_, variables) =>
-      queryClient.invalidateQueries({ queryKey: ['textBoxes', variables.spaceId] }),
+    onMutate: async ({ id, spaceId, layout }) => {
+      // Cancel any outgoing refetches to prevent them from overwriting our optimistic update
+      await queryClient.cancelQueries({ queryKey: ['textBoxes', spaceId] });
+
+      // Snapshot the previous value
+      const previousTextBoxes = queryClient.getQueryData(['textBoxes', spaceId]);
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(['textBoxes', spaceId], (old: TextBox[] | undefined) => {
+        if (!old) return old;
+        return old.map((box) => (box.id === id ? { ...box, layout } : box));
+      });
+
+      // Return a context with the previous data
+      return { previousTextBoxes };
+    },
+    onError: (err, variables, context) => {
+      // If the mutation fails, roll back to the previous value
+      if (context?.previousTextBoxes) {
+        queryClient.setQueryData(['textBoxes', variables.spaceId], context.previousTextBoxes);
+      }
+    },
+    onSettled: (data, error, variables) => {
+      // Always refetch after error or success
+      queryClient.invalidateQueries({ queryKey: ['textBoxes', variables.spaceId] });
+    },
   });
 };
 
