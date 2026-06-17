@@ -3,13 +3,11 @@
 import React, { useState } from 'react';
 import { Space } from '@/hooks/useSpaces';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
-import { useMoveTextBox } from '@/hooks/useTextBoxes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, X, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SpaceSettingsMenu } from './SpaceSettingsMenu';
-import { toast } from 'sonner';
 
 interface SpaceNavProps {
   spaces: Space[];
@@ -19,13 +17,10 @@ interface SpaceNavProps {
 const SPACE_ICONS = ['📋', '🏠', '💼', '🎓', '💻', '🏋️', '🎯', '📚', '🧪', '🌟'];
 
 export function SpaceNav({ spaces, onCreateSpace }: SpaceNavProps) {
-  const { activeSpaceId, setActiveSpace, draggingTextBox, setDraggingTextBox } =
-    useWorkspaceStore();
-  const moveTextBox = useMoveTextBox();
+  const { activeSpaceId, setActiveSpace, dragOverSpaceId } = useWorkspaceStore();
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const [newIcon, setNewIcon] = useState('📋');
-  const [dragOverSpaceId, setDragOverSpaceId] = useState<number | null>(null);
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,67 +31,22 @@ export function SpaceNav({ spaces, onCreateSpace }: SpaceNavProps) {
     setIsCreating(false);
   };
 
-  const handleDragOver = (e: React.DragEvent, spaceId: number) => {
-    // Only accept if a textbox is being dragged and it's a different space
-    if (!draggingTextBox || draggingTextBox.spaceId === spaceId) return;
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    setDragOverSpaceId(spaceId);
-  };
-
-  const handleDragLeave = () => {
-    setDragOverSpaceId(null);
-  };
-
-  const handleDrop = (e: React.DragEvent, targetSpaceId: number) => {
-    e.preventDefault();
-    setDragOverSpaceId(null);
-
-    try {
-      const raw = e.dataTransfer.getData('application/textbox-move');
-      if (!raw) return;
-      const { textBoxId, sourceSpaceId } = JSON.parse(raw);
-      if (sourceSpaceId === targetSpaceId) return;
-
-      moveTextBox.mutate(
-        { id: textBoxId, sourceSpaceId, targetSpaceId },
-        {
-          onSuccess: () => {
-            const targetSpace = spaces.find((s) => s.id === targetSpaceId);
-            toast.success(`Moved to "${targetSpace?.name ?? 'space'}"`);
-            setActiveSpace(targetSpaceId);
-          },
-          onError: () => {
-            toast.error('Failed to move text box');
-          },
-        },
-      );
-    } catch {
-      // Invalid data — ignore
-    }
-    setDraggingTextBox(null);
-  };
-
   return (
     <nav className="flex items-center gap-1 px-4 overflow-x-auto scrollbar-none shrink-0">
       {spaces.map((space) => {
         const isDropTarget = dragOverSpaceId === space.id;
-        const isDragActive = !!draggingTextBox && draggingTextBox.spaceId !== space.id;
 
         return (
           <div key={space.id} className="group relative flex items-center shrink-0">
             <button
               onClick={() => setActiveSpace(space.id)}
-              onDragOver={(e) => handleDragOver(e, space.id)}
-              onDragLeave={handleDragLeave}
-              onDrop={(e) => handleDrop(e, space.id)}
+              data-space-target={space.id}
               className={cn(
                 'flex items-center gap-2 pl-4 pr-10 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 shrink-0',
                 activeSpaceId === space.id
                   ? 'bg-primary text-primary-foreground shadow-md shadow-primary/30'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
                 isDropTarget && 'ring-2 ring-primary bg-primary/10 scale-105',
-                isDragActive && !isDropTarget && 'opacity-80',
               )}
             >
               {space.icon && <span className="text-base leading-none">{space.icon}</span>}

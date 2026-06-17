@@ -87,7 +87,7 @@ function WorkspaceInner() {
         <SpaceNav spaces={spaces} onCreateSpace={handleCreateSpace} />
       </div>
 
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 min-h-0 relative z-0">
         {!activeSpaceId ? (
           <div className="flex items-center justify-center h-40 text-muted-foreground text-sm">
             Select a space to get started
