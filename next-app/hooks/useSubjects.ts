@@ -173,9 +173,9 @@ export const useUpdateSubjectLog = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['subjectLogs', variables.subjectId] });
       queryClient.invalidateQueries({ queryKey: ['subjects'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-      queryClient.invalidateQueries({ queryKey: ['stats'] });
-      queryClient.invalidateQueries({ queryKey: ['habits'] });
+      queryClient.invalidateQueries({ queryKey: ['subjectsWithLogs21'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+      queryClient.invalidateQueries({ queryKey: ['timeline'] });
     },
   });
 };
@@ -191,9 +191,9 @@ export const useDeleteSubjectLog = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['subjectLogs', variables.subjectId] });
       queryClient.invalidateQueries({ queryKey: ['subjects'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-      queryClient.invalidateQueries({ queryKey: ['stats'] });
-      queryClient.invalidateQueries({ queryKey: ['habits'] });
+      queryClient.invalidateQueries({ queryKey: ['subjectsWithLogs21'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+      queryClient.invalidateQueries({ queryKey: ['timeline'] });
     },
   });
 };
