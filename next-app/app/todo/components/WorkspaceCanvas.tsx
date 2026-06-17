@@ -1,12 +1,21 @@
 'use client';
 
-import React, { useRef } from 'react';
-import { useTextBoxes, useCreateTextBox } from '@/hooks/useTextBoxes';
+import React, { useRef, useMemo } from 'react';
+import { useTextBoxes, useCreateTextBox, useUpdateTextBoxLayout } from '@/hooks/useTextBoxes';
 import TextBoxContainer from './TextBoxContainer';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { useViewport } from '@/hooks/useViewport';
 import { Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 // Placement constants
 const BOX_WIDTH = 400;
@@ -102,8 +111,46 @@ export default function WorkspaceCanvas() {
   const { activeSpaceId } = useWorkspaceStore();
   const { data: textBoxes, isLoading } = useTextBoxes(activeSpaceId as number);
   const createTextBox = useCreateTextBox();
+  const updateLayout = useUpdateTextBoxLayout();
   const viewport = useViewport();
   const canvasRef = useRef<HTMLDivElement>(null);
+
+  const sortedTextBoxes = useMemo(() => {
+    if (!textBoxes) return [];
+    if (viewport !== 'mobile') return textBoxes;
+
+    return [...textBoxes].sort((a, b) => {
+      const orderA = a.layout?.mobile?.order ?? 0;
+      const orderB = b.layout?.mobile?.order ?? 0;
+      return orderA - orderB;
+    });
+  }, [textBoxes, viewport]);
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = sortedTextBoxes.findIndex((t) => t.id === active.id);
+    const newIndex = sortedTextBoxes.findIndex((t) => t.id === over.id);
+
+    const reordered = arrayMove(sortedTextBoxes, oldIndex, newIndex);
+
+    // Update backend for items that moved
+    reordered.forEach((box, index) => {
+      if (box.layout?.mobile?.order !== index) {
+        updateLayout.mutate({
+          id: box.id,
+          spaceId: activeSpaceId as number,
+          layout: {
+            ...box.layout,
+            mobile: { ...box.layout?.mobile, order: index },
+          },
+        });
+      }
+    });
+  };
 
   if (!activeSpaceId) {
     return (
@@ -141,11 +188,11 @@ export default function WorkspaceCanvas() {
     const { x, y } = findPlacement(existingRects, canvasW, canvasH);
 
     createTextBox.mutate({
-      spaceId: activeSpaceId,
+      spaceId: activeSpaceId as number,
       layout: {
         desktop: { x, y, width: BOX_WIDTH, height: BOX_HEIGHT },
         tablet: { x: Math.min(x, 20), y, width: 350, height: BOX_HEIGHT },
-        mobile: { x: 0, y, width: '100%', height: BOX_HEIGHT },
+        mobile: { x: 0, y, width: '100%', height: BOX_HEIGHT, order: textBoxes?.length ?? 0 },
       },
     });
   };
@@ -162,14 +209,36 @@ export default function WorkspaceCanvas() {
             : 'absolute inset-0 w-full h-full'
         }
       >
-        {textBoxes?.map((box) => (
-          <TextBoxContainer
-            key={box.id}
-            textBox={box}
-            spaceId={activeSpaceId}
-            viewport={viewport}
-          />
-        ))}
+        {viewport === 'mobile' ? (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={sortedTextBoxes.map((t) => t.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {sortedTextBoxes.map((box) => (
+                <TextBoxContainer
+                  key={box.id}
+                  textBox={box}
+                  spaceId={activeSpaceId as number}
+                  viewport={viewport}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
+        ) : (
+          sortedTextBoxes.map((box) => (
+            <TextBoxContainer
+              key={box.id}
+              textBox={box}
+              spaceId={activeSpaceId as number}
+              viewport={viewport}
+            />
+          ))
+        )}
       </div>
 
       <Button

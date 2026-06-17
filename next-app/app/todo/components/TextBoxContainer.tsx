@@ -7,6 +7,8 @@ import { useUpdateTextBoxLayout, useDeleteTextBox } from '@/hooks/useTextBoxes';
 import { GripHorizontal, Trash2, ArrowRightLeft } from 'lucide-react';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { Viewport } from '@/hooks/useViewport';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 export default function TextBoxContainer({
   textBox,
@@ -25,10 +27,20 @@ export default function TextBoxContainer({
     textBox.layout?.desktop || { x: 0, y: 0, width: 400, height: 300 };
   const isMobile = viewport === 'mobile';
 
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
+    id: textBox.id,
+  });
+
   // Track whether the user is actively dragging or resizing
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const isInteracting = isDragging || isResizing;
+
+  const sortableStyle = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    ...(isMobile ? { position: 'relative', zIndex: isDragging ? 50 : 10 } : {}),
+  } as React.CSSProperties;
 
   // Server-derived position/size (recalculates when layout props change)
   const serverPos = useMemo(
@@ -125,7 +137,7 @@ export default function TextBoxContainer({
 
   const isFocused = focusedTextBoxId === textBox.id;
 
-  return (
+  const rndContent = (
     <Rnd
       default={{
         x: isMobile ? 0 : layout.x,
@@ -149,7 +161,11 @@ export default function TextBoxContainer({
       dragHandleClassName="drag-handle"
     >
       <div className="h-8 flex items-center justify-between px-3 border-b border-border/50 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity">
-        <div className="drag-handle cursor-grab active:cursor-grabbing flex-1 h-full flex items-center">
+        <div
+          className="drag-handle cursor-grab active:cursor-grabbing flex-1 h-full flex items-center"
+          {...(isMobile ? listeners : {})}
+          {...(isMobile ? attributes : {})}
+        >
           <GripHorizontal className="h-4 w-4 text-muted-foreground" />
         </div>
         <div className="flex items-center gap-0.5">
@@ -193,4 +209,14 @@ export default function TextBoxContainer({
       </div>
     </Rnd>
   );
+
+  if (isMobile) {
+    return (
+      <div ref={setNodeRef} style={sortableStyle} className="w-full">
+        {rndContent}
+      </div>
+    );
+  }
+
+  return rndContent;
 }
