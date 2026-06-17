@@ -95,7 +95,7 @@ export default function SubjectLogsDialog({ isOpen, onClose, subject }: SubjectL
               No logs found for this subject.
             </p>
           ) : (
-            <div className="flex flex-col gap-3">
+            <div className="relative border-l-2 border-border/40 ml-4 pl-6 pr-2 flex flex-col gap-4 py-4">
               {logs.map((log) => {
                 const isEditing = editingLogId === log.id;
 
@@ -121,78 +121,94 @@ export default function SubjectLogsDialog({ isOpen, onClose, subject }: SubjectL
                 return (
                   <div
                     key={log.id}
-                    className="p-3 border border-border rounded-lg bg-muted/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                    className="relative group animate-in fade-in slide-in-from-bottom-2"
                   >
-                    {isEditing ? (
-                      <div className="flex-1 flex flex-col gap-2 w-full">
-                        <div className="flex flex-col gap-1">
-                          <label className="text-xs text-muted-foreground">Start Time</label>
-                          <input
-                            type="datetime-local"
-                            className="bg-background border border-border rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                            value={editStart}
-                            onChange={(e) => setEditStart(e.target.value)}
-                          />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <label className="text-xs text-muted-foreground">End Time</label>
-                          <input
-                            type="datetime-local"
-                            className="bg-background border border-border rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                            value={editEnd}
-                            onChange={(e) => setEditEnd(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex-1">
-                        <div className="font-medium text-sm text-foreground">{durationLabel}</div>
-                        <div className="text-xs text-muted-foreground mt-0.5">
-                          {startLabel} — {endLabel}
-                        </div>
-                      </div>
-                    )}
+                    {/* Timeline Dot */}
+                    <div
+                      className="absolute -left-[31px] top-5 h-3 w-3 rounded-full border-2 bg-background ring-4 ring-background transition-transform duration-200 group-hover:scale-125"
+                      style={{ borderColor: subject.color || 'var(--primary)' }}
+                    />
 
-                    <div className="flex items-center gap-2 self-end sm:self-auto">
+                    <div className="p-4 border border-border/60 rounded-xl bg-card shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                       {isEditing ? (
-                        <>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleSaveEdit(log.id)}
-                            className="h-8 w-8 text-green-500 hover:text-green-600 hover:bg-green-500/10"
-                          >
-                            <Check className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setEditingLogId(null)}
-                            className="h-8 w-8 text-muted-foreground"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </>
+                        <div className="flex-1 flex flex-col gap-3 w-full">
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-xs font-medium text-muted-foreground">
+                              Start Time
+                            </label>
+                            <input
+                              type="datetime-local"
+                              className="bg-background border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow"
+                              value={editStart}
+                              onChange={(e) => setEditStart(e.target.value)}
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-xs font-medium text-muted-foreground">
+                              End Time
+                            </label>
+                            <input
+                              type="datetime-local"
+                              className="bg-background border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow"
+                              value={editEnd}
+                              onChange={(e) => setEditEnd(e.target.value)}
+                            />
+                          </div>
+                        </div>
                       ) : (
-                        <>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEditClick(log)}
-                            className="h-8 w-8 text-muted-foreground"
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(log.id)}
-                            className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </>
+                        <div className="flex-1 flex flex-col">
+                          <div className="font-semibold text-lg tracking-tight text-foreground">
+                            {durationLabel}
+                          </div>
+                          <div className="text-sm font-medium text-muted-foreground mt-0.5">
+                            {startLabel} <span className="mx-1 text-border">→</span> {endLabel}
+                          </div>
+                        </div>
                       )}
+
+                      <div className="flex items-center gap-1.5 self-end sm:self-auto">
+                        {isEditing ? (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleSaveEdit(log.id)}
+                              className="h-8 gap-1.5 text-green-600 hover:text-green-700 hover:bg-green-500/10 border-green-500/20"
+                            >
+                              <Check className="h-3.5 w-3.5" />
+                              Save
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setEditingLogId(null)}
+                              className="h-8 gap-1.5 text-muted-foreground"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                              Cancel
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEditClick(log)}
+                              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(log.id)}
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
