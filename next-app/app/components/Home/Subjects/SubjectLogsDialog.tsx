@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Trash2, Edit2, Check, X } from 'lucide-react';
 import { ConvertSecsToTimer } from '@/lib/utils';
 import { toast } from 'sonner';
+import { DateTimePicker } from '@/components/ui/date-time-picker';
 
 interface SubjectLogsDialogProps {
   isOpen: boolean;
@@ -26,36 +27,32 @@ export default function SubjectLogsDialog({ isOpen, onClose, subject }: SubjectL
   const deleteLog = useDeleteSubjectLog();
 
   const [editingLogId, setEditingLogId] = useState<number | null>(null);
-  const [editStart, setEditStart] = useState<string>('');
-  const [editEnd, setEditEnd] = useState<string>('');
+  const [editStart, setEditStart] = useState<Date | undefined>(undefined);
+  const [editEnd, setEditEnd] = useState<Date | undefined>(undefined);
 
   const handleEditClick = (log: SubjectLog) => {
     setEditingLogId(log.id);
-    // Format for datetime-local: YYYY-MM-DDThh:mm
-    const startStr = new Date(log.startedAt).toISOString().slice(0, 16);
-    setEditStart(startStr);
-    const endStr = log.endedAt ? new Date(log.endedAt).toISOString().slice(0, 16) : '';
-    setEditEnd(endStr);
+    setEditStart(new Date(log.startedAt));
+    setEditEnd(log.endedAt ? new Date(log.endedAt) : undefined);
   };
 
   const handleSaveEdit = async (logId: number) => {
-    try {
-      const startedAtDate = new Date(editStart);
-      let endedAtDate: Date | null = null;
+    if (!editStart) {
+      toast.error('Start time is required');
+      return;
+    }
 
-      if (editEnd) {
-        endedAtDate = new Date(editEnd);
-        if (endedAtDate < startedAtDate) {
-          toast.error('End time cannot be before start time');
-          return;
-        }
+    try {
+      if (editEnd && editEnd < editStart) {
+        toast.error('End time cannot be before start time');
+        return;
       }
 
       await updateLog.mutateAsync({
         subjectId: subject.id,
         logId,
-        startedAt: startedAtDate.toISOString(),
-        endedAt: endedAtDate ? endedAtDate.toISOString() : null,
+        startedAt: editStart.toISOString(),
+        endedAt: editEnd ? editEnd.toISOString() : null,
       });
 
       toast.success('Log updated successfully');
@@ -136,23 +133,13 @@ export default function SubjectLogsDialog({ isOpen, onClose, subject }: SubjectL
                             <label className="text-xs font-medium text-muted-foreground">
                               Start Time
                             </label>
-                            <input
-                              type="datetime-local"
-                              className="bg-background border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow"
-                              value={editStart}
-                              onChange={(e) => setEditStart(e.target.value)}
-                            />
+                            <DateTimePicker value={editStart} onChange={setEditStart} />
                           </div>
                           <div className="flex flex-col gap-1.5">
                             <label className="text-xs font-medium text-muted-foreground">
                               End Time
                             </label>
-                            <input
-                              type="datetime-local"
-                              className="bg-background border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow"
-                              value={editEnd}
-                              onChange={(e) => setEditEnd(e.target.value)}
-                            />
+                            <DateTimePicker value={editEnd} onChange={setEditEnd} />
                           </div>
                         </div>
                       ) : (
