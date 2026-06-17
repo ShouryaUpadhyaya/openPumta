@@ -153,7 +153,7 @@ export default function WorkspaceCanvas() {
   return (
     <div
       ref={canvasRef}
-      className="relative flex-1 min-w-fit min-h-full bg-dot-pattern bg-size-[24px_24px]"
+      className="relative flex-1 min-w-fit  min-h-full overflow-hidden bg-dot-pattern bg-size-[24px_24px]"
     >
       <div
         className={

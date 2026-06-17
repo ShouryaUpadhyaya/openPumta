@@ -12,12 +12,12 @@ interface WorkspaceState {
   activeFilter: FilterType;
   dateRange: DateRange | undefined;
   focusedTextBoxId: number | null;
-  dragOverSpaceId: number | null;
+  draggingTextBox: { id: number; spaceId: number } | null;
   // Actions
   setActiveSpace: (id: number | null) => void;
   setFilter: (filter: FilterType, dateRange?: DateRange) => void;
   setFocusedTextBox: (id: number | null) => void;
-  setDragOverSpaceId: (id: number | null) => void;
+  setDraggingTextBox: (data: { id: number; spaceId: number } | null) => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({
@@ -25,10 +25,10 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
   activeFilter: 'all',
   dateRange: undefined,
   focusedTextBoxId: null,
-  dragOverSpaceId: null,
+  draggingTextBox: null,
 
   setActiveSpace: (id) => set({ activeSpaceId: id }),
   setFilter: (filter, dateRange) => set({ activeFilter: filter, dateRange }),
   setFocusedTextBox: (id) => set({ focusedTextBoxId: id }),
-  setDragOverSpaceId: (id) => set({ dragOverSpaceId: id }),
+  setDraggingTextBox: (data) => set({ draggingTextBox: data }),
 }));
