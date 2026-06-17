@@ -2,7 +2,7 @@
   <!-- Place your logo or banner image here -->
   <img src="next-app/public/banner.png" alt="openPumta Banner" width="100%" />
 
-  <h1>openPumta</h1>
+  <!-- <h1>openPumta</h1> -->
   <p>An open-source, desktop-first productivity system integrating Pomodoro focus tracking, habit building, and AI-assisted reflection.</p>
   <p><i>Inspired by Yeolpumta, Notion, and Atomic Habits.</i></p>
 
@@ -19,10 +19,10 @@
 
 <br />
 
-<!-- Place a screenshot/GIF of the app in action here -->
+<!-- Place a screenshot/GIF of the app in action here
 <div align="center">
   <img src="next-app/public/screen.png" alt="icon" width="20%" />
-</div>
+</div> -->
 
 <br />
 
@@ -36,6 +36,7 @@
   - [Workspace](#workspace)
   - [Clock \& Focus](#clock--focus)
   - [Stats](#stats)
+  - [Settings](#settings)
 - [Architecture](#architecture)
 - [Deployment](#deployment)
 - [Getting Started (Local Development)](#getting-started-local-development)

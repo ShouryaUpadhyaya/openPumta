@@ -30,13 +30,22 @@ export default function WorkspaceCanvas() {
   }
 
   const handleAddTextBox = () => {
-    const offset = (textBoxes?.length || 0) * 20;
+    let maxY = 50;
+    if (textBoxes) {
+      textBoxes.forEach((box) => {
+        const desktopLayout = box.layout?.desktop;
+        if (desktopLayout) {
+          maxY = Math.max(maxY, desktopLayout.y + desktopLayout.height + 20);
+        }
+      });
+    }
+
     createTextBox.mutate({
       spaceId: activeSpaceId,
       layout: {
-        desktop: { x: 50 + offset, y: 50 + offset, width: 400, height: 300 },
-        tablet: { x: 20 + offset, y: 20 + offset, width: 350, height: 300 },
-        mobile: { x: 0, y: 20 + offset, width: '100%', height: 300 },
+        desktop: { x: 50, y: maxY, width: 400, height: 300 },
+        tablet: { x: 20, y: maxY, width: 350, height: 300 },
+        mobile: { x: 0, y: maxY, width: '100%', height: 300 },
       },
     });
   };
