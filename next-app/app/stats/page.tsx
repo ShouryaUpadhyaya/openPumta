@@ -6,12 +6,14 @@ import {
   useDailyTimeline,
   useSubjectsWithLogs,
   useDailyRatings21,
-  useTodosAll,
   useHabitsWithLogs21,
+  useTodosAll,
 } from '@/hooks/useStats';
 
 import MainDashboardContainer from '../components/stats/MainDashboardContainer';
 import DeepDiveContainer from '../components/stats/DeepDiveContainer';
+import ManageLogsDialog from '../components/stats/ManageLogsDialog';
+import { Subject } from '../components/Home/Subjects/columns';
 
 import { BarChart3, ChevronDown, ChevronUp } from 'lucide-react';
 import { getLocalIsoDate } from '@/lib/utils';
@@ -50,13 +52,18 @@ export default function StatsPage() {
       className="min-h-screen p-4 md:p-6 pb-28 max-w-[1400px] mx-auto"
       data-tour-highlight="stats-page"
     >
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-3 rounded-xl bg-primary/20 text-primary">
-          <BarChart3 className="h-6 w-6" />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="p-3 rounded-xl bg-primary/20 text-primary">
+            <BarChart3 className="h-6 w-6" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Stats</h1>
+            <p className="text-muted-foreground text-sm">Comprehensive performance dashboard</p>
+          </div>
         </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Stats</h1>
-          <p className="text-muted-foreground text-sm">Comprehensive performance dashboard</p>
+          <ManageLogsDialog subjects={subjects as Subject[]} />
         </div>
       </div>
 

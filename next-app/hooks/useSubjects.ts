@@ -137,3 +137,63 @@ export const useSubjectTimer = () => {
 
   return { startTimer, endTimer };
 };
+
+export const useSubjectLogs = (subjectId: number) => {
+  return useQuery<SubjectLog[]>({
+    queryKey: ['subjectLogs', subjectId],
+    queryFn: async () => {
+      const { data } = await api.get(`/subject/${subjectId}/logs`);
+      return data.data; // ApiResponse.data
+    },
+    enabled: !!subjectId,
+  });
+};
+
+export const useUpdateSubjectLog = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      subjectId,
+      logId,
+      startedAt,
+      endedAt,
+    }: {
+      subjectId: number;
+      logId: number;
+      startedAt?: string;
+      endedAt?: string | null;
+    }) => {
+      const { data } = await api.patch(`/subject/${subjectId}/logs/${logId}`, {
+        startedAt,
+        endedAt,
+      });
+      return data.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['subjectLogs', variables.subjectId] });
+      queryClient.invalidateQueries({ queryKey: ['subjects'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['stats'] });
+      queryClient.invalidateQueries({ queryKey: ['habits'] });
+    },
+  });
+};
+
+export const useDeleteSubjectLog = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ subjectId, logId }: { subjectId: number; logId: number }) => {
+      const { data } = await api.delete(`/subject/${subjectId}/logs/${logId}`);
+      return data.data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['subjectLogs', variables.subjectId] });
+      queryClient.invalidateQueries({ queryKey: ['subjects'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['stats'] });
+      queryClient.invalidateQueries({ queryKey: ['habits'] });
+    },
+  });
+};

@@ -13,6 +13,7 @@ import { ConvertSecsToTimer } from '@/lib/utils';
 import { useDeleteSubject } from '@/hooks/useSubjects';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useRouter } from 'next/navigation';
+import SubjectLogsDialog from './SubjectLogsDialog';
 
 interface SubjectRowProps {
   subject: Subject;
@@ -25,6 +26,7 @@ export function SubjectRow({ subject, onEdit }: SubjectRowProps) {
   const router = useRouter();
   const deleteSubjectMutation = useDeleteSubject();
   const { activeSubjectId, startWork, phase, running } = useTimerStore();
+  const [isLogsDialogOpen, setIsLogsDialogOpen] = React.useState(false);
 
   const handlePlayClick = async () => {
     try {
@@ -175,6 +177,9 @@ export function SubjectRow({ subject, onEdit }: SubjectRowProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-popover border-border">
               <DropdownMenuItem onClick={() => onEdit(subject)}>Edit</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsLogsDialogOpen(true)}>
+                View Logs
+              </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={handleDelete}
                 className="text-destructive focus:text-destructive focus:bg-destructive/10"
@@ -185,6 +190,11 @@ export function SubjectRow({ subject, onEdit }: SubjectRowProps) {
           </DropdownMenu>
         </div>
       </td>
+      <SubjectLogsDialog
+        isOpen={isLogsDialogOpen}
+        onClose={() => setIsLogsDialogOpen(false)}
+        subject={subject}
+      />
     </tr>
   );
 }

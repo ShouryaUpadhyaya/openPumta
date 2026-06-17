@@ -8,6 +8,8 @@ import {
   updateSubject,
   deleteSubject,
   getSubjectLogs,
+  updateSubjectLog,
+  deleteSubjectLog,
   getAllSubjectsWithLogs,
   getDashboardData,
 } from '../controllers/subject.controller.js';
@@ -24,6 +26,8 @@ router
   .patch('/updateSubjectName/:id', updateSubject)
   .delete('/:id', deleteSubject)
   .get('/:subjectId/logs', getSubjectLogs)
+  .patch('/:subjectId/logs/:logId', updateSubjectLog)
+  .delete('/:subjectId/logs/:logId', deleteSubjectLog)
   .get('/stats', getAllSubjectsWithLogs)
   .get('/dashboard', getDashboardData);
 

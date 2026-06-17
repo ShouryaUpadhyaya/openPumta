@@ -359,6 +359,68 @@ const getAllSubjectsWithLogs = asyncHandler(async (req: Request, res: Response) 
     .json(new ApiResponse(200, subjectsWithDuration, 'Subjects with logs fetched successfully'));
 });
 
+const updateSubjectLog = asyncHandler(async (req: Request, res: Response) => {
+  const { logId } = req.params;
+  const { startedAt, endedAt } = req.body;
+  const logIdNum = Number(logId);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userId = (req as any).user?.id;
+
+  const log = await prisma.subjectLog.findFirst({
+    where: {
+      id: logIdNum,
+      deleted: false,
+      subject: {
+        userId: Number(userId),
+        deleted: false,
+      },
+    },
+  });
+
+  if (!log) {
+    throw new ApiError(404, 'Subject log not found');
+  }
+
+  const updatedLog = await prisma.subjectLog.update({
+    where: { id: logIdNum },
+    data: {
+      ...(startedAt !== undefined && { startedAt: new Date(startedAt) }),
+      ...(endedAt !== undefined && { endedAt: endedAt ? new Date(endedAt) : null }),
+    },
+  });
+
+  res.status(200).json(new ApiResponse(200, updatedLog, 'Subject log updated successfully'));
+});
+
+const deleteSubjectLog = asyncHandler(async (req: Request, res: Response) => {
+  const { logId } = req.params;
+  const logIdNum = Number(logId);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userId = (req as any).user?.id;
+
+  const log = await prisma.subjectLog.findFirst({
+    where: {
+      id: logIdNum,
+      deleted: false,
+      subject: {
+        userId: Number(userId),
+        deleted: false,
+      },
+    },
+  });
+
+  if (!log) {
+    throw new ApiError(404, 'Subject log not found');
+  }
+
+  await prisma.subjectLog.update({
+    where: { id: logIdNum },
+    data: { deleted: true },
+  });
+
+  res.status(200).json(new ApiResponse(200, null, 'Subject log deleted successfully'));
+});
+
 const getDashboardData = asyncHandler(async (req: Request, res: Response) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userId = (req as any).user?.id;
@@ -446,6 +508,8 @@ export {
   updateSubject,
   deleteSubject,
   getSubjectLogs,
+  updateSubjectLog,
+  deleteSubjectLog,
   getAllSubjectsWithLogs,
   getDashboardData,
 };
