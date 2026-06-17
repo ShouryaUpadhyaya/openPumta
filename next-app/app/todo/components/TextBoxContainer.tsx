@@ -4,7 +4,7 @@ import { Rnd } from 'react-rnd';
 import { TextBox } from '@/types/space';
 import BlockEditor from './BlockEditor';
 import { useUpdateTextBoxLayout, useDeleteTextBox } from '@/hooks/useTextBoxes';
-import { GripHorizontal, Trash2 } from 'lucide-react';
+import { GripHorizontal, Trash2, ArrowRightLeft } from 'lucide-react';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { Viewport } from '@/hooks/useViewport';
 
@@ -19,7 +19,7 @@ export default function TextBoxContainer({
 }) {
   const updateLayout = useUpdateTextBoxLayout();
   const deleteTextBox = useDeleteTextBox();
-  const { focusedTextBoxId, setFocusedTextBox } = useWorkspaceStore();
+  const { focusedTextBoxId, setFocusedTextBox, setDraggingTextBox } = useWorkspaceStore();
 
   const layout = textBox.layout?.[viewport] ||
     textBox.layout?.desktop || { x: 0, y: 0, width: 400, height: 300 };
@@ -152,16 +152,36 @@ export default function TextBoxContainer({
         <div className="drag-handle cursor-grab active:cursor-grabbing flex-1 h-full flex items-center">
           <GripHorizontal className="h-4 w-4 text-muted-foreground" />
         </div>
-        <button
-          onClick={() => {
-            if (confirm('Delete this text box?')) {
-              deleteTextBox.mutate({ id: textBox.id, spaceId });
-            }
-          }}
-          className="text-muted-foreground hover:text-destructive p-1 rounded-md hover:bg-muted"
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
+        <div className="flex items-center gap-0.5">
+          <div
+            draggable
+            onDragStart={(e) => {
+              e.dataTransfer.setData(
+                'application/textbox-move',
+                JSON.stringify({ textBoxId: textBox.id, sourceSpaceId: spaceId }),
+              );
+              e.dataTransfer.effectAllowed = 'move';
+              setDraggingTextBox({ id: textBox.id, spaceId });
+            }}
+            onDragEnd={() => {
+              setDraggingTextBox(null);
+            }}
+            className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted cursor-move"
+            title="Drag to another space"
+          >
+            <ArrowRightLeft className="h-4 w-4" />
+          </div>
+          <button
+            onClick={() => {
+              if (confirm('Delete this text box?')) {
+                deleteTextBox.mutate({ id: textBox.id, spaceId });
+              }
+            }}
+            className="text-muted-foreground hover:text-destructive p-1 rounded-md hover:bg-muted"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
       </div>
       <div className="flex-1 p-2 overflow-y-auto cursor-text min-h-25 lg:min-h-75">
         <BlockEditor

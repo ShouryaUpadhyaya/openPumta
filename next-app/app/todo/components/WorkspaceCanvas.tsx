@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useRef } from 'react';
 import { useTextBoxes, useCreateTextBox } from '@/hooks/useTextBoxes';
 import TextBoxContainer from './TextBoxContainer';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
@@ -7,11 +8,102 @@ import { useViewport } from '@/hooks/useViewport';
 import { Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+// Placement constants
+const BOX_WIDTH = 400;
+const BOX_HEIGHT = 300;
+const PADDING = 20;
+const SPACING = 20;
+
+interface Rect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/** Check if two rects overlap (with spacing gap) */
+function overlaps(a: Rect, b: Rect): boolean {
+  return !(
+    a.x + a.width + SPACING <= b.x ||
+    b.x + b.width + SPACING <= a.x ||
+    a.y + a.height + SPACING <= b.y ||
+    b.y + b.height + SPACING <= a.y
+  );
+}
+
+/** Check if a rect fits within canvas bounds (with padding) */
+function fitsInCanvas(rect: Rect, canvasW: number, canvasH: number): boolean {
+  return (
+    rect.x >= PADDING &&
+    rect.y >= PADDING &&
+    rect.x + rect.width <= canvasW - PADDING &&
+    rect.y + rect.height <= canvasH - PADDING
+  );
+}
+
+/** Returns true if the candidate doesn't overlap any existing box */
+function isValid(candidate: Rect, existing: Rect[], canvasW: number, canvasH: number): boolean {
+  if (!fitsInCanvas(candidate, canvasW, canvasH)) return false;
+  return !existing.some((box) => overlaps(candidate, box));
+}
+
+/** Smart placement: tries right → left → below → center */
+function findPlacement(
+  existing: Rect[],
+  canvasW: number,
+  canvasH: number,
+): { x: number; y: number } {
+  const candidate: Rect = { x: 0, y: 0, width: BOX_WIDTH, height: BOX_HEIGHT };
+
+  if (existing.length === 0) {
+    return { x: PADDING, y: PADDING };
+  }
+
+  // Try RIGHT of each existing box (sorted by rightmost first for better packing)
+  const byRight = [...existing].sort((a, b) => b.x + b.width - (a.x + a.width));
+  for (const box of byRight) {
+    candidate.x = box.x + box.width + SPACING;
+    candidate.y = box.y;
+    if (isValid(candidate, existing, canvasW, canvasH)) {
+      return { x: candidate.x, y: candidate.y };
+    }
+  }
+
+  // Try LEFT of each existing box (sorted by leftmost first)
+  const byLeft = [...existing].sort((a, b) => a.x - b.x);
+  for (const box of byLeft) {
+    candidate.x = box.x - BOX_WIDTH - SPACING;
+    candidate.y = box.y;
+    if (isValid(candidate, existing, canvasW, canvasH)) {
+      return { x: candidate.x, y: candidate.y };
+    }
+  }
+
+  // Try BELOW all existing boxes
+  let maxY = 0;
+  for (const box of existing) {
+    maxY = Math.max(maxY, box.y + box.height);
+  }
+  candidate.x = PADDING;
+  candidate.y = maxY + SPACING;
+  // Below always works (canvas can scroll), so skip bounds check for Y
+  if (candidate.x + candidate.width <= canvasW - PADDING) {
+    return { x: candidate.x, y: candidate.y };
+  }
+
+  // CENTER fallback
+  return {
+    x: Math.max(PADDING, (canvasW - BOX_WIDTH) / 2),
+    y: maxY + SPACING,
+  };
+}
+
 export default function WorkspaceCanvas() {
   const { activeSpaceId } = useWorkspaceStore();
   const { data: textBoxes, isLoading } = useTextBoxes(activeSpaceId as number);
   const createTextBox = useCreateTextBox();
   const viewport = useViewport();
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   if (!activeSpaceId) {
     return (
@@ -30,28 +122,39 @@ export default function WorkspaceCanvas() {
   }
 
   const handleAddTextBox = () => {
-    let maxY = 50;
-    if (textBoxes) {
-      textBoxes.forEach((box) => {
-        const desktopLayout = box.layout?.desktop;
-        if (desktopLayout) {
-          maxY = Math.max(maxY, desktopLayout.y + desktopLayout.height + 20);
-        }
-      });
-    }
+    const canvasEl = canvasRef.current;
+    const canvasW = canvasEl?.clientWidth ?? 1200;
+    const canvasH = canvasEl?.clientHeight ?? 800;
+
+    // Collect existing box rects for the current viewport
+    const existingRects: Rect[] = (textBoxes ?? []).map((box) => {
+      const l = box.layout?.[viewport] ||
+        box.layout?.desktop || { x: 0, y: 0, width: 400, height: 300 };
+      return {
+        x: l.x || 0,
+        y: l.y || 0,
+        width: typeof l.width === 'number' ? l.width : 400,
+        height: l.height || 300,
+      };
+    });
+
+    const { x, y } = findPlacement(existingRects, canvasW, canvasH);
 
     createTextBox.mutate({
       spaceId: activeSpaceId,
       layout: {
-        desktop: { x: 50, y: maxY, width: 400, height: 300 },
-        tablet: { x: 20, y: maxY, width: 350, height: 300 },
-        mobile: { x: 0, y: maxY, width: '100%', height: 300 },
+        desktop: { x, y, width: BOX_WIDTH, height: BOX_HEIGHT },
+        tablet: { x: Math.min(x, 20), y, width: 350, height: BOX_HEIGHT },
+        mobile: { x: 0, y, width: '100%', height: BOX_HEIGHT },
       },
     });
   };
 
   return (
-    <div className="relative flex-1 min-w-fit  min-h-full overflow-hidden bg-dot-pattern bg-size-[24px_24px]">
+    <div
+      ref={canvasRef}
+      className="relative flex-1 min-w-fit  min-h-full overflow-hidden bg-dot-pattern bg-size-[24px_24px]"
+    >
       <div
         className={
           viewport === 'mobile'

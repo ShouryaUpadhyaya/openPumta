@@ -91,3 +91,28 @@ export const useDeleteTextBox = () => {
       queryClient.invalidateQueries({ queryKey: ['textBoxes', variables.spaceId] }),
   });
 };
+
+export const useMoveTextBox = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      sourceSpaceId,
+      targetSpaceId,
+    }: {
+      id: number;
+      sourceSpaceId: number;
+      targetSpaceId: number;
+    }) => {
+      const { data } = await api.patch(`/spaces/${sourceSpaceId}/textboxes/${id}/move`, {
+        targetSpaceId,
+      });
+      return data.data as TextBox;
+    },
+    onSuccess: (_, variables) => {
+      // Invalidate both source and target space caches
+      queryClient.invalidateQueries({ queryKey: ['textBoxes', variables.sourceSpaceId] });
+      queryClient.invalidateQueries({ queryKey: ['textBoxes', variables.targetSpaceId] });
+    },
+  });
+};

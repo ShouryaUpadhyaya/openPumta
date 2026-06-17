@@ -6,6 +6,7 @@ import {
   updateTextBoxLayout,
   updateTextBoxContent,
   deleteTextBox,
+  moveTextBox,
 } from '../controllers/textbox.controller.js';
 
 // Base route: /api/spaces/:spaceId/textboxes
@@ -19,5 +20,6 @@ router.route('/').get(getTextBoxes).post(createTextBox);
 router.route('/:id').delete(deleteTextBox);
 router.route('/:id/layout').patch(updateTextBoxLayout);
 router.route('/:id/content').patch(updateTextBoxContent);
+router.route('/:id/move').patch(moveTextBox);
 
 export default router;
