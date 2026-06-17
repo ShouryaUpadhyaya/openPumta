@@ -81,9 +81,7 @@ export default function Navigation({ mounted }: { mounted: boolean }) {
           >
             {!isSidebarCollapsed && (
               <div className="flex items-center gap-2 px-2">
-                <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-xl">O</span>
-                </div>
+                <Image src="/icon.svg" alt="icon" width={10} height={10} className="w-9 h-9 " />
                 <span className="font-bold text-xl tracking-tight">OpenPumta</span>
               </div>
             )}

@@ -1,16 +1,16 @@
 <div align="center">
   <!-- Place your logo or banner image here -->
-  <img src="https://via.placeholder.com/800x200?text=openPumta+Banner" alt="openPumta Banner" width="100%" />
+  <img src="next-app/public/banner.png" alt="openPumta Banner" width="100%" />
 
   <h1>openPumta</h1>
   <p>An open-source, desktop-first productivity system integrating Pomodoro focus tracking, habit building, and AI-assisted reflection.</p>
   <p><i>Inspired by Yeolpumta, Notion, and Atomic Habits.</i></p>
 
   <p>
-    <a href="https://img.shields.io/badge/license-MIT-blue"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License" /></a>
-    <a href="https://img.shields.io/badge/status-active-development-green"><img src="https://img.shields.io/badge/status-active-development-green" alt="Status" /></a>
-    <a href="https://img.shields.io/badge/stack-Next.js%20%7C%20Express%20%7C%20Prisma-blue"><img src="https://img.shields.io/badge/stack-Next.js%20%7C%20Express%20%7C%20Prisma-blue" alt="Stack" /></a>
-    <a href="https://img.shields.io/github/stars/yourhandle/openPumta?style=social"><img src="https://img.shields.io/github/stars/yourhandle/openPumta?style=social" alt="Stars" /></a>
+    <a href="https://github.com/ShouryaUpadhyaya/openPumta/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License" /></a>
+    <a href="https://github.com/ShouryaUpadhyaya/openPumta"><img src="https://img.shields.io/badge/status-active%20development-green.svg" alt="Status" /></a>
+    <a href="https://github.com/ShouryaUpadhyaya/openPumta"><img src="https://img.shields.io/badge/stack-Next.js%20%7C%20Express%20%7C%20Prisma-blue.svg" alt="Stack" /></a>
+    <a href="https://github.com/ShouryaUpadhyaya/openPumta/stargazers"><img src="https://img.shields.io/github/stars/ShouryaUpadhyaya/openPumta?style=social" alt="Stars" /></a>
   </p>
 
   <h3><a href="https://openpumta.com/">View Live Demo</a></h3>
@@ -21,7 +21,7 @@
 
 <!-- Place a screenshot/GIF of the app in action here -->
 <div align="center">
-  <img src="https://via.placeholder.com/800x450?text=App+Screenshot+Here" alt="openPumta Screenshot" width="80%" />
+  <img src="next-app/public/screen.png" alt="icon" width="20%" />
 </div>
 
 <br />
@@ -76,7 +76,7 @@ The central hub for your entire day.
 
 <!-- Place a screenshot of the Dashboard here -->
 <div align="center">
-  <img src="https://via.placeholder.com/800x400?text=Dashboard+Screenshot" alt="Dashboard Screenshot" width="80%" />
+  <img src="next-app/public/Dashboard.png" alt="dashboard" width="80%" />
 </div>
 
 ### Habits (21-Day Protocol)
@@ -90,6 +90,14 @@ Designed around strict, achievable consistency.
 - **Subject Linking:** Habits can be linked to subjects for automatic completion during focus sessions.
 - **Education:** Click the info button in the habit section to learn more about the neurobiology of habit formation.
 
+<div align="center">
+  <img src="next-app/public/habit_1.png" alt="Habits Screenshot 1" width="80%" />
+  <br />
+  <br />
+  <img src="next-app/public/habit_2.png" alt="Habits Screenshot 2" width="40%" />
+  <img src="next-app/public/habit_3.png" alt="Habits Screenshot 3" width="40%" />
+</div>
+
 ### Workspace
 
 A Notion-like canvas for your personal productivity systems.
@@ -98,10 +106,18 @@ A Notion-like canvas for your personal productivity systems.
 - **Build Your Systems:** Create custom pages like a "Daily Planner" with a section for today's todos and another for the week's priorities.
 - **Notion Compatibility:** Copy and paste your existing Notion templates directly into openPumta—they work seamlessly! No need to rebuild your systems. Pre-made templates are also available out-of-the-box.
 
+<div align="center">
+  <img src="next-app/public/workspace example.png" alt="Workspace Example" width="80%" />
+</div>
+
 ### Clock & Focus
 
 - **Visual Progress:** See the current subject time, total time of the day, and a visual progress ring.
 - **Evolving Avatar:** Watch your avatar evolve as your focus time increases throughout the session!
+
+<div align="center">
+  <img src="next-app/public/timer.png" alt="Focus Timer" width="80%" />
+</div>
 
 ### Stats
 
@@ -109,8 +125,22 @@ We believe in "Show, Don't Tell" when it comes to stats. Dive into detailed visu
 
 <!-- Place screenshots of the Stats page here -->
 <div align="center">
-  <img src="https://via.placeholder.com/400x300?text=Stats+Screenshot+1" alt="Stats 1" />
-  <img src="https://via.placeholder.com/400x300?text=Stats+Screenshot+2" alt="Stats 2" />
+  <img src="next-app/public/stats_1.png" alt="Stats 1" width="80%" />
+  <br />
+  <br />
+  <img src="next-app/public/stats2.png" alt="Stats 2" width="40%" />
+  <img src="next-app/public/stats_3.png" alt="Stats 3" width="40%" />
+</div>
+
+### Settings
+
+Easily configure your profile, subjects, and preferences.
+
+<div align="center">
+  <img src="next-app/public/setting1.png" alt="Settings 1" width="80%" />
+  <br />
+  <br />
+  <img src="next-app/public/setting_2.png" alt="Settings 2" width="80%" />
 </div>
 
 ---

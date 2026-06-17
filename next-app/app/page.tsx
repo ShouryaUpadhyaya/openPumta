@@ -6,9 +6,9 @@ import Subjects from './components/Home/Subjects';
 import DailyRating from './components/Home/DailyRating';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useSubjects } from '@/hooks/useSubjects';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import Image from 'next/image';
 import { LogIn, LogOut, User } from 'lucide-react';
 import { GettingStartedCard } from '@/components/onboarding/getting-started-card';
 
@@ -20,7 +20,10 @@ export default function Home() {
     <div className="flex flex-col min-h-screen lg:h-screen lg:overflow-hidden p-4 bg-background text-foreground pb-24 lg:pb-4 w-full max-w-full overflow-x-hidden min-w-0">
       {/* Header */}
       <header className="flex justify-between items-center mb-4 shrink-0 lg:hidden">
-        <h1 className="text-2xl font-bold tracking-tight">OpenPumta</h1>
+        <h1 className="flex text-2xl font-bold justify-center items-center tracking-tight">
+          <Image src="/icon.svg" alt="icon" width={10} height={10} className="w-8 h-8 mr-2" />
+          OpenPumta
+        </h1>
         <div className="flex gap-2">
           {!loading && !user ? (
             <Button asChild variant="default" size="sm" className="gap-2">
