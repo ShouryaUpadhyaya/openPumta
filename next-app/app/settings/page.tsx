@@ -579,7 +579,7 @@ export default function SettingsPage() {
               <CardTitle>Restart Onboarding</CardTitle>
             </div>
             <CardDescription>
-              Launch the welcome tour again to learn about OpenPumta&apos;s philosophy.
+              Launch the welcome tour again to learn about openPumta&apos;s philosophy.
             </CardDescription>
           </CardHeader>
           <CardContent>

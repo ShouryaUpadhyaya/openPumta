@@ -22,7 +22,8 @@ export default function Home() {
       <header className="flex justify-between items-center mb-4 shrink-0 lg:hidden">
         <h1 className="flex text-2xl font-bold justify-center items-center tracking-tight">
           <Image src="/icon.svg" alt="icon" width={10} height={10} className="w-8 h-8 mr-2" />
-          OpenPumta
+          openPumta
+          <span className="sr-only"> - The Ultimate Yelpumta & Notion Productivity System</span>
         </h1>
         <div className="flex gap-2">
           {!loading && !user ? (
