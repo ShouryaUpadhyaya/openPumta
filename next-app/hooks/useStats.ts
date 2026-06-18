@@ -11,12 +11,22 @@ export interface TimelineItem {
   duration: number;
 }
 
+import { useAuthStore } from '@/store/useAuthStore';
+import { getStartOfDay, getEndOfDay } from '@/lib/dateUtils';
+
 export const useDailyTimeline = (date?: string) => {
+  const { user } = useAuthStore();
+  const startOfDayOffset = user?.startOfDay || '00:00';
+
+  const baseDate = date ? new Date(date) : new Date();
+  const from = getStartOfDay(startOfDayOffset, baseDate);
+  const to = getEndOfDay(startOfDayOffset, baseDate);
+
   return useQuery<TimelineItem[]>({
-    queryKey: ['timeline', date],
+    queryKey: ['timeline', date, startOfDayOffset],
     queryFn: async () => {
       const { data } = await api.get(`/stats/timeline`, {
-        params: { date },
+        params: { date, from: from.toISOString(), to: to.toISOString() },
       });
       return data.data;
     },
@@ -24,10 +34,17 @@ export const useDailyTimeline = (date?: string) => {
 };
 
 export const useDashboardStats = () => {
+  const { user } = useAuthStore();
+  const startOfDayOffset = user?.startOfDay || '00:00';
+  const from = getStartOfDay(startOfDayOffset);
+  const to = getEndOfDay(startOfDayOffset);
+
   return useQuery({
-    queryKey: ['dashboardStats'],
+    queryKey: ['dashboardStats', startOfDayOffset],
     queryFn: async () => {
-      const { data } = await api.get(`/stats/dashboard`);
+      const { data } = await api.get(`/stats/dashboard`, {
+        params: { from: from.toISOString(), to: to.toISOString() },
+      });
       return data.data; // { focusTimeArray, habitCompletionRateByDate, summary }
     },
   });
@@ -36,12 +53,16 @@ export const useDashboardStats = () => {
 // ─── Extended Stats Hooks for Overview Page ──────────────────────────────────
 
 export const useSubjectsWithLogs = () => {
-  const to = new Date();
-  const from = new Date();
-  from.setDate(from.getDate() - 21);
+  const { user } = useAuthStore();
+  const startOfDayOffset = user?.startOfDay || '00:00';
+
+  const to = getEndOfDay(startOfDayOffset);
+  const fromDate = new Date();
+  fromDate.setDate(fromDate.getDate() - 21);
+  const from = getStartOfDay(startOfDayOffset, fromDate);
 
   return useQuery({
-    queryKey: ['subjectsWithLogs21'],
+    queryKey: ['subjectsWithLogs21', startOfDayOffset],
     queryFn: async () => {
       const { data } = await api.get(
         `/subject/stats?from=${from.toISOString()}&to=${to.toISOString()}`,
@@ -72,11 +93,15 @@ export const useTodosAll = () => {
 };
 
 export const useHabitsWithLogs21 = () => {
-  const from = new Date();
-  from.setDate(from.getDate() - 21);
+  const { user } = useAuthStore();
+  const startOfDayOffset = user?.startOfDay || '00:00';
+
+  const fromDate = new Date();
+  fromDate.setDate(fromDate.getDate() - 21);
+  const from = getStartOfDay(startOfDayOffset, fromDate);
 
   return useQuery({
-    queryKey: ['habitsWithLogs', getLocalIsoDate(from)],
+    queryKey: ['habitsWithLogs', getLocalIsoDate(from), startOfDayOffset],
     queryFn: async () => {
       const { data } = await api.get(`/habits/logs`, {
         params: { from: from.toISOString() },

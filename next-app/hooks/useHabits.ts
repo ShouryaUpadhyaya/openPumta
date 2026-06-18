@@ -51,11 +51,23 @@ export const useCreateHabit = () => {
   });
 };
 
+import { useAuthStore } from '@/store/useAuthStore';
+import { getStartOfDay, getEndOfDay } from '@/lib/dateUtils';
+
 export const useHabitDashboard = (dateStr?: string) => {
+  const { user } = useAuthStore();
+  const startOfDayOffset = user?.startOfDay || '00:00';
+
+  const baseDate = dateStr ? new Date(dateStr) : new Date();
+  const from = getStartOfDay(startOfDayOffset, baseDate);
+  const to = getEndOfDay(startOfDayOffset, baseDate);
+
   return useQuery({
-    queryKey: ['habitDashboard', dateStr],
+    queryKey: ['habitDashboard', dateStr, startOfDayOffset],
     queryFn: async () => {
-      const { data } = await api.get(`/habits/dashboard`, { params: { date: dateStr } });
+      const { data } = await api.get(`/habits/dashboard`, {
+        params: { date: dateStr, from: from.toISOString(), to: to.toISOString() },
+      });
       return data.data; // { habits, todayStats, activeLog }
     },
   });
@@ -63,6 +75,8 @@ export const useHabitDashboard = (dateStr?: string) => {
 
 export const useToggleHabitCompletion = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+  const startOfDayOffset = user?.startOfDay || '00:00';
 
   return useMutation({
     mutationFn: async ({
@@ -74,7 +88,16 @@ export const useToggleHabitCompletion = () => {
       isBadDayPlan?: boolean;
       date?: string;
     }) => {
-      const { data } = await api.patch(`/habits/${habitId}/toggle`, { isBadDayPlan, date });
+      const baseDate = date ? new Date(date) : new Date();
+      const from = getStartOfDay(startOfDayOffset, baseDate);
+      const to = getEndOfDay(startOfDayOffset, baseDate);
+
+      const { data } = await api.patch(`/habits/${habitId}/toggle`, {
+        isBadDayPlan,
+        date,
+        from: from.toISOString(),
+        to: to.toISOString(),
+      });
       return data.data; // { completed: boolean }
     },
     onSuccess: () => {

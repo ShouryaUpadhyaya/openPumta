@@ -463,6 +463,44 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
+        {/* ── Account Preferences ──────────────────────────────────────── */}
+        <Card className="bg-background border-border/40 shadow-sm">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-primary" />
+              <CardTitle>Account Preferences</CardTitle>
+            </div>
+            <CardDescription>
+              Configure how the dashboard calculates daily stats and habits.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="space-y-0.5">
+                <Label htmlFor="start-of-day" className="text-sm font-medium">
+                  Start of Day
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  When should the timers and habits reset? (Default is 05:00 AM)
+                </p>
+              </div>
+              <Input
+                id="start-of-day"
+                type="time"
+                className="w-fit"
+                value={user?.startOfDay || '05:00'}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val) {
+                    useAuthStore.getState().updateUserPreferences({ startOfDay: val });
+                    toast.success('Start of day updated to ' + val);
+                  }
+                }}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
         {/* ── Durations ───────────────────────────────────────── */}
         <Card className="bg-background border-border/40 shadow-sm">
           <CardHeader>

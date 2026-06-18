@@ -22,13 +22,18 @@ export interface Subject {
   habits?: Habit[];
 }
 
+import { useAuthStore } from '@/store/useAuthStore';
+import { getStartOfDay, getEndOfDay } from '@/lib/dateUtils';
+
 export const useSubjects = () => {
-  const to = new Date();
-  const from = new Date();
-  from.setDate(from.getDate() - 1);
+  const { user } = useAuthStore();
+  const startOfDayOffset = user?.startOfDay || '00:00';
+
+  const from = getStartOfDay(startOfDayOffset);
+  const to = getEndOfDay(startOfDayOffset);
 
   return useQuery<Subject[]>({
-    queryKey: ['subjects'],
+    queryKey: ['subjects', startOfDayOffset],
     queryFn: async () => {
       const { data } = await api.get(
         `/subject/stats?from=${from.toISOString()}&to=${to.toISOString()}`,
@@ -108,6 +113,8 @@ export const useDeleteSubject = () => {
 
 export const useSubjectTimer = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+  const startOfDayOffset = user?.startOfDay || '00:00';
 
   const startTimer = useMutation({
     mutationFn: async (subjectId: number) => {
@@ -124,7 +131,12 @@ export const useSubjectTimer = () => {
 
   const endTimer = useMutation({
     mutationFn: async (subjectId: number) => {
-      const { data } = await api.patch(`/subject/${subjectId}/endTimer`);
+      const from = getStartOfDay(startOfDayOffset);
+      const to = getEndOfDay(startOfDayOffset);
+      const { data } = await api.patch(`/subject/${subjectId}/endTimer`, {
+        from: from.toISOString(),
+        to: to.toISOString(),
+      });
       return data.data; // ApiResponse.data
     },
     onSuccess: () => {

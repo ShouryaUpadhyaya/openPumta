@@ -8,6 +8,7 @@ interface User {
   name: string | null;
   avatarUrl: string | null;
   isGuest: boolean;
+  startOfDay?: string;
 }
 
 interface AuthState {
@@ -16,6 +17,7 @@ interface AuthState {
   fetchUser: () => Promise<void>;
   guestLogin: () => Promise<void>;
   logout: () => Promise<void>;
+  updateUserPreferences: (prefs: { startOfDay: string }) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -51,6 +53,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       window.location.href = '/login';
     } catch (error) {
       console.error('Logout failed', error);
+    }
+  },
+  updateUserPreferences: async (prefs) => {
+    try {
+      const user = get().user;
+      if (!user) return;
+      const { data } = await api.patch(`/user/${user.id}`, prefs);
+      set({ user: { ...user, ...data.data } });
+    } catch (error) {
+      console.error('Failed to update user preferences', error);
+      throw error;
     }
   },
 }));
