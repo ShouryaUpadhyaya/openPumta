@@ -27,6 +27,7 @@ import {
 import { toast } from 'sonner';
 import api from '@/lib/api';
 import { computeAllMetricsBundle } from '../stats/lib/metrics';
+import { TimePicker } from '@/components/ui/time-picker';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -484,13 +485,9 @@ export default function SettingsPage() {
                   When should the timers and habits reset? (Default is 05:00 AM)
                 </p>
               </div>
-              <Input
-                id="start-of-day"
-                type="time"
-                className="w-fit"
+              <TimePicker
                 value={user?.startOfDay || '05:00'}
-                onChange={(e) => {
-                  const val = e.target.value;
+                onChange={(val) => {
                   if (val) {
                     useAuthStore.getState().updateUserPreferences({ startOfDay: val });
                     toast.success('Start of day updated to ' + val);
