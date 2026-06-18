@@ -66,7 +66,7 @@ export function DateTimePicker({ value, onChange, disabled, className }: DateTim
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0 border-border shadow-md" align="start">
-        <Calendar mode="single" selected={date} onSelect={handleDateSelect} initialFocus />
+        <Calendar mode="single" selected={date} onSelect={handleDateSelect} autoFocus />
         <div className="p-3 border-t border-border flex items-center justify-between gap-2 bg-muted/30">
           <Clock className="h-4 w-4 text-muted-foreground" />
           <input
