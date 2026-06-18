@@ -13,7 +13,7 @@ function getLocalIsoDate(date: Date | string | number = new Date()): string {
 const getDailyTimeline = asyncHandler(async (req: Request, res: Response) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userId = (req as any).user?.id;
-  const { date } = req.query; // Expecting YYYY-MM-DD
+  const { date, from, to } = req.query; // Expecting YYYY-MM-DD
 
   if (!userId) {
     throw new ApiError(401, 'Unauthorized');
@@ -22,16 +22,21 @@ const getDailyTimeline = asyncHandler(async (req: Request, res: Response) => {
   const userIdNum = Number(userId);
 
   const targetDate = date ? new Date(date as string) : new Date();
-  const startOfDay = new Date(targetDate);
-  startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date(targetDate);
-  endOfDay.setHours(23, 59, 59, 999);
+  let startBoundary = new Date(targetDate);
+  startBoundary.setHours(0, 0, 0, 0);
+  let endBoundary = new Date(targetDate);
+  endBoundary.setHours(23, 59, 59, 999);
+
+  if (from && to) {
+    startBoundary = new Date(from as string);
+    endBoundary = new Date(to as string);
+  }
 
   // Fetch Subject Logs
   const subjectLogs = await prisma.subjectLog.findMany({
     where: {
       subject: { userId: userIdNum, deleted: false },
-      startedAt: { gte: startOfDay, lte: endOfDay },
+      startedAt: { gte: startBoundary, lte: endBoundary },
       deleted: false,
     },
     include: { subject: true },
@@ -41,7 +46,7 @@ const getDailyTimeline = asyncHandler(async (req: Request, res: Response) => {
   const habitLogs = await prisma.habitTimeLog.findMany({
     where: {
       habit: { userId: userIdNum, deleted: false },
-      startedAt: { gte: startOfDay, lte: endOfDay },
+      startedAt: { gte: startBoundary, lte: endBoundary },
       deleted: false,
     },
     include: { habit: true },
@@ -51,7 +56,7 @@ const getDailyTimeline = asyncHandler(async (req: Request, res: Response) => {
   const toDoLogs = await prisma.toDoLog.findMany({
     where: {
       toDo: { userId: userIdNum, deleted: false },
-      startedAt: { gte: startOfDay, lte: endOfDay },
+      startedAt: { gte: startBoundary, lte: endBoundary },
       deleted: false,
     },
     include: { toDo: true },
@@ -104,10 +109,16 @@ const getDashboardStats = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(401, 'Unauthorized');
   }
 
+  const { from } = req.query;
   const userIdNum = Number(userId);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
+  if (from) {
+    const fromDate = new Date(from as string);
+    today.setTime(fromDate.getTime());
+  }
 
   const twentyOneDaysAgo = new Date(today);
   twentyOneDaysAgo.setDate(today.getDate() - 21);

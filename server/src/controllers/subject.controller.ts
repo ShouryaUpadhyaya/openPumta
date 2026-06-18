@@ -166,7 +166,7 @@ const startSubjectLog = asyncHandler(async (req: Request, res: Response) => {
 
 const endSubjectLog = asyncHandler(async (req: Request, res: Response) => {
   const { subjectId } = req.params;
-  const { endedAt } = req.body;
+  const { endedAt, from, to } = req.body;
   const subjectIdNum = Number(subjectId);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userId = (req as any).user?.id;
@@ -204,13 +204,17 @@ const endSubjectLog = asyncHandler(async (req: Request, res: Response) => {
   });
 
   // Auto-Complete linked habits logic
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  let startBoundary = new Date();
+  startBoundary.setHours(0, 0, 0, 0);
+
+  if (from && to) {
+    startBoundary = new Date(from as string);
+  }
 
   const todaysLogs = await prisma.subjectLog.findMany({
     where: {
       subjectId: subjectIdNum,
-      startedAt: { gte: today },
+      startedAt: { gte: startBoundary },
       endedAt: { not: null },
       deleted: false,
     },
@@ -238,7 +242,7 @@ const endSubjectLog = asyncHandler(async (req: Request, res: Response) => {
     const existingHabitLog = await prisma.habitTimeLog.findFirst({
       where: {
         habitId: habit.id,
-        startedAt: { gte: today },
+        startedAt: { gte: startBoundary },
         deleted: false,
       },
     });

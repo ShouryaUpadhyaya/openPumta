@@ -24,6 +24,7 @@ model User {
   toDo         ToDo[]
   dailyRatings DailyRating[]
   spaces       Space[]
+  startOfDay   String        @default("05:00")
   deleted      Boolean       @default(false)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt

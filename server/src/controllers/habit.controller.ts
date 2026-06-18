@@ -277,9 +277,17 @@ const getHabitDashboardData = asyncHandler(async (req: Request, res: Response) =
   const { date } = req.query;
 
   const targetDate = date ? new Date(date as string) : new Date();
-  targetDate.setHours(0, 0, 0, 0);
-  const endOfDay = new Date(targetDate);
-  endOfDay.setHours(23, 59, 59, 999);
+
+  // Use passed boundaries if available, otherwise default to midnight
+  let startBoundary = new Date(targetDate);
+  startBoundary.setHours(0, 0, 0, 0);
+  let endBoundary = new Date(targetDate);
+  endBoundary.setHours(23, 59, 59, 999);
+
+  if (req.query.from && req.query.to) {
+    startBoundary = new Date(req.query.from as string);
+    endBoundary = new Date(req.query.to as string);
+  }
 
   const habits = await prisma.habit.findMany({
     where: {
@@ -298,8 +306,8 @@ const getHabitDashboardData = asyncHandler(async (req: Request, res: Response) =
         deleted: false,
       },
       startedAt: {
-        gte: targetDate,
-        lte: endOfDay,
+        gte: startBoundary,
+        lte: endBoundary,
       },
       deleted: false,
     },
@@ -337,7 +345,7 @@ const getHabitDashboardData = asyncHandler(async (req: Request, res: Response) =
 
 const toggleHabitCompletion = asyncHandler(async (req: Request, res: Response) => {
   const { habitId } = req.params;
-  const { isBadDayPlan, date } = req.body;
+  const { isBadDayPlan, date, from, to } = req.body;
   const habitIdNum = Number(habitId);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userId = (req as any).user?.id;
@@ -352,15 +360,21 @@ const toggleHabitCompletion = asyncHandler(async (req: Request, res: Response) =
   }
 
   const targetDateObj = date ? new Date(date as string) : new Date();
-  const startOfDay = new Date(targetDateObj);
-  startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date(targetDateObj);
-  endOfDay.setHours(23, 59, 59, 999);
+
+  let startBoundary = new Date(targetDateObj);
+  startBoundary.setHours(0, 0, 0, 0);
+  let endBoundary = new Date(targetDateObj);
+  endBoundary.setHours(23, 59, 59, 999);
+
+  if (from && to) {
+    startBoundary = new Date(from as string);
+    endBoundary = new Date(to as string);
+  }
 
   const existingLog = await prisma.habitTimeLog.findFirst({
     where: {
       habitId: habitIdNum,
-      startedAt: { gte: startOfDay, lte: endOfDay },
+      startedAt: { gte: startBoundary, lte: endBoundary },
       deleted: false,
     },
   });

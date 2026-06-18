@@ -14,7 +14,7 @@ const getAllUsers = asyncHandler(async (req: Request, res: Response) => {
 const updateUser = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const idNum = Number(id);
-  const { email, name, avatarUrl } = req.body;
+  const { email, name, avatarUrl, startOfDay } = req.body;
 
   const updatedUser = await prisma.user.update({
     where: {
@@ -24,6 +24,7 @@ const updateUser = asyncHandler(async (req: Request, res: Response) => {
       email,
       name,
       avatarUrl,
+      startOfDay,
     },
   });
 
