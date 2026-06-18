@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle2, Circle, Trophy } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -54,15 +54,24 @@ export function GettingStartedCard() {
   // ── Confetti + auto-dismiss on completion ─────────────────────────────────
   const allDone = gettingStartedTasks.every((t) => t.completed);
 
+  // Fix hydration mismatch for Zustand persist
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsMounted(true);
+  }, []);
+
   useEffect(() => {
     if (!allDone || hasSeenConfetti || confettiFired.current) return;
     confettiFired.current = true;
     markConfettiSeen();
 
+    // Full page confetti burst
     confetti({
-      particleCount: 120,
-      spread: 80,
-      origin: { x: 0.85, y: 0.85 },
+      particleCount: 250,
+      spread: 120,
+      origin: { x: 0.5, y: 0.4 },
+      zIndex: 9999,
       colors: ['#f97316', '#fb923c', '#fbbf24', '#ffffff', '#a3a3a3'],
     });
 
@@ -71,14 +80,16 @@ export function GettingStartedCard() {
     return () => clearTimeout(timer);
   }, [allDone, hasSeenConfetti, markConfettiSeen, dismissGettingStarted]);
 
-  // Only show for "fresh" starters who haven't dismissed
-  const shouldShow = onboardingChoice === 'fresh' && !gettingStartedDismissed && !allDone;
+  // Show for any completed onboarding (fresh or demo) who haven't dismissed
+  const shouldShow = onboardingChoice !== null && !gettingStartedDismissed && !allDone;
 
   const completedCount = gettingStartedTasks.filter((t) => t.completed).length;
 
+  if (!isMounted) return null;
+
   return (
     <AnimatePresence>
-      {(shouldShow || allDone) && !gettingStartedDismissed && (
+      {(shouldShow || (allDone && onboardingChoice !== null)) && !gettingStartedDismissed && (
         <motion.div
           initial={{ x: 120, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
