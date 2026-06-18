@@ -94,6 +94,8 @@ export function OnboardingModal() {
   const handleSkip = useCallback(() => {
     cleanupDemoData();
     markOnboardingComplete('fresh');
+    window.localStorage.removeItem('REACT_QUERY_OFFLINE_CACHE');
+    window.location.href = '/';
   }, [markOnboardingComplete, cleanupDemoData]);
 
   const handleNext = useCallback(() => {

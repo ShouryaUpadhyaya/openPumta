@@ -25,9 +25,15 @@ export function OnboardingCompletion({ onClose }: OnboardingCompletionProps) {
       }
       markOnboardingComplete('fresh');
       onClose();
+      // Clear React Query persisted cache
+      window.localStorage.removeItem('REACT_QUERY_OFFLINE_CACHE');
+      // Reload to invalidate all caches and reset state
+      window.location.href = '/';
     } catch {
       markOnboardingComplete('fresh');
       onClose();
+      window.localStorage.removeItem('REACT_QUERY_OFFLINE_CACHE');
+      window.location.href = '/';
     } finally {
       setLoadingFresh(false);
     }
@@ -40,14 +46,19 @@ export function OnboardingCompletion({ onClose }: OnboardingCompletionProps) {
         await removeDemoData(demoDataIds, true);
         setDemoDataIds(null);
       }
+      // Clear React Query persisted cache
+      window.localStorage.removeItem('REACT_QUERY_OFFLINE_CACHE');
       // Brief pause to show success state before closing
       setTimeout(() => {
         markOnboardingComplete('demo');
         onClose();
+        window.location.href = '/';
       }, 600);
     } catch {
       markOnboardingComplete('demo');
       onClose();
+      window.localStorage.removeItem('REACT_QUERY_OFFLINE_CACHE');
+      window.location.href = '/';
     } finally {
       setLoadingTemplate(false);
     }
