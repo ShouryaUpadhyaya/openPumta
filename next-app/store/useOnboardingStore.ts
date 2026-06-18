@@ -13,6 +13,7 @@ export interface DemoDataIds {
   subjects: number[];
   habits: number[];
   spaces: number[];
+  ratings: number[];
 }
 
 interface OnboardingState {

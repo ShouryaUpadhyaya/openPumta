@@ -12,6 +12,7 @@ import exportRoute from './routes/export.route.js';
 import aiRoute from './routes/ai.route.js';
 import spaceRoute from './routes/space.route.js';
 import textboxRoute from './routes/textbox.route.js';
+import demoRoute from './routes/demo.route.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
@@ -52,6 +53,7 @@ app.use('/api/stats', statsRoute);
 app.use('/api/daily-rating', dailyRatingRoute);
 app.use('/api/export', exportRoute);
 app.use('/api/ai', aiRoute);
+app.use('/api/demo', demoRoute);
 // Workspace routes
 app.use('/api/spaces', spaceRoute);
 app.use('/api/spaces/:spaceId/textboxes', textboxRoute);

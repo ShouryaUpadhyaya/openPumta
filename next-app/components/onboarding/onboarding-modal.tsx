@@ -52,21 +52,13 @@ export function OnboardingModal() {
       });
   }, [mounted, hasSeenOnboarding, demoDataIds, setDemoDataIds]);
 
-  // ── Cleanup temporary demo data ───────────────────────────────────────────
   const cleanupDemoData = useCallback(async () => {
     if (demoDataIds) {
       const ids = demoDataIds;
       setDemoDataIds(null); // Clear immediately to prevent double-calls
-      await removeDemoData(ids);
+      await removeDemoData(ids, false);
     }
   }, [demoDataIds, setDemoDataIds]);
-
-  // Remove data when reaching the last slide
-  useEffect(() => {
-    if (slideIndex >= TOTAL - 1) {
-      cleanupDemoData();
-    }
-  }, [slideIndex, cleanupDemoData]);
 
   const currentSlide = ONBOARDING_SLIDES[slideIndex];
   const isFullMode = currentSlide?.mode === 'full' || showCompletion;

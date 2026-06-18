@@ -5,70 +5,86 @@ import { motion } from 'framer-motion';
 import { Sparkles, Play, Loader2, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useOnboardingStore } from '@/store/useOnboardingStore';
-import { generateDemoData } from './demo-data-generator';
+import { removeDemoData } from './demo-data-generator';
 
 interface OnboardingCompletionProps {
   onClose: () => void;
 }
 
 export function OnboardingCompletion({ onClose }: OnboardingCompletionProps) {
-  const { markOnboardingComplete } = useOnboardingStore();
-  const [loadingDemo, setLoadingDemo] = useState(false);
-  const [demoSuccess, setDemoSuccess] = useState(false);
+  const { markOnboardingComplete, demoDataIds, setDemoDataIds } = useOnboardingStore();
+  const [loadingFresh, setLoadingFresh] = useState(false);
+  const [loadingTemplate, setLoadingTemplate] = useState(false);
 
-  const handleStartFresh = () => {
-    markOnboardingComplete('fresh');
-    onClose();
+  const handleStartFresh = async () => {
+    setLoadingFresh(true);
+    try {
+      if (demoDataIds) {
+        await removeDemoData(demoDataIds, false);
+        setDemoDataIds(null);
+      }
+      markOnboardingComplete('fresh');
+      onClose();
+    } catch {
+      markOnboardingComplete('fresh');
+      onClose();
+    } finally {
+      setLoadingFresh(false);
+    }
   };
 
-  const handleUseDemo = async () => {
-    setLoadingDemo(true);
+  const handleUseTemplate = async () => {
+    setLoadingTemplate(true);
     try {
-      await generateDemoData();
-      setDemoSuccess(true);
+      if (demoDataIds) {
+        await removeDemoData(demoDataIds, true);
+        setDemoDataIds(null);
+      }
       // Brief pause to show success state before closing
       setTimeout(() => {
         markOnboardingComplete('demo');
         onClose();
-      }, 1200);
+      }, 600);
     } catch {
-      // Generator catches internally; this is a safety net
       markOnboardingComplete('demo');
       onClose();
     } finally {
-      setLoadingDemo(false);
+      setLoadingTemplate(false);
     }
   };
 
   const options = [
     {
-      id: 'fresh',
-      icon: <Play className="h-6 w-6" />,
-      title: 'Start Fresh',
-      description: 'Create your own subjects, habits, workspaces, and goals from scratch.',
-      cta: 'Start Fresh',
-      action: handleStartFresh,
-      loading: false,
-      variant: 'outline' as const,
-      accent: 'border-white/20 hover:border-primary/50 hover:bg-primary/5',
-    },
-    {
-      id: 'demo',
-      icon: demoSuccess ? (
-        <CheckCircle className="h-6 w-6 text-emerald-400" />
-      ) : loadingDemo ? (
+      id: 'template',
+      icon: loadingTemplate ? (
         <Loader2 className="h-6 w-6 animate-spin" />
       ) : (
         <Sparkles className="h-6 w-6" />
       ),
-      title: 'Explore Demo Data',
+      title: 'Use Predefined Template',
       description:
-        'Generate realistic example data — subjects, habits, workspaces, and reviews — so you can immediately see how OpenPumta works.',
-      cta: demoSuccess ? 'Done! Loading…' : loadingDemo ? 'Generating…' : 'Use Demo Data',
-      action: handleUseDemo,
-      loading: loadingDemo,
+        'Keep the Computer Science subjects, habits, and workspace planners to kickstart your journey. (Historical stats will be wiped clean for you)',
+      cta: loadingTemplate ? 'Setting up...' : 'Use Template',
+      action: handleUseTemplate,
+      loading: loadingTemplate || loadingFresh,
       variant: 'default' as const,
       accent: 'border-primary/40 bg-primary/10 hover:bg-primary/15',
+    },
+    {
+      id: 'fresh',
+      icon: loadingFresh ? (
+        <Loader2 className="h-6 w-6 animate-spin" />
+      ) : (
+        <Play className="h-6 w-6" />
+      ),
+      title: 'Start Fresh',
+      description:
+        'Wipe all demo data and start from a blank canvas. Set up your own subjects, habits, workspaces, and goals from scratch.',
+      cta: loadingFresh ? 'Clearing...' : 'Start Fresh',
+      action: handleStartFresh,
+      loading: loadingTemplate || loadingFresh,
+      variant: 'outline' as const,
+      accent: 'border-white/20 hover:border-primary/50 hover:bg-primary/5',
     },
   ];
 
@@ -95,14 +111,16 @@ export function OnboardingCompletion({ onClose }: OnboardingCompletionProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 + 0.1, duration: 0.3 }}
-            className={`flex flex-col gap-4 p-5 rounded-2xl border cursor-pointer transition-all duration-200 ${opt.accent}`}
-            onClick={!opt.loading && !demoSuccess ? opt.action : undefined}
+            className={`flex flex-col gap-4 p-5 rounded-2xl border cursor-pointer transition-all duration-200 ${opt.accent} ${
+              opt.loading ? 'opacity-50 pointer-events-none' : ''
+            }`}
+            onClick={!opt.loading ? opt.action : undefined}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                if (!opt.loading && !demoSuccess) opt.action();
+                if (!opt.loading) opt.action();
               }
             }}
           >
@@ -122,11 +140,11 @@ export function OnboardingCompletion({ onClose }: OnboardingCompletionProps) {
             <Button
               variant={opt.variant}
               size="sm"
-              disabled={opt.loading || demoSuccess}
+              disabled={opt.loading}
               className="w-full mt-auto"
               onClick={(e) => {
                 e.stopPropagation();
-                if (!opt.loading && !demoSuccess) opt.action();
+                if (!opt.loading) opt.action();
               }}
             >
               {opt.cta}
@@ -134,11 +152,6 @@ export function OnboardingCompletion({ onClose }: OnboardingCompletionProps) {
           </motion.div>
         ))}
       </div>
-
-      {/* Helper text */}
-      <p className="text-center text-xs text-muted-foreground">
-        All demo data can be edited or deleted later.
-      </p>
     </motion.div>
   );
 }
