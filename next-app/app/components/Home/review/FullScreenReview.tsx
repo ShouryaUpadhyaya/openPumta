@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Star, Save, Trash2, GripVertical, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Star, Save, Trash2, GripVertical, Plus, X } from 'lucide-react';
 import { getLocalIsoDate } from '@/lib/utils';
 import {
   useDailyRatingByDate,
@@ -80,8 +80,11 @@ export default function FullScreenReview({
     { id: string; question: string; answer: string }[]
   >([]);
 
+  // Track last initialized date to prevent overwriting user edits while typing
+  const lastInitializedDate = useRef<string | null>(null);
+
   useEffect(() => {
-    if (data) {
+    if (data && lastInitializedDate.current !== selectedDateStr) {
       setRating(data.rating?.rating || 0);
 
       const content = data.rating?.content || data.template;
@@ -96,6 +99,8 @@ export default function FullScreenReview({
         setJournal('');
         setCustomQuestions([]);
       }
+
+      lastInitializedDate.current = selectedDateStr;
     }
   }, [data, selectedDateStr]);
 
@@ -205,6 +210,14 @@ export default function FullScreenReview({
               <Save className="h-4 w-4" />
               Save Template
             </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onOpenChange(false)}
+              className="rounded-full text-muted-foreground hover:bg-muted"
+            >
+              <X className="h-5 w-5" />
+            </Button>
           </div>
         </DialogHeader>
 
@@ -312,7 +325,7 @@ export default function FullScreenReview({
                   </span>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <Habits />
+                  <Habits passedDate={selectedDate} hideDatePicker={true} />
                 </div>
               </div>
             </>

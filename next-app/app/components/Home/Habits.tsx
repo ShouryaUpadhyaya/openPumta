@@ -10,8 +10,16 @@ import { AddHabitDialog } from './Habits/AddHabitDialog';
 import { EditHabitDialog } from './Habits/EditHabitDialog';
 import { HabitCard } from './Habits/HabitCard';
 
-export default function Habits() {
-  const [selectedDate, setSelectedDate] = useState(new Date());
+export default function Habits({
+  passedDate,
+  hideDatePicker = false,
+}: {
+  passedDate?: Date;
+  hideDatePicker?: boolean;
+} = {}) {
+  const [internalDate, setInternalDate] = useState(new Date());
+  const selectedDate = passedDate || internalDate;
+  const setSelectedDate = passedDate ? () => {} : setInternalDate;
   const selectedDateStr = getLocalIsoDate(selectedDate);
   const isToday = selectedDateStr === getLocalIsoDate(new Date());
 
@@ -50,37 +58,43 @@ export default function Habits() {
       <div className="flex justify-between items-center mb-4 shrink-0">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
-            <button
-              onClick={() =>
-                setSelectedDate((d) => {
-                  const nd = new Date(d);
-                  nd.setDate(nd.getDate() - 1);
-                  return nd;
-                })
-              }
-              className="p-1 hover:bg-muted rounded-full transition-colors"
-            >
-              <ChevronLeft className="h-5 w-5 text-muted-foreground" />
-            </button>
+            {!hideDatePicker && (
+              <button
+                onClick={() =>
+                  setSelectedDate((d) => {
+                    const nd = new Date(d);
+                    nd.setDate(nd.getDate() - 1);
+                    return nd;
+                  })
+                }
+                className="p-1 hover:bg-muted rounded-full transition-colors"
+              >
+                <ChevronLeft className="h-5 w-5 text-muted-foreground" />
+              </button>
+            )}
             <h1 className="text-2xl font-bold flex flex-col">
               Daily Habits
-              <span className="text-[10px] font-normal text-muted-foreground uppercase tracking-wider text-center">
-                {isToday ? 'Today' : selectedDateStr}
-              </span>
+              {!hideDatePicker && (
+                <span className="text-[10px] font-normal text-muted-foreground uppercase tracking-wider text-center">
+                  {isToday ? 'Today' : selectedDateStr}
+                </span>
+              )}
             </h1>
-            <button
-              onClick={() =>
-                setSelectedDate((d) => {
-                  const nd = new Date(d);
-                  nd.setDate(nd.getDate() + 1);
-                  return nd;
-                })
-              }
-              disabled={isToday}
-              className="p-1 hover:bg-muted rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
-            >
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </button>
+            {!hideDatePicker && (
+              <button
+                onClick={() =>
+                  setSelectedDate((d) => {
+                    const nd = new Date(d);
+                    nd.setDate(nd.getDate() + 1);
+                    return nd;
+                  })
+                }
+                disabled={isToday}
+                className="p-1 hover:bg-muted rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+              >
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              </button>
+            )}
           </div>
           {habits.length > 0 && (
             <span

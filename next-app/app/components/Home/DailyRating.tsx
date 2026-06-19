@@ -5,7 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useDailyRatingStats, useSubmitDailyRating } from '@/hooks/useRatings';
-import { Star, TrendingUp, TrendingDown, Minus, Maximize2 } from 'lucide-react';
+import {
+  Star,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Maximize2,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import FullScreenReview from './review/FullScreenReview';
@@ -53,7 +61,9 @@ export default function DailyRating() {
   const { user } = useAuthStore();
   const { data: stats, isLoading } = useDailyRatingStats();
   const submitRating = useSubmitDailyRating();
-  const selectedDateStr = getLocalIsoDate(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const selectedDateStr = getLocalIsoDate(selectedDate);
+  const isToday = selectedDateStr === getLocalIsoDate(new Date());
 
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
 
@@ -126,12 +136,44 @@ export default function DailyRating() {
         data-tour-highlight="daily-review-section"
       >
         <CardHeader className="pb-2 relative">
-          <CardTitle className="text-lg flex justify-between items-center">
-            <span>Daily Review</span>
-            <div className="flex items-center gap-2">
+          <CardTitle className="text-lg flex justify-between items-center w-full">
+            <span className="shrink-0">Daily Review</span>
+
+            <div className="flex items-center gap-1 bg-muted/40 rounded-full border border-muted-foreground/20 px-1 py-0.5 mx-auto">
+              <button
+                onClick={() =>
+                  setSelectedDate((d) => {
+                    const nd = new Date(d);
+                    nd.setDate(nd.getDate() - 1);
+                    return nd;
+                  })
+                }
+                className="p-0.5 hover:bg-muted rounded-full transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+              </button>
+              <span className="text-[10px] font-semibold px-1 min-w-[3rem] text-center tracking-wide uppercase text-muted-foreground">
+                {isToday ? 'Today' : selectedDateStr.substring(5)}
+              </span>
+              <button
+                onClick={() =>
+                  setSelectedDate((d) => {
+                    const nd = new Date(d);
+                    nd.setDate(nd.getDate() + 1);
+                    return nd;
+                  })
+                }
+                disabled={isToday}
+                className="p-0.5 hover:bg-muted rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+              >
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
               {hasRatedToday && (
-                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-medium">
-                  Completed Today
+                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-medium hidden sm:inline-flex">
+                  Completed
                 </span>
               )}
               <Button
@@ -282,7 +324,7 @@ export default function DailyRating() {
         <FullScreenReview
           open={isFullScreenOpen}
           onOpenChange={setIsFullScreenOpen}
-          initialDate={new Date()}
+          initialDate={selectedDate}
         />
       )}
     </>
