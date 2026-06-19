@@ -217,11 +217,13 @@ function PomodoroPage() {
           </div>
         )}
 
-        <div className="mt-6 sm:mt-10 mb-4 sm:mb-8 z-10">
-          <AvatarSelectionDialog>
-            <AvatarDisplay activeAvatar={activeAvatar} focusMs={currentFocusMs} />
-          </AvatarSelectionDialog>
-        </div>
+        {store.showAvatar && (
+          <div className="mt-6 sm:mt-10 mb-4 sm:mb-8 z-10">
+            <AvatarSelectionDialog>
+              <AvatarDisplay activeAvatar={activeAvatar} focusMs={currentFocusMs} />
+            </AvatarSelectionDialog>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-6 md:gap-8 pb-6 sm:pb-8 shrink-0">

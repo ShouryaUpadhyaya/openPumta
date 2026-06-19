@@ -30,6 +30,7 @@ interface TimerState {
   // Settings & UI
   settings: TimerSettings;
   showProgressBar: boolean;
+  showAvatar: boolean;
   workColor: string;
   shortBreakColor: string;
   longBreakColor: string;
@@ -37,6 +38,7 @@ interface TimerState {
   // Actions
   setMode: (mode: TimerMode) => void;
   setShowProgressBar: (show: boolean) => void;
+  setShowAvatar: (show: boolean) => void;
   setSettings: (settings: Partial<TimerSettings>) => void;
   setColors: (work: string, short: string, long: string) => void;
 
@@ -67,12 +69,14 @@ export const useTimerStore = create<TimerState>()(
         notificationsEnabled: false,
       },
       showProgressBar: true,
+      showAvatar: false,
       workColor: '#f97316',
       shortBreakColor: '#22c55e',
       longBreakColor: '#3b82f6',
 
       setMode: (mode) => set({ mode }),
       setShowProgressBar: (showProgressBar) => set({ showProgressBar }),
+      setShowAvatar: (showAvatar) => set({ showAvatar }),
       setSettings: (newSettings) =>
         set((state) => ({ settings: { ...state.settings, ...newSettings } })),
       setColors: (work, short, long) =>
