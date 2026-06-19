@@ -136,10 +136,8 @@ export default function DailyRating() {
         data-tour-highlight="daily-review-section"
       >
         <CardHeader className="pb-2 relative">
-          <CardTitle className="text-lg flex justify-between items-center w-full">
-            <span className="shrink-0">Daily Review</span>
-
-            <div className="flex items-center gap-1 bg-muted/40 rounded-full border border-muted-foreground/20 px-1 py-0.5 mx-auto">
+          <CardTitle className="flex justify-between items-center w-full">
+            <div className="flex items-center gap-1">
               <button
                 onClick={() =>
                   setSelectedDate((d) => {
@@ -148,13 +146,16 @@ export default function DailyRating() {
                     return nd;
                   })
                 }
-                className="p-0.5 hover:bg-muted rounded-full transition-colors"
+                className="p-1 hover:bg-muted rounded-full transition-colors"
               >
-                <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+                <ChevronLeft className="h-5 w-5 text-muted-foreground" />
               </button>
-              <span className="text-[10px] font-semibold px-1 min-w-[3rem] text-center tracking-wide uppercase text-muted-foreground">
-                {isToday ? 'Today' : selectedDateStr.substring(5)}
-              </span>
+              <div className="text-lg md:text-2xl font-bold flex flex-col items-center">
+                Daily Review
+                <span className="text-[10px] font-normal text-muted-foreground uppercase tracking-wider text-center">
+                  {isToday ? 'Today' : selectedDateStr}
+                </span>
+              </div>
               <button
                 onClick={() =>
                   setSelectedDate((d) => {
@@ -164,9 +165,9 @@ export default function DailyRating() {
                   })
                 }
                 disabled={isToday}
-                className="p-0.5 hover:bg-muted rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                className="p-1 hover:bg-muted rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
               >
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </button>
             </div>
 

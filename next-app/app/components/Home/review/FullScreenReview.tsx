@@ -173,16 +173,7 @@ export default function FullScreenReview({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="lg:min-w-4xl md:min-w-3xl max-w-4xl w-full h-[100dvh] md:h-[90vh] flex flex-col p-0 overflow-hidden shadow-2xl rounded-none md:rounded-3xl bg-background border-0 md:border">
         <DialogHeader className="p-4 md:p-8 border-b shrink-0 flex flex-row items-center justify-between sticky top-0 bg-background/90 backdrop-blur-md z-10">
-          <div className="flex items-center gap-2 md:gap-4">
-            <DialogTitle className="text-lg md:text-2xl font-bold tracking-tight text-foreground hidden sm:block">
-              Daily Review
-            </DialogTitle>
-            <DialogTitle className="text-lg font-bold tracking-tight text-foreground sm:hidden">
-              Review
-            </DialogTitle>
-          </div>
-
-          <div className="flex items-center bg-muted/40 rounded-full border border-muted-foreground/20 px-1 md:px-1.5 py-0.5 md:py-1">
+          <div className="flex items-center gap-1">
             <button
               onClick={() =>
                 setSelectedDate((d) => {
@@ -191,13 +182,17 @@ export default function FullScreenReview({
                   return nd;
                 })
               }
-              className="p-1 md:p-1.5 hover:bg-muted rounded-full transition-colors"
+              className="p-1 hover:bg-muted rounded-full transition-colors"
             >
-              <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+              <ChevronLeft className="h-5 w-5 text-muted-foreground" />
             </button>
-            <span className="text-xs md:text-sm font-semibold px-2 md:px-6 w-24 md:w-36 text-center text-foreground tracking-wide">
-              {isToday ? 'Today' : selectedDateStr}
-            </span>
+            <DialogTitle className="text-xl md:text-2xl font-bold flex flex-col items-center tracking-tight text-foreground">
+              <span className="hidden sm:inline">Daily Review</span>
+              <span className="inline sm:hidden">Review</span>
+              <span className="text-[10px] font-normal text-muted-foreground uppercase tracking-wider text-center">
+                {isToday ? 'Today' : selectedDateStr}
+              </span>
+            </DialogTitle>
             <button
               onClick={() =>
                 setSelectedDate((d) => {
@@ -207,9 +202,9 @@ export default function FullScreenReview({
                 })
               }
               disabled={isToday}
-              className="p-1 md:p-1.5 hover:bg-muted rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+              className="p-1 hover:bg-muted rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
             >
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
             </button>
           </div>
 
