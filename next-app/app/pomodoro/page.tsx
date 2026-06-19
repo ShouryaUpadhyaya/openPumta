@@ -9,11 +9,16 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useSubjects } from '@/hooks/useSubjects';
+import { useAuthStore } from '@/store/useAuthStore';
+import { AvatarDisplay } from '../components/pomodoro/AvatarDisplay';
+import { AvatarSelectionDialog } from '../components/pomodoro/AvatarSelectionDialog';
+import { AvatarSet } from '@/lib/avatarConfig';
 
 function PomodoroPage() {
   const { data: Subjects = [], isLoading } = useSubjects();
   const store = useTimerStore();
   const { remainingMs, elapsedMs, progress, phase, mode, activeSubjectId } = useTimerEngine();
+  const { user, lifetimeFocusMs } = useAuthStore();
 
   const runningSubject = Subjects.find((subject) => subject.id === activeSubjectId);
 
@@ -58,6 +63,8 @@ function PomodoroPage() {
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   const activeWorkSecs = phase === 'work' ? Math.floor(elapsedMs / 1000) : 0;
+  const currentFocusMs = lifetimeFocusMs + activeWorkSecs * 1000;
+  const activeAvatar = (user?.activeAvatar as AvatarSet) || 'warrior';
 
   const getSubjectLogSecs = (
     log: NonNullable<(typeof Subjects)[number]['subjectLogs']>[number],
@@ -209,6 +216,12 @@ function PomodoroPage() {
             </Tooltip>
           </div>
         )}
+
+        <div className="mt-6 sm:mt-10 mb-4 sm:mb-8 z-10">
+          <AvatarSelectionDialog>
+            <AvatarDisplay activeAvatar={activeAvatar} focusMs={currentFocusMs} />
+          </AvatarSelectionDialog>
+        </div>
       </div>
 
       <div className="flex items-center gap-6 md:gap-8 pb-6 sm:pb-8 shrink-0">

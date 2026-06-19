@@ -14,7 +14,7 @@ const getAllUsers = asyncHandler(async (req: Request, res: Response) => {
 const updateUser = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const idNum = Number(id);
-  const { email, name, avatarUrl, startOfDay } = req.body;
+  const { email, name, avatarUrl, startOfDay, activeAvatar } = req.body;
 
   const updatedUser = await prisma.user.update({
     where: {
@@ -25,6 +25,7 @@ const updateUser = asyncHandler(async (req: Request, res: Response) => {
       name,
       avatarUrl,
       startOfDay,
+      activeAvatar,
     },
   });
 
@@ -64,4 +65,26 @@ const addUser = asyncHandler(async (req: Request, res: Response) => {
   return res.status(201).json(new ApiResponse(201, newUser, 'User added successfully'));
 });
 
-export { getAllUsers, addUser, updateUser, deleteUser };
+const getLifetimeFocusTime = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user ? (req.user as { id: number }).id : null;
+  if (!userId) {
+    throw new ApiError(401, 'Unauthorized');
+  }
+
+  const logs = await prisma.subjectLog.findMany({
+    where: { subject: { userId }, deleted: false, endedAt: { not: null } },
+  });
+
+  let totalMs = 0;
+  logs.forEach((log) => {
+    if (log.startedAt && log.endedAt) {
+      totalMs += new Date(log.endedAt).getTime() - new Date(log.startedAt).getTime();
+    }
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { lifetimeFocusMs: totalMs }, 'Lifetime focus fetched'));
+});
+
+export { getAllUsers, addUser, updateUser, deleteUser, getLifetimeFocusTime };

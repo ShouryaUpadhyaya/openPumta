@@ -14,7 +14,7 @@ api.interceptors.response.use(
   (error) => {
     const message =
       error.response?.data?.message || error.message || 'An unexpected error occurred';
-    if (message?.data.statusCode != 401) toast.error(message);
+    if (error.response?.status !== 401) toast.error(message);
     return Promise.reject(error);
   },
 );

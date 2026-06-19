@@ -9,28 +9,41 @@ interface User {
   avatarUrl: string | null;
   isGuest: boolean;
   startOfDay?: string;
+  activeAvatar?: string;
 }
 
 interface AuthState {
   user: User | null;
+  lifetimeFocusMs: number;
   loading: boolean;
   fetchUser: () => Promise<void>;
+  fetchLifetimeFocus: () => Promise<void>;
   guestLogin: () => Promise<void>;
   logout: () => Promise<void>;
-  updateUserPreferences: (prefs: { startOfDay: string }) => Promise<void>;
+  updateUserPreferences: (prefs: { startOfDay?: string; activeAvatar?: string }) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
+  lifetimeFocusMs: 0,
   loading: true,
   fetchUser: async () => {
     try {
       const { data } = await api.get('/auth/user');
       set({ user: data, loading: false });
       console.log('log in');
+      await get().fetchLifetimeFocus();
     } catch {
       console.error('login to save Progress');
       await get().guestLogin();
+    }
+  },
+  fetchLifetimeFocus: async () => {
+    try {
+      const { data } = await api.get('/users/lifetime-focus');
+      set({ lifetimeFocusMs: data.data.lifetimeFocusMs });
+    } catch (e) {
+      console.error('Failed to fetch lifetime focus', e);
     }
   },
   guestLogin: async () => {
@@ -59,7 +72,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const user = get().user;
       if (!user) return;
-      const { data } = await api.patch(`/user/${user.id}`, prefs);
+      const { data } = await api.patch(`/users/${user.id}`, prefs);
       set({ user: { ...user, ...data.data } });
     } catch (error) {
       console.error('Failed to update user preferences', error);

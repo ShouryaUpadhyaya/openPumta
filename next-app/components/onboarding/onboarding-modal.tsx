@@ -13,6 +13,8 @@ import { OnboardingTourCard } from './onboarding-tour-card';
 import { OnboardingSpotlight } from './onboarding-spotlight';
 import { OnboardingCompletion } from './onboarding-completion';
 import { generateDemoData, removeDemoData } from './demo-data-generator';
+import { useAuthStore } from '@/store/useAuthStore';
+import { queryClient } from '@/lib/queryClient';
 
 const TOTAL = ONBOARDING_SLIDES.length;
 
@@ -20,6 +22,7 @@ export function OnboardingModal() {
   const router = useRouter();
   const { hasSeenOnboarding, markOnboardingComplete, demoDataIds, setDemoDataIds } =
     useOnboardingStore();
+  const { user } = useAuthStore();
 
   const [slideIndex, setSlideIndex] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -39,7 +42,7 @@ export function OnboardingModal() {
 
   // ── Auto-generate temporary demo data for the tour ────────────────────────
   useEffect(() => {
-    if (!mounted || hasSeenOnboarding || demoDataIds || generationAttempted.current) return;
+    if (!mounted || hasSeenOnboarding || demoDataIds || generationAttempted.current || user) return;
     generationAttempted.current = true;
     requestAnimationFrame(() => setIsGenerating(true));
     generateDemoData()
@@ -50,7 +53,7 @@ export function OnboardingModal() {
       .catch(() => {
         setIsGenerating(false);
       });
-  }, [mounted, hasSeenOnboarding, demoDataIds, setDemoDataIds]);
+  }, [mounted, hasSeenOnboarding, demoDataIds, setDemoDataIds, user]);
 
   const cleanupDemoData = useCallback(async () => {
     if (demoDataIds) {
@@ -95,6 +98,7 @@ export function OnboardingModal() {
     cleanupDemoData();
     markOnboardingComplete('fresh');
     window.localStorage.removeItem('REACT_QUERY_OFFLINE_CACHE');
+    queryClient.clear();
     window.location.href = '/';
   }, [markOnboardingComplete, cleanupDemoData]);
 

@@ -23,9 +23,11 @@ import {
   Zap,
   BarChart3,
   RotateCcw,
+  Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api';
+import { queryClient } from '@/lib/queryClient';
 import { computeAllMetricsBundle } from '../stats/lib/metrics';
 import { TimePicker } from '@/components/ui/time-picker';
 
@@ -246,7 +248,7 @@ export default function SettingsPage() {
       toast.success('Timer settings saved', {
         description: `${Math.floor(newWork / 60000)}m focus / ${Math.floor(newShort / 60000)}m break`,
       });
-    } catch (_err) {
+    } catch {
       toast.error('Failed to save timer settings');
     } finally {
       setIsSaving(false);
@@ -272,7 +274,7 @@ export default function SettingsPage() {
       document.body.removeChild(a);
 
       toast.success(`Data exported as ${format.toUpperCase()} successfully`);
-    } catch (_err) {
+    } catch {
       toast.error('Failed to export data');
     }
   };
@@ -626,6 +628,38 @@ export default function SettingsPage() {
             >
               <RotateCcw className="h-4 w-4" />
               Restart Tour
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* ── Clear Local Data ────────────────────────────────────── */}
+        <Card className="bg-background border-border/40 shadow-sm border-destructive/20">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-destructive" />
+              <CardTitle className="text-destructive">Clear Local Data</CardTitle>
+            </div>
+            <CardDescription>
+              Remove all local storage and clear the cache. This will log you out if you are using a
+              guest account or offline mode.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              type="button"
+              onClick={() => {
+                if (window.confirm('Are you sure you want to clear all local data and cache?')) {
+                  window.localStorage.clear();
+                  queryClient.clear();
+                  toast.success('Local data and cache cleared');
+                  window.location.href = '/';
+                }
+              }}
+              variant="destructive"
+              className="flex items-center gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Clear Local Data
             </Button>
           </CardContent>
         </Card>
