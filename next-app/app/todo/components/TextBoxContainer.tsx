@@ -157,7 +157,7 @@ export default function TextBoxContainer({
       minHeight={150}
       bounds="parent"
       onMouseDown={() => setFocusedTextBox(textBox.id)}
-      className={`bg-[#1f1f1f] rounded-xl border border-border shadow-sm group hover:shadow-md transition-shadow flex flex-col ${isFocused ? 'z-50 ring-1 ring-primary/30' : 'z-10'} ${isMobile ? 'relative! transform-none! h-auto! min-h-fit1 shrink-0' : 'min-h-fit!'}`}
+      className={`bg-[#1f1f1f] min-h-fit! h-fit! rounded-xl border border-border shadow-sm group hover:shadow-md transition-shadow flex flex-col ${isFocused ? 'z-50 ring-1 ring-primary/30' : 'z-10'} ${isMobile ? 'relative! transform-none! h-auto!  shrink-0' : 'min-h-fit!'}`}
       dragHandleClassName="drag-handle"
     >
       <div className="h-8 flex items-center justify-between px-3 border-b border-border/50 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity">

@@ -30,7 +30,17 @@ export const useSubmitDailyRating = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ rating, description, date, content }: { rating?: number; description?: string; date?: string; content?: any }) => {
+    mutationFn: async ({
+      rating,
+      description,
+      date,
+      content,
+    }: {
+      rating?: number;
+      description?: string;
+      date?: string;
+      content?: any;
+    }) => {
       const { data } = await api.post('/daily-rating', { rating, description, date, content });
       return data.data;
     },

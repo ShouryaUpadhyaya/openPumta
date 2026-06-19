@@ -15,6 +15,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import Loading from './review/Loading';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import FullScreenReview from './review/FullScreenReview';
 import { getLocalIsoDate } from '@/lib/utils';
@@ -68,27 +69,7 @@ export default function DailyRating() {
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
 
   if (isLoading) {
-    return (
-      <Card className="h-full flex flex-col bg-background shadow-none border-border/40">
-        <CardHeader className="pb-2">
-          <Skeleton className="h-6 w-32" />
-        </CardHeader>
-        <CardContent className="flex-1 flex flex-col gap-4">
-          <div className="flex flex-col gap-3 p-4 bg-muted/30 rounded-xl border border-dashed">
-            <div className="flex justify-center gap-2 py-2">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Skeleton key={i} className="h-8 w-8 rounded-full" />
-              ))}
-            </div>
-            <Skeleton className="h-16 w-full rounded-xl" />
-          </div>
-          <div className="grid grid-cols-2 gap-3 mt-auto">
-            <Skeleton className="h-20 rounded-xl" />
-            <Skeleton className="h-20 rounded-xl" />
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <Loading />;
   }
 
   const hasRatedToday = stats?.today !== null && stats?.today !== undefined && stats.today > 0;

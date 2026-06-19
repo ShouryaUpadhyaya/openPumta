@@ -13,12 +13,11 @@ const createOrUpdateDailyRating = asyncHandler(async (req: Request, res: Respons
     throw new ApiError(401, 'Unauthorized');
   }
 
-  // rating is optional if they just want to save journal content without rating yet
+  // rating is optional so condion invalid on saving just rating if they just want to save journal content without rating yet
   if (rating !== undefined && (rating < 1 || rating > 5)) {
     throw new ApiError(400, 'Rating must be between 1 and 5');
   }
 
-  // Use provided date or today
   const targetDate = date ? new Date(date) : new Date();
   targetDate.setHours(0, 0, 0, 0);
 
@@ -44,7 +43,6 @@ const createOrUpdateDailyRating = asyncHandler(async (req: Request, res: Respons
       },
     });
   } else {
-    // If creating a new record without rating, default to 0 to indicate unrated but journaled
     dailyRating = await prisma.dailyRating.create({
       data: {
         userId,
@@ -83,18 +81,18 @@ const getDailyRatingByDate = asyncHandler(async (req: Request, res: Response) =>
   // Also return the user's review template so the frontend can initialize a blank day
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { reviewTemplate: true }
+    select: { reviewTemplate: true },
   });
 
   res.status(200).json(
     new ApiResponse(
-      200, 
+      200,
       {
         rating: dailyRating,
-        template: user?.reviewTemplate || null
-      }, 
-      'Daily rating fetched successfully'
-    )
+        template: user?.reviewTemplate || null,
+      },
+      'Daily rating fetched successfully',
+    ),
   );
 });
 
@@ -109,10 +107,18 @@ const updateReviewTemplate = asyncHandler(async (req: Request, res: Response) =>
 
   const updatedUser = await prisma.user.update({
     where: { id: userId },
-    data: { reviewTemplate: template }
+    data: { reviewTemplate: template },
   });
 
-  res.status(200).json(new ApiResponse(200, { template: updatedUser.reviewTemplate }, 'Review template updated successfully'));
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { template: updatedUser.reviewTemplate },
+        'Review template updated successfully',
+      ),
+    );
 });
 
 const getDailyRatingStats = asyncHandler(async (req: Request, res: Response) => {
@@ -163,7 +169,7 @@ const getDailyRatingStats = asyncHandler(async (req: Request, res: Response) => 
         lte: today,
       },
     },
-    orderBy: { date: 'desc' }
+    orderBy: { date: 'desc' },
   });
 
   // Filter out 0 ratings (unrated journal-only days) for the averages
@@ -222,4 +228,9 @@ const getDailyRatingStats = asyncHandler(async (req: Request, res: Response) => 
   );
 });
 
-export { createOrUpdateDailyRating, getDailyRatingStats, getDailyRatingByDate, updateReviewTemplate };
+export {
+  createOrUpdateDailyRating,
+  getDailyRatingStats,
+  getDailyRatingByDate,
+  updateReviewTemplate,
+};
