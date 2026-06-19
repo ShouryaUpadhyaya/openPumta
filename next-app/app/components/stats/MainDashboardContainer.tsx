@@ -11,6 +11,7 @@ import {
   computeHabitStreaks,
   computeBurnoutRisk,
   computeGoalProgress,
+  computeReviewInsights,
 } from '../../stats/lib/metrics';
 
 // Main Components
@@ -21,7 +22,7 @@ import ConsistencyTracker from './main/ConsistencyTracker';
 import FocusStackedBar from './main/FocusStackedBar';
 import SubjectDonutChart from './main/SubjectDonutChart';
 import SessionStatsPanel from './main/SessionStatsPanel';
-import MoodOverviewPanel from './main/MoodOverviewPanel';
+import ReviewInsightsPanel from './main/ReviewInsightsPanel';
 import TasksProgressRing from './main/TasksProgressRing';
 import GoalRealityBars from './deep-dive/GoalRealityBars';
 import AdvancedPeriodTrends from './deep-dive/AdvancedPeriodTrends';
@@ -33,7 +34,7 @@ interface MainDashboardContainerProps {
   focusLogs: { date: string; focusTimeSecs: number }[];
   timeline: TimelineItem[];
   subjects: Subject[];
-  ratingStats: { ratings: DailyRating[]; weeklyAverage: number } | undefined;
+  ratingStats: { ratings?: DailyRating[]; weeklyAverage?: number; history?: any[] } | undefined;
   todos: ToDo[];
   habitsData: Habit[];
 }
@@ -243,14 +244,15 @@ export default function MainDashboardContainer({
     ];
   }, [augmentedTimeline, focusStreak, breakSecs]);
 
-  // C8: Mood Overview
+  // C8: Review Insights Overview
   const moodData = useMemo(() => {
     const dStr = getLocalIsoDate(selectedDate);
-    const todayRating = ratingStats?.ratings?.find((r) => r.date.toString().startsWith(dStr));
+    const todayRating = ratingStats?.history?.find((r: any) => r.date.startsWith(dStr));
+    const insights = todayRating?.content ? computeReviewInsights(todayRating.content) : { total: 0, completed: 0, completionRate: 0, items: [] };
+    
     return {
       rating: todayRating?.rating || null,
-      sleep: todayRating?.description ? parseInt(todayRating.description) : undefined, // fallback logic
-      energy: undefined,
+      insights,
     };
   }, [selectedDate, ratingStats]);
 
@@ -320,10 +322,9 @@ export default function MainDashboardContainer({
         <div className="lg:col-span-8 flex flex-col gap-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
             <SessionStatsPanel stats={sessionStats} />
-            <MoodOverviewPanel
+            <ReviewInsightsPanel
               moodRating={moodData.rating}
-              sleepHours={moodData.sleep}
-              energyLevel={moodData.energy}
+              reviewInsights={moodData.insights}
             />
           </div>
         </div>

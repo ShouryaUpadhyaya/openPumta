@@ -26,6 +26,7 @@ model User {
   spaces       Space[]
   startOfDay   String        @default("05:00")
   activeAvatar String        @default("bunny")
+  reviewTemplate Json?
   deleted      Boolean       @default(false)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
@@ -151,6 +152,7 @@ model DailyRating {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   rating      Int // 1-5 scale
   description String?
+  content     Json?
   date        DateTime @default(now()) @db.Date
 
   @@unique([userId, date])

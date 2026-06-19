@@ -602,6 +602,10 @@ export function computeAllMetricsBundle(
     : 0;
   const moodNorm = ratingStats?.weeklyAverage ? (ratingStats.weeklyAverage / 5) * 100 : 50;
 
+  // Compute new BlockNote review metrics
+  const reviewHistory = ratingStats?.history || [];
+  const todayContent = reviewHistory.find((h: any) => h.date.startsWith(getLocalIsoDate(new Date())))?.content || [];
+
   return {
     generatedAt: new Date().toISOString(),
     overview: {
@@ -617,6 +621,7 @@ export function computeAllMetricsBundle(
         taskCompletion.rate,
         moodNorm,
       ),
+      reviewInsights: computeReviewInsights(todayContent),
     },
     detailed: {
       sessionStats: computeSessionStats(subjects),
@@ -635,7 +640,235 @@ export function computeAllMetricsBundle(
       habitTimeOfDay: computeHabitTimeOfDay(habitsData),
       habitBounceBacks: computeBounceBacks(habitsData),
       habitIdentity: computeIdentityMilestones(habitsData),
+      checkboxAnalytics: computeCheckboxAnalytics(reviewHistory),
+      correlationInsights: computeCorrelationInsights(reviewHistory),
+      reviewStreaks: computeReviewStreaks(reviewHistory),
     },
     mood: ratingStats,
   };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BLOCKNOTE REVIEW ANALYTICS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export function extractCheckboxes(blocks: any[]): { text: string; checked: boolean }[] {
+  if (!blocks || !Array.isArray(blocks)) return [];
+  let result: { text: string; checked: boolean }[] = [];
+  
+  for (const block of blocks) {
+    if (block.type === 'checkListItem') {
+      let text = '';
+      if (Array.isArray(block.content)) {
+        text = block.content.map((c: any) => c.text || '').join('');
+      } else if (typeof block.content === 'string') {
+        text = block.content;
+      }
+      
+      const trimmedText = text.trim();
+      if (trimmedText) {
+        result.push({ text: trimmedText, checked: !!block.props?.checked });
+      }
+    }
+    
+    if (block.children && Array.isArray(block.children)) {
+      result = result.concat(extractCheckboxes(block.children));
+    }
+  }
+  
+  return result;
+}
+
+export function computeReviewInsights(todayContent: any[]) {
+  const checkboxes = extractCheckboxes(todayContent);
+  const total = checkboxes.length;
+  const completed = checkboxes.filter(c => c.checked).length;
+  
+  return {
+    total,
+    completed,
+    completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
+    items: checkboxes
+  };
+}
+
+export function computeCheckboxAnalytics(history: any[]) {
+  if (!history?.length) return [];
+  
+  // Track stats per unique checkbox text
+  const statsMap = new Map<string, {
+    totalDaysPresent: number;
+    completedDays: number;
+    daysCheckedSet: Set<string>;
+  }>();
+
+  // Sort history ascending to compute streaks properly
+  const sortedHistory = [...history].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  sortedHistory.forEach(day => {
+    const checkboxes = extractCheckboxes(day.content);
+    // Deduplicate identical checkboxes in the same day (rare but possible)
+    const uniqueDayCheckboxes = new Map<string, boolean>();
+    checkboxes.forEach(c => {
+      // If it appears multiple times, consider it checked if ANY instance is checked
+      if (uniqueDayCheckboxes.has(c.text)) {
+        uniqueDayCheckboxes.set(c.text, uniqueDayCheckboxes.get(c.text) || c.checked);
+      } else {
+        uniqueDayCheckboxes.set(c.text, c.checked);
+      }
+    });
+
+    uniqueDayCheckboxes.forEach((checked, text) => {
+      if (!statsMap.has(text)) {
+        statsMap.set(text, { totalDaysPresent: 0, completedDays: 0, daysCheckedSet: new Set() });
+      }
+      const entry = statsMap.get(text)!;
+      entry.totalDaysPresent++;
+      if (checked) {
+        entry.completedDays++;
+        entry.daysCheckedSet.add(getLocalIsoDate(new Date(day.date)));
+      }
+    });
+  });
+
+  const results = Array.from(statsMap.entries()).map(([name, data]) => {
+    // Calculate streak
+    let streak = 0;
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    while (data.daysCheckedSet.has(getLocalIsoDate(d))) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    }
+
+    return {
+      name,
+      completionRate: Math.round((data.completedDays / data.totalDaysPresent) * 100),
+      streak,
+      missedDays: data.totalDaysPresent - data.completedDays,
+      totalDays: data.totalDaysPresent
+    };
+  });
+
+  return results.sort((a, b) => b.completionRate - a.completionRate);
+}
+
+export function computeCorrelationInsights(history: any[]) {
+  if (!history?.length) return [];
+  
+  const statsMap = new Map<string, {
+    checkedRatings: number[];
+    uncheckedRatings: number[];
+  }>();
+
+  history.forEach(day => {
+    // Only consider days where a rating was actually given
+    if (day.rating && day.rating > 0) {
+      const checkboxes = extractCheckboxes(day.content);
+      const uniqueDayCheckboxes = new Map<string, boolean>();
+      checkboxes.forEach(c => {
+        if (uniqueDayCheckboxes.has(c.text)) {
+          uniqueDayCheckboxes.set(c.text, uniqueDayCheckboxes.get(c.text) || c.checked);
+        } else {
+          uniqueDayCheckboxes.set(c.text, c.checked);
+        }
+      });
+
+      uniqueDayCheckboxes.forEach((checked, text) => {
+        if (!statsMap.has(text)) {
+          statsMap.set(text, { checkedRatings: [], uncheckedRatings: [] });
+        }
+        const entry = statsMap.get(text)!;
+        if (checked) {
+          entry.checkedRatings.push(day.rating);
+        } else {
+          entry.uncheckedRatings.push(day.rating);
+        }
+      });
+    }
+  });
+
+  const results = Array.from(statsMap.entries()).map(([name, data]) => {
+    const avgChecked = data.checkedRatings.length 
+      ? data.checkedRatings.reduce((a, b) => a + b, 0) / data.checkedRatings.length 
+      : 0;
+    const avgUnchecked = data.uncheckedRatings.length 
+      ? data.uncheckedRatings.reduce((a, b) => a + b, 0) / data.uncheckedRatings.length 
+      : 0;
+      
+    return {
+      name,
+      avgRatingWhenChecked: Math.round(avgChecked * 10) / 10,
+      avgRatingWhenUnchecked: Math.round(avgUnchecked * 10) / 10,
+      diff: Math.round((avgChecked - avgUnchecked) * 10) / 10,
+      occurrences: data.checkedRatings.length + data.uncheckedRatings.length
+    };
+  });
+
+  // Filter out items that don't have enough data (e.g., need at least 1 checked and 1 unchecked)
+  return results
+    .filter(r => r.avgRatingWhenChecked > 0 && r.avgRatingWhenUnchecked > 0)
+    .sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
+}
+
+export function computeReviewStreaks(history: any[]) {
+  if (!history?.length) return { currentStreak: 0, longestStreak: 0, consistency: 0 };
+  
+  // A review is counted if rating > 0 OR content is not empty
+  const activeDays = new Set(history.filter(h => h.rating > 0 || (h.content && extractCheckboxes(h.content).length > 0) || (h.content && h.content.length > 0)).map(h => getLocalIsoDate(new Date(h.date))));
+  
+  let currentStreak = 0;
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  
+  // Check if today is completed
+  if (activeDays.has(getLocalIsoDate(d))) {
+    currentStreak++;
+    d.setDate(d.getDate() - 1);
+  } else {
+    // If today is not completed, check if yesterday was (to keep streak alive)
+    d.setDate(d.getDate() - 1);
+    if (activeDays.has(getLocalIsoDate(d))) {
+      currentStreak++;
+      d.setDate(d.getDate() - 1);
+    }
+  }
+  
+  while (activeDays.has(getLocalIsoDate(d))) {
+    currentStreak++;
+    d.setDate(d.getDate() - 1);
+  }
+  
+  // Calc longest streak by sorting active days
+  const sortedDays = Array.from(activeDays).sort();
+  let longestStreak = 0;
+  let tempStreak = 0;
+  let prevDate = null;
+  
+  for (const dateStr of sortedDays) {
+    const curDate = new Date(dateStr);
+    if (!prevDate) {
+      tempStreak = 1;
+    } else {
+      const diffDays = Math.round((curDate.getTime() - prevDate.getTime()) / (1000 * 3600 * 24));
+      if (diffDays === 1) {
+        tempStreak++;
+      } else {
+        longestStreak = Math.max(longestStreak, tempStreak);
+        tempStreak = 1;
+      }
+    }
+    prevDate = curDate;
+  }
+  longestStreak = Math.max(longestStreak, tempStreak);
+  
+  // Calc 90 day consistency
+  const ninetyDaysAgo = new Date();
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+  ninetyDaysAgo.setHours(0, 0, 0, 0);
+  
+  const recentActiveDays = sortedDays.filter(d => new Date(d) >= ninetyDaysAgo);
+  const consistency = Math.round((recentActiveDays.length / 90) * 100);
+  
+  return { currentStreak, longestStreak, consistency };
 }

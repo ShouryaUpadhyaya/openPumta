@@ -8,6 +8,9 @@ import {
   computeBurnoutRisk,
   computeHabitStreaks,
   computeGoalProgress,
+  computeCheckboxAnalytics,
+  computeCorrelationInsights,
+  computeReviewStreaks,
 } from '../../stats/lib/metrics';
 
 // Deep Dive Components
@@ -16,6 +19,11 @@ import FocusHabitsCorrelation from './deep-dive/FocusHabitsCorrelation';
 import GoalRealityBars from './deep-dive/GoalRealityBars';
 import BurnoutRiskAssessment from './deep-dive/BurnoutRiskAssessment';
 import AdvancedPeriodTrends from './deep-dive/AdvancedPeriodTrends';
+import MoodTrendsChart from './deep-dive/MoodTrendsChart';
+import RatingHeatmap from './deep-dive/RatingHeatmap';
+import ReviewStreaksPanel from './deep-dive/ReviewStreaksPanel';
+import CheckboxAnalyticsPanel from './deep-dive/CheckboxAnalyticsPanel';
+import CorrelationInsights from './deep-dive/CorrelationInsights';
 import { getLocalIsoDate } from '@/lib/utils';
 
 interface DeepDiveContainerProps {
@@ -23,7 +31,7 @@ interface DeepDiveContainerProps {
   timeline: TimelineItem[];
   subjects: Subject[];
   habitsData: Habit[];
-  ratingStats: { ratings: DailyRating[]; weeklyAverage: number } | undefined;
+  ratingStats: { ratings?: DailyRating[]; weeklyAverage?: number; history?: any[] } | undefined;
 }
 
 export default function DeepDiveContainer({
@@ -96,21 +104,57 @@ export default function DeepDiveContainer({
     }));
   }, [subjects]);
 
+  // BlockNote Review Deep Dive Data
+  const reviewHistory = ratingStats?.history || [];
+  
+  const checkboxAnalytics = useMemo(() => computeCheckboxAnalytics(reviewHistory), [reviewHistory]);
+  const moodCorrelations = useMemo(() => computeCorrelationInsights(reviewHistory), [reviewHistory]);
+  const reviewStreaks = useMemo(() => computeReviewStreaks(reviewHistory), [reviewHistory]);
+
   return (
-    <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-4 h-[600px]">
-          <DetailedActivityTimeline timeline={timeline} />
+    <div className="flex flex-col gap-8">
+      {/* Productivity Deep Dive */}
+      <div className="flex flex-col gap-6">
+        <h2 className="text-xl font-bold border-b pb-2">Productivity & Focus</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-4 h-[600px]">
+            <DetailedActivityTimeline timeline={timeline} />
+          </div>
+          <div className="lg:col-span-8 flex flex-col gap-6 h-[600px]">
+            <FocusHabitsCorrelation data={correlationData} />
+            <AdvancedPeriodTrends trendData={focusTrend} />
+          </div>
         </div>
-        <div className="lg:col-span-8 flex flex-col gap-6 h-[600px]">
-          <FocusHabitsCorrelation data={correlationData} />
-          <AdvancedPeriodTrends trendData={focusTrend} />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <GoalRealityBars data={goalRealityData} />
+          <BurnoutRiskAssessment data={burnout as any} />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <GoalRealityBars data={goalRealityData} />
-        <BurnoutRiskAssessment data={burnout as any} />
+      {/* Reviews & Journaling Deep Dive */}
+      <div className="flex flex-col gap-6">
+        <h2 className="text-xl font-bold border-b pb-2 mt-4">Reviews & Journaling</h2>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-8">
+            <MoodTrendsChart history={reviewHistory} />
+          </div>
+          <div className="lg:col-span-4">
+            <ReviewStreaksPanel streaks={reviewStreaks} />
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 gap-6">
+          <RatingHeatmap history={reviewHistory} />
+        </div>
+        
+        {checkboxAnalytics.length > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <CheckboxAnalyticsPanel analytics={checkboxAnalytics} />
+            <CorrelationInsights correlations={moodCorrelations} />
+          </div>
+        )}
       </div>
     </div>
   );
