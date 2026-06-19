@@ -80,6 +80,8 @@ export default function FullScreenReview({
     { id: string; question: string; answer: string }[]
   >([]);
 
+  const [isTemplateEdited, setIsTemplateEdited] = useState(false);
+
   // Track last initialized date to prevent overwriting user edits while typing
   const lastInitializedDate = useRef<string | null>(null);
 
@@ -134,7 +136,10 @@ export default function FullScreenReview({
         },
       },
       {
-        onSuccess: () => toast.success('Saved as your daily review template!'),
+        onSuccess: () => {
+          toast.success('Saved as your daily review template!');
+          setIsTemplateEdited(false);
+        },
         onError: () => toast.error('Failed to save template'),
       },
     );
@@ -144,32 +149,40 @@ export default function FullScreenReview({
     const newQ = { id: Math.random().toString(), question: 'New Question', answer: '' };
     const updated = [...customQuestions, newQ];
     setCustomQuestions(updated);
+    setIsTemplateEdited(true);
     saveData(rating, journal, updated);
   };
 
   const updateQuestion = (id: string, field: 'question' | 'answer', value: string) => {
     const updated = customQuestions.map((q) => (q.id === id ? { ...q, [field]: value } : q));
     setCustomQuestions(updated);
+    if (field === 'question') {
+      setIsTemplateEdited(true);
+    }
     saveData(rating, journal, updated);
   };
 
   const removeQuestion = (id: string) => {
     const updated = customQuestions.filter((q) => q.id !== id);
     setCustomQuestions(updated);
+    setIsTemplateEdited(true);
     saveData(rating, journal, updated);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="min-w-3xl w-full h-[90vh] flex flex-col p-0 overflow-hidden shadow-2xl rounded-3xl bg-background border">
-        <DialogHeader className="p-5 md:p-8 border-b shrink-0 flex flex-row items-center justify-between sticky top-0 bg-card/90 backdrop-blur-md z-10">
-          <div className="flex items-center gap-4">
-            <DialogTitle className="text-2xl font-bold tracking-tight text-foreground">
+      <DialogContent className="lg:min-w-4xl md:min-w-3xl max-w-4xl w-full h-[100dvh] md:h-[90vh] flex flex-col p-0 overflow-hidden shadow-2xl rounded-none md:rounded-3xl bg-background border-0 md:border">
+        <DialogHeader className="p-4 md:p-8 border-b shrink-0 flex flex-row items-center justify-between sticky top-0 bg-background/90 backdrop-blur-md z-10">
+          <div className="flex items-center gap-2 md:gap-4">
+            <DialogTitle className="text-lg md:text-2xl font-bold tracking-tight text-foreground hidden sm:block">
               Daily Review
+            </DialogTitle>
+            <DialogTitle className="text-lg font-bold tracking-tight text-foreground sm:hidden">
+              Review
             </DialogTitle>
           </div>
 
-          <div className="flex items-center bg-muted/40 rounded-full border border-muted-foreground/20 px-1.5 py-1">
+          <div className="flex items-center bg-muted/40 rounded-full border border-muted-foreground/20 px-1 md:px-1.5 py-0.5 md:py-1">
             <button
               onClick={() =>
                 setSelectedDate((d) => {
@@ -178,11 +191,11 @@ export default function FullScreenReview({
                   return nd;
                 })
               }
-              className="p-1.5 hover:bg-muted rounded-full transition-colors"
+              className="p-1 md:p-1.5 hover:bg-muted rounded-full transition-colors"
             >
               <ChevronLeft className="h-4 w-4 text-muted-foreground" />
             </button>
-            <span className="text-sm font-semibold px-6 w-36 text-center text-foreground tracking-wide">
+            <span className="text-xs md:text-sm font-semibold px-2 md:px-6 w-24 md:w-36 text-center text-foreground tracking-wide">
               {isToday ? 'Today' : selectedDateStr}
             </span>
             <button
@@ -194,22 +207,25 @@ export default function FullScreenReview({
                 })
               }
               disabled={isToday}
-              className="p-1.5 hover:bg-muted rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+              className="p-1 md:p-1.5 hover:bg-muted rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
             >
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSaveAsTemplate}
-              className="hidden md:flex gap-2 rounded-xl font-semibold"
-            >
-              <Save className="h-4 w-4" />
-              Save Template
-            </Button>
+          <div className="flex items-center gap-1 md:gap-2">
+            {isTemplateEdited && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSaveAsTemplate}
+                className="flex gap-1 md:gap-2 rounded-xl font-semibold px-2 md:px-3 text-[10px] md:text-sm h-8"
+              >
+                <Save className="h-3 w-3 md:h-4 md:w-4" />
+                <span className="hidden sm:inline">Save Template</span>
+                <span className="inline sm:hidden">Save</span>
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -221,7 +237,7 @@ export default function FullScreenReview({
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-5 md:p-8 flex flex-col gap-10 relative">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col gap-8 md:gap-10 relative">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
               <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -233,7 +249,7 @@ export default function FullScreenReview({
                 <span className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
                   Main Rating
                 </span>
-                <div className="flex gap-2" onMouseLeave={() => setIsHovering(0)}>
+                <div className="flex gap-1 md:gap-2" onMouseLeave={() => setIsHovering(0)}>
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
@@ -243,7 +259,7 @@ export default function FullScreenReview({
                       onClick={() => handleRatingChange(star)}
                     >
                       <Star
-                        className={`h-10 w-10 ${
+                        className={`h-8 w-8 md:h-10 md:w-10 ${
                           isHovering >= star || (!isHovering && rating >= star)
                             ? 'fill-yellow-400 text-yellow-400'
                             : 'text-muted-foreground opacity-30 cursor-pointer'
@@ -276,14 +292,16 @@ export default function FullScreenReview({
                   <span className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
                     Custom Questions
                   </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={addQuestion}
-                    className="h-8 px-3 text-xs font-semibold rounded-full bg-muted/50"
-                  >
-                    <Plus className="h-3 w-3 mr-1" /> Add
-                  </Button>
+                  <div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={addQuestion}
+                      className="h-8 px-3 text-xs font-semibold rounded-full bg-muted/50"
+                    >
+                      <Plus className="h-3 w-3 mr-1" /> Add
+                    </Button>
+                  </div>
                 </div>
                 {customQuestions.map((q) => (
                   <div
