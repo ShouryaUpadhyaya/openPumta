@@ -1,18 +1,59 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useDailyRatingStats } from '@/hooks/useRatings';
+import { useDailyRatingStats, useSubmitDailyRating } from '@/hooks/useRatings';
 import { Star, TrendingUp, TrendingDown, Minus, Maximize2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import FullScreenReview from './review/FullScreenReview';
+import { getLocalIsoDate } from '@/lib/utils';
+import { Textarea } from '@/components/ui/textarea';
+import debounce from 'lodash/debounce';
+
+function DebouncedTextarea({
+  initialValue,
+  onChange,
+  placeholder,
+  className,
+}: {
+  initialValue: string;
+  onChange: (val: string) => void;
+  placeholder?: string;
+  className?: string;
+}) {
+  const [val, setVal] = useState(initialValue);
+
+  useEffect(() => {
+    setVal(initialValue);
+  }, [initialValue]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedOnChange = useCallback(
+    debounce((newVal: string) => onChange(newVal), 1000),
+    [onChange],
+  );
+
+  return (
+    <Textarea
+      placeholder={placeholder}
+      className={className}
+      value={val}
+      onChange={(e) => {
+        setVal(e.target.value);
+        debouncedOnChange(e.target.value);
+      }}
+    />
+  );
+}
 
 export default function DailyRating() {
   const { user } = useAuthStore();
   const { data: stats, isLoading } = useDailyRatingStats();
+  const submitRating = useSubmitDailyRating();
+  const selectedDateStr = getLocalIsoDate(new Date());
 
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
 
@@ -41,6 +82,42 @@ export default function DailyRating() {
   }
 
   const hasRatedToday = stats?.today !== null && stats?.today !== undefined && stats.today > 0;
+
+  const todayStats = stats?.history?.find((h) => h.date.startsWith(selectedDateStr));
+  let initialJournal = '';
+  if (todayStats?.content && !Array.isArray(todayStats.content)) {
+    initialJournal = (todayStats.content as any).journal || '';
+  } else if (todayStats?.content && Array.isArray(todayStats.content)) {
+    initialJournal = 'Legacy review format. Open fullscreen to view.';
+  }
+
+  const handleJournalChange = (newJournal: string) => {
+    const currentRating = todayStats?.rating || 0;
+
+    let newContent = { journal: newJournal, customQuestions: [] };
+    if (todayStats?.content && !Array.isArray(todayStats.content)) {
+      newContent.customQuestions = (todayStats.content as any).customQuestions || [];
+    }
+
+    submitRating.mutate({
+      rating: currentRating === 0 ? undefined : currentRating,
+      date: selectedDateStr,
+      content: newContent,
+    });
+  };
+
+  const handleRatingChange = (newRating: number) => {
+    let newContent = { journal: initialJournal, customQuestions: [] };
+    if (todayStats?.content && !Array.isArray(todayStats.content)) {
+      newContent.customQuestions = (todayStats.content as any).customQuestions || [];
+    }
+
+    submitRating.mutate({
+      rating: newRating,
+      date: selectedDateStr,
+      content: newContent,
+    });
+  };
 
   return (
     <>
@@ -78,40 +155,41 @@ export default function DailyRating() {
             <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="today" className="flex-1 flex flex-col gap-4 overflow-y-auto mt-0 pr-1">
-            <div
-              className="flex flex-col gap-3 p-4 bg-muted/30 rounded-xl border border-dashed cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => setIsFullScreenOpen(true)}
-            >
+          <TabsContent
+            value="today"
+            className="flex-1 flex flex-col gap-4 overflow-y-auto mt-0 pr-1"
+          >
+            <div className="flex flex-col gap-3 p-4 bg-muted/30 rounded-xl border border-dashed transition-colors hover:border-primary/30">
               <div className="flex flex-col items-center justify-center py-2">
-                <span className="text-sm text-muted-foreground mb-2">How was your day?</span>
+                <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                  Main Rating
+                </span>
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <div
+                    <button
                       key={star}
-                      className="transition-transform focus:outline-none"
+                      className="transition-transform hover:scale-110 focus:outline-none"
+                      onClick={() => handleRatingChange(star)}
                     >
                       <Star
                         className={`h-8 w-8 ${
-                          ((stats?.today ?? 0) >= star)
+                          (stats?.today ?? 0) >= star
                             ? 'fill-yellow-400 text-yellow-400'
-                            : 'text-muted-foreground opacity-30'
+                            : 'text-muted-foreground opacity-30 cursor-pointer'
                         }`}
                       />
-                    </div>
+                    </button>
                   ))}
                 </div>
-                {hasRatedToday && (
-                  <span className="text-xs font-bold text-foreground mt-2">
-                    {stats?.today} / 5
-                  </span>
-                )}
               </div>
 
-              <div className="text-center mt-2">
-                <Button variant="secondary" size="sm" className="w-full rounded-xl">
-                  Open Journal & Tracker
-                </Button>
+              <div className="flex flex-col gap-1 w-full mt-2">
+                <DebouncedTextarea
+                  initialValue={initialJournal}
+                  onChange={handleJournalChange}
+                  placeholder="Journal your day here..."
+                  className="min-h-[80px] text-sm resize-none bg-background rounded-xl border-border/50 focus-visible:ring-1"
+                />
               </div>
             </div>
 
@@ -153,32 +231,43 @@ export default function DailyRating() {
           <TabsContent value="history" className="flex-1 overflow-y-auto mt-0 pr-1">
             <div className="flex flex-col gap-3">
               {stats?.history?.length ? (
-                stats.history.filter((e) => e.rating > 0).slice(0, 21).map((entry) => (
-                  <div
-                    key={entry.date}
-                    className="flex flex-col gap-2 p-3 bg-muted/20 border rounded-xl"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-muted-foreground">
-                        {new Intl.DateTimeFormat('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        }).format(new Date(entry.date))}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-bold">{entry.rating}</span>
+                stats.history
+                  .filter((e) => e.rating > 0)
+                  .slice(0, 21)
+                  .map((entry) => {
+                    let journalText = '';
+                    if (entry.content && !Array.isArray(entry.content)) {
+                      journalText = (entry.content as any).journal || '';
+                    } else if (entry.description) {
+                      journalText = entry.description;
+                    }
+
+                    return (
+                      <div
+                        key={entry.date}
+                        className="flex flex-col gap-2 p-3 bg-muted/20 border rounded-xl"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-muted-foreground">
+                            {new Intl.DateTimeFormat('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            }).format(new Date(entry.date))}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                            <span className="text-sm font-bold">{entry.rating}</span>
+                          </div>
+                        </div>
+                        {journalText && (
+                          <p className="text-sm text-foreground bg-background border border-border/50 p-2 rounded-lg italic line-clamp-3">
+                            &quot;{journalText}&quot;
+                          </p>
+                        )}
                       </div>
-                    </div>
-                    {/* We only show description here for backward compatibility or simple views. Full BlockNote content is in the full-screen view. */}
-                    {entry.description && (
-                      <p className="text-sm text-foreground bg-background border p-2 rounded-lg italic line-clamp-3">
-                        &quot;{entry.description}&quot;
-                      </p>
-                    )}
-                  </div>
-                ))
+                    );
+                  })
               ) : (
                 <div className="flex flex-col items-center justify-center py-8 text-center">
                   <p className="text-sm text-muted-foreground">No historical reviews found.</p>
