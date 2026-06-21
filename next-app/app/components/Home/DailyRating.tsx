@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect, useRef } from 'react';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useAuthStore } from '@/store/useAuthStore';
 import { useDailyRatingStats, useSubmitDailyRating } from '@/hooks/useRatings';
 import {
   Star,
@@ -14,7 +13,6 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
 import Loading from './review/Loading';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import FullScreenReview from './review/FullScreenReview';
@@ -34,32 +32,54 @@ function DebouncedTextarea({
   className?: string;
 }) {
   const [val, setVal] = useState(initialValue);
+  const [isFocused, setIsFocused] = useState(false);
+  const [prevInitial, setPrevInitial] = useState(initialValue);
+
+  // Sync external initialValue to local state when the user isn't actively typing
+  // This is done during render to avoid the 'react-hooks/set-state-in-effect' error
+  if (initialValue !== prevInitial) {
+    setPrevInitial(initialValue);
+    if (!isFocused) {
+      setVal(initialValue);
+    }
+  }
+
+  // Keep a ref to the latest onChange
+  const onChangeRef = useRef(onChange);
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  // Store the debounced function in a ref and initialize it in an effect
+  // This guarantees we never execute or read refs during the render phase.
+  const debouncedOnChangeRef = useRef<ReturnType<typeof debounce> | null>(null);
 
   useEffect(() => {
-    setVal(initialValue);
-  }, [initialValue]);
+    debouncedOnChangeRef.current = debounce((newVal: string) => {
+      onChangeRef.current(newVal);
+    }, 2000);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedOnChange = useCallback(
-    debounce((newVal: string) => onChange(newVal), 1000),
-    [onChange],
-  );
+    return () => {
+      debouncedOnChangeRef.current?.cancel();
+    };
+  }, []);
 
   return (
     <Textarea
       placeholder={placeholder}
       className={className}
       value={val}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
       onChange={(e) => {
         setVal(e.target.value);
-        debouncedOnChange(e.target.value);
+        debouncedOnChangeRef.current?.(e.target.value);
       }}
     />
   );
 }
 
 export default function DailyRating() {
-  const { user } = useAuthStore();
   const { data: stats, isLoading } = useDailyRatingStats();
   const submitRating = useSubmitDailyRating();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -77,6 +97,7 @@ export default function DailyRating() {
   const todayStats = stats?.history?.find((h) => h.date.startsWith(selectedDateStr));
   let initialJournal = '';
   if (todayStats?.content && !Array.isArray(todayStats.content)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     initialJournal = (todayStats.content as any).journal || '';
   } else if (todayStats?.content && Array.isArray(todayStats.content)) {
     initialJournal = 'Legacy review format. Open fullscreen to view.';
@@ -85,8 +106,9 @@ export default function DailyRating() {
   const handleJournalChange = (newJournal: string) => {
     const currentRating = todayStats?.rating || 0;
 
-    let newContent = { journal: newJournal, customQuestions: [] };
+    const newContent = { journal: newJournal, customQuestions: [] };
     if (todayStats?.content && !Array.isArray(todayStats.content)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       newContent.customQuestions = (todayStats.content as any).customQuestions || [];
     }
 
@@ -98,8 +120,9 @@ export default function DailyRating() {
   };
 
   const handleRatingChange = (newRating: number) => {
-    let newContent = { journal: initialJournal, customQuestions: [] };
+    const newContent = { journal: initialJournal, customQuestions: [] };
     if (todayStats?.content && !Array.isArray(todayStats.content)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       newContent.customQuestions = (todayStats.content as any).customQuestions || [];
     }
 
@@ -261,6 +284,7 @@ export default function DailyRating() {
                   .map((entry) => {
                     let journalText = '';
                     if (entry.content && !Array.isArray(entry.content)) {
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       journalText = (entry.content as any).journal || '';
                     } else if (entry.description) {
                       journalText = entry.description;
