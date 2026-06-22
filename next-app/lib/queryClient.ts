@@ -15,5 +15,8 @@ export const invalidateSubjectTimerQueries = async () => {
     queryClient.invalidateQueries({ queryKey: ['habits'] }),
     queryClient.invalidateQueries({ queryKey: ['habitDashboard'] }),
     queryClient.invalidateQueries({ queryKey: ['habitsWithLogs'] }),
+    queryClient.invalidateQueries({ queryKey: ['timeline'] }),
+    queryClient.invalidateQueries({ queryKey: ['dashboardStats'] }),
+    queryClient.invalidateQueries({ queryKey: ['subjectsWithLogs21'] }),
   ]);
 };

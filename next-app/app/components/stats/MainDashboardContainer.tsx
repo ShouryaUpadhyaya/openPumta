@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import type { Subject, SubjectLog } from '@/types/subject';
+import type { Subject } from '@/types/subject';
 import type { ToDo } from '@/types/todo';
 import type { Habit } from '@/types/habit';
 import type { DailyRating } from '@/types/rating';
@@ -8,8 +8,6 @@ import { useTimerStore } from '@/store/useTimerStore';
 import {
   computeFocusTrend,
   computeFocusStreak,
-  computeHabitStreaks,
-  computeBurnoutRisk,
   computeGoalProgress,
   computeReviewInsights,
 } from '../../stats/lib/metrics';
@@ -34,6 +32,7 @@ interface MainDashboardContainerProps {
   focusLogs: { date: string; focusTimeSecs: number }[];
   timeline: TimelineItem[];
   subjects: Subject[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ratingStats: { ratings?: DailyRating[]; weeklyAverage?: number; history?: any[] } | undefined;
   todos: ToDo[];
   habitsData: Habit[];
@@ -92,7 +91,23 @@ export default function MainDashboardContainer({
     return timeline;
   }, [timeline, activeTimelineItem]);
 
-  const focusTrend = useMemo(() => computeFocusTrend(focusLogs), [focusLogs]);
+  const augmentedFocusLogs = useMemo(() => {
+    if (!activeTimelineItem) return focusLogs;
+    const activeDateIso = getLocalIsoDate(new Date(activeTimelineItem.startedAt));
+
+    const existing = focusLogs.find((l) => l.date === activeDateIso);
+    const others = focusLogs.filter((l) => l.date !== activeDateIso);
+
+    return [
+      ...others,
+      {
+        date: activeDateIso,
+        focusTimeSecs: (existing?.focusTimeSecs || 0) + activeTimelineItem.duration,
+      },
+    ].sort((a, b) => a.date.localeCompare(b.date));
+  }, [focusLogs, activeTimelineItem]);
+
+  const focusTrend = useMemo(() => computeFocusTrend(augmentedFocusLogs), [augmentedFocusLogs]);
   const focusStreak = useMemo(() => computeFocusStreak(subjects), [subjects]);
 
   // Daily Subject Focus (for Stacked Bar & Radar)
@@ -124,13 +139,11 @@ export default function MainDashboardContainer({
   // C2: Daily Hours for selected date
   const dailyHours = useMemo(() => {
     const dStr = getLocalIsoDate(selectedDate);
-    const item = focusLogs.find((l) => l.date === dStr);
+    const item = augmentedFocusLogs.find((l) => l.date === dStr);
     let hours = item ? item.focusTimeSecs / 3600 : 0;
-    if (activeTimelineItem) {
-      hours += activeTimelineItem.duration / 3600;
-    }
+    // We already added activeTimelineItem to augmentedFocusLogs, so no need to add it again here!
     return hours;
-  }, [focusLogs, selectedDate, activeTimelineItem]);
+  }, [augmentedFocusLogs, selectedDate]);
 
   // C3: Weekly Radar Data
   const weeklyRadarData = useMemo(() => {
@@ -140,7 +153,7 @@ export default function MainDashboardContainer({
     d.setDate(d.getDate() - 6);
     for (let i = 0; i < 7; i++) {
       const dStr = getLocalIsoDate(d);
-      const log = focusLogs.find((l) => l.date === dStr);
+      const log = augmentedFocusLogs.find((l) => l.date === dStr);
       data.push({
         day: dayNames[d.getDay()],
         hours: log ? Math.round((log.focusTimeSecs / 3600) * 10) / 10 : 0,
@@ -148,24 +161,7 @@ export default function MainDashboardContainer({
       d.setDate(d.getDate() + 1);
     }
     return data;
-  }, [selectedDate, focusLogs]);
-
-  // C4: Consistency Tracker Data
-  const consistencyData = useMemo(() => {
-    const data = [];
-    const d = new Date(selectedDate);
-    d.setDate(d.getDate() - 20);
-    for (let i = 0; i < 21; i++) {
-      const dStr = getLocalIsoDate(d);
-      const log = focusLogs.find((l) => l.date === dStr);
-      data.push({
-        date: dStr,
-        goalMet: log ? log.focusTimeSecs >= 4 * 3600 : false,
-      });
-      d.setDate(d.getDate() + 1);
-    }
-    return data;
-  }, [selectedDate, focusLogs]);
+  }, [selectedDate, augmentedFocusLogs]);
 
   // C5: Focus Stacked Bar Data
   const stackedBarData = useMemo(() => {
@@ -247,9 +243,12 @@ export default function MainDashboardContainer({
   // C8: Review Insights Overview
   const moodData = useMemo(() => {
     const dStr = getLocalIsoDate(selectedDate);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const todayRating = ratingStats?.history?.find((r: any) => r.date.startsWith(dStr));
-    const insights = todayRating?.content ? computeReviewInsights(todayRating.content) : { total: 0, completed: 0, completionRate: 0, items: [] };
-    
+    const insights = todayRating?.content
+      ? computeReviewInsights(todayRating.content)
+      : { total: 0, completed: 0, completionRate: 0, items: [] };
+
     return {
       rating: todayRating?.rating || null,
       insights,
@@ -277,7 +276,7 @@ export default function MainDashboardContainer({
           <MonthlyCalendarNav
             selectedDate={selectedDate}
             onSelectDate={onSelectDate}
-            focusLogs={focusLogs}
+            focusLogs={augmentedFocusLogs}
           />
         </div>
         <div className="lg:col-span-7">
@@ -322,10 +321,7 @@ export default function MainDashboardContainer({
         <div className="lg:col-span-8 flex flex-col gap-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
             <SessionStatsPanel stats={sessionStats} />
-            <ReviewInsightsPanel
-              moodRating={moodData.rating}
-              reviewInsights={moodData.insights}
-            />
+            <ReviewInsightsPanel moodRating={moodData.rating} reviewInsights={moodData.insights} />
           </div>
         </div>
       </div>

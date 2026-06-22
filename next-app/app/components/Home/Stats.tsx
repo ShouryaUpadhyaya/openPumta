@@ -8,6 +8,9 @@ import { HabitConsistencyChart } from './Stats/HabitConsistencyChart';
 import { WeeklyPatternChart } from './Stats/WeeklyPatternChart';
 import { SessionStatsCard } from './Stats/SessionStatsCard';
 
+import { useTimerStore } from '@/store/useTimerStore';
+import { getLocalIsoDate } from '@/lib/utils';
+
 const FALLBACK_COLORS = ['#0088FE', '#FF8042', '#00C49F', '#FFBB28', '#FF8042'];
 
 function Stats() {
@@ -15,6 +18,16 @@ function Stats() {
   const { data: subjects, isLoading: isLoadingSubjects } = useSubjectsWithLogs();
 
   const [chartColors, setChartColors] = useState<string[]>(FALLBACK_COLORS);
+
+  const store = useTimerStore();
+  const [localNow, setLocalNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (store.phase === 'work' && store.running) {
+      const interval = setInterval(() => setLocalNow(Date.now()), 10000);
+      return () => clearInterval(interval);
+    }
+  }, [store.phase, store.running]);
 
   useEffect(() => {
     const rootStyles = getComputedStyle(document.documentElement);
@@ -33,16 +46,68 @@ function Stats() {
     }
   }, []);
 
-  const sessionStats = useMemo(() => computeSessionStats(subjects || []), [subjects]);
-  const dayOfWeek = useMemo(() => computeDayOfWeekPattern(subjects || []), [subjects]);
+  const augmentedSubjects = useMemo(() => {
+    if (!subjects) return [];
+    if (store.phase === 'work' && store.running && store.activeSubjectId && store.phaseStartedAt) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return subjects.map((s: any) => {
+        if (s.id === store.activeSubjectId) {
+          return {
+            ...s,
+            subjectLogs: [
+              ...(s.subjectLogs || []),
+              {
+                id: 'active',
+                startedAt: new Date(store.phaseStartedAt as number).toISOString(),
+                endedAt: new Date(localNow).toISOString(),
+              },
+            ],
+          };
+        }
+        return s;
+      });
+    }
+    return subjects;
+  }, [subjects, store.phase, store.running, store.activeSubjectId, store.phaseStartedAt, localNow]);
+
+  const augmentedFocusData = useMemo(() => {
+    const arr = statsData?.focusTimeArray || [];
+    if (store.phase === 'work' && store.running && store.activeSubjectId && store.phaseStartedAt) {
+      const durationHrs = (localNow - (store.phaseStartedAt as number)) / 1000 / 3600;
+      const todayIso = getLocalIsoDate(new Date(store.phaseStartedAt as number));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const existing = arr.find((l: any) => l.date === todayIso);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const others = arr.filter((l: any) => l.date !== todayIso);
+      return [
+        ...others,
+        {
+          date: todayIso,
+          focusTimeHrs: (existing?.focusTimeHrs || 0) + durationHrs,
+        },
+      ].sort((a, b) => a.date.localeCompare(b.date));
+    }
+    return arr;
+  }, [
+    statsData,
+    store.phase,
+    store.running,
+    store.activeSubjectId,
+    store.phaseStartedAt,
+    localNow,
+  ]);
+
+  const sessionStats = useMemo(() => computeSessionStats(augmentedSubjects), [augmentedSubjects]);
+  const dayOfWeek = useMemo(() => computeDayOfWeekPattern(augmentedSubjects), [augmentedSubjects]);
 
   if (isLoadingDashboard || isLoadingSubjects) {
     return <StatsSkeleton />;
   }
 
   const focusData =
-    statsData?.focusTimeArray
-      ?.map((d: { date: string | number | Date; focusTimeHrs: number }) => ({
+    augmentedFocusData
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((d: any) => ({
         date: new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }),
         hours: d.focusTimeHrs,
       }))
@@ -50,7 +115,8 @@ function Stats() {
 
   const habitData =
     statsData?.habitCompletionRateByDate
-      ?.map((d: { date: string | number | Date; rate: number }) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ?.map((d: any) => ({
         date: new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }),
         rate: d.rate,
       }))
