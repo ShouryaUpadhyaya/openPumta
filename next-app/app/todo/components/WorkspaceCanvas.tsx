@@ -110,6 +110,16 @@ function findPlacement(
 export default function WorkspaceCanvas() {
   const { activeSpaceId } = useWorkspaceStore();
   const { data: textBoxes, isLoading } = useTextBoxes(activeSpaceId as number);
+  const maxY = useMemo(() => {
+    if (!textBoxes || textBoxes.length === 0) return 0;
+    return Math.max(
+      ...textBoxes.map((box) => {
+        const l = box.layout?.desktop || { y: 0, height: 300 };
+        return (l.y || 0) + (typeof l.height === 'number' ? l.height : 300);
+      }),
+    );
+  }, [textBoxes]);
+
   const createTextBox = useCreateTextBox();
   const updateLayout = useUpdateTextBoxLayout();
   const viewport = useViewport();
@@ -200,13 +210,16 @@ export default function WorkspaceCanvas() {
   return (
     <div
       ref={canvasRef}
-      className="relative flex-1 min-w-fit  min-h-full overflow-hidden bg-dot-pattern bg-size-[24px_24px]"
+      className="relative flex-1 overflow-y-auto overflow-x-hidden bg-dot-pattern bg-size-[24px_24px]"
     >
       <div
+        style={
+          viewport === 'mobile' ? undefined : { minHeight: `calc(max(100vh, ${maxY}px) + 600px)` }
+        }
         className={
           viewport === 'mobile'
-            ? 'absolute inset-0 w-fit h-full overflow-y-auto flex flex-col gap-4 p-4 pb-24'
-            : 'absolute inset-0 w-full h-full'
+            ? 'w-full min-h-full flex flex-col gap-4 p-4 pb-24'
+            : 'relative w-full'
         }
       >
         {viewport === 'mobile' ? (
@@ -243,7 +256,7 @@ export default function WorkspaceCanvas() {
 
       <Button
         onClick={handleAddTextBox}
-        className="absolute bottom-6 right-6 h-14 w-14 rounded-full shadow-xl flex items-center justify-center z-50 hover:scale-105 transition-transform"
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-xl flex items-center justify-center z-50 hover:scale-105 transition-transform"
         size="icon"
       >
         <Plus className="h-6 w-6" />
