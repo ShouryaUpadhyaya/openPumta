@@ -5,27 +5,25 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Pencil, Trash2 } from 'lucide-react';
 import { HabitDifficulty } from '@/hooks/useHabits';
 import { getLocalIsoDate } from '@/lib/utils';
+import { DIFFICULTY_OPTIONS } from './constants';
 
 interface HabitHeatmapCardProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   habit: any;
   isCompletedOnSelectedDate: boolean;
   completionDates: Map<string, boolean>; // date -> isBadDayPlan
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   linkedSubject?: any;
   daysArray: string[];
   gridCols: string;
   filterRange: number | 'all';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onEdit: (habit: any) => void;
   onDelete: (habitId: number) => void;
   onToggle: (habitId: number, isBadDayPlan: boolean) => void;
   isCompletedMinimum: boolean;
   selectedDateStr?: string;
 }
-
-const DIFFICULTY_OPTIONS: { label: string; value: HabitDifficulty; color: string }[] = [
-  { label: 'Easy', value: 'LOW', color: 'text-emerald-500' },
-  { label: 'Medium', value: 'MID', color: 'text-amber-500' },
-  { label: 'Hard', value: 'HIGH', color: 'text-rose-500' },
-];
 
 export function HabitHeatmapCard({
   habit,
