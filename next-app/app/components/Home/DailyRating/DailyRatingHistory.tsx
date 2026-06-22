@@ -5,9 +5,10 @@ import { DailyRatingStatsResponse } from '@/hooks/useRatings';
 
 export interface DailyRatingHistoryProps {
   stats: DailyRatingStatsResponse | undefined;
+  onSelectHistory?: (date: Date) => void;
 }
 
-export function DailyRatingHistory({ stats }: DailyRatingHistoryProps) {
+export function DailyRatingHistory({ stats, onSelectHistory }: DailyRatingHistoryProps) {
   return (
     <TabsContent value="history" className="flex-1 overflow-y-auto mt-0 pr-1">
       <div className="flex flex-col gap-3">
@@ -19,7 +20,11 @@ export function DailyRatingHistory({ stats }: DailyRatingHistoryProps) {
               let journalText = '';
               if (entry.content && !Array.isArray(entry.content)) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                journalText = (entry.content as any).journal || '';
+                const c = entry.content as any;
+                journalText = c.journal || '';
+                if (!journalText && c.customQuestions && c.customQuestions.length > 0) {
+                  journalText = c.customQuestions[0]?.answer || 'Custom Review Completed';
+                }
               } else if (entry.description) {
                 journalText = entry.description;
               }
@@ -27,7 +32,8 @@ export function DailyRatingHistory({ stats }: DailyRatingHistoryProps) {
               return (
                 <div
                   key={entry.date}
-                  className="flex flex-col gap-2 p-3 bg-muted/20 border rounded-xl"
+                  onClick={() => onSelectHistory?.(new Date(entry.date))}
+                  className="flex flex-col gap-2 p-3 bg-muted/20 border rounded-xl hover:bg-muted/40 cursor-pointer transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-muted-foreground">

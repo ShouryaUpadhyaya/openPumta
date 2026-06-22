@@ -95,7 +95,13 @@ export default function DailyRating() {
             handleJournalChange={handleJournalChange}
           />
 
-          <DailyRatingHistory stats={stats} />
+          <DailyRatingHistory
+            stats={stats}
+            onSelectHistory={(date) => {
+              setSelectedDate(date);
+              setIsFullScreenOpen(true);
+            }}
+          />
         </Tabs>
       </Card>
 
