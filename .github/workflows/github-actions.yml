@@ -1,6 +1,6 @@
 name: Deploy on VPS
 run-name: ${{github.action}} is running
-on: [push]
+on: push
 jobs:
   Ssh_into_VPS:
     runs-on: uubuntu-24.04
