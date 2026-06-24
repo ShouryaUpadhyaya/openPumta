@@ -2,7 +2,20 @@ name: Deploy on VPS
 run-name: ${{github.action}} is running
 on: push
 jobs:
-  Ssh_into_VPS:
-    runs-on: uubuntu-24.04
+  Deploy_ON_PUSH:
+    runs-on: ubuntu-24.04
     steps:
-      - run: echo "test commit"
+      - name: Execute remote SSH commands using password
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{secrets.SSH_PRIVATE_KEY}}
+          script: |
+            whoami
+            docker ps
+            ls
+            cd openPumta/
+            git pull
+            docker compose -f docker-compose.prod.yml up -d --build
+            echo "New Changes deployed to VPS"
