@@ -29,10 +29,13 @@ function DebouncedTextarea({
   className?: string;
 }) {
   const [val, setVal] = useState(initialValue);
+  const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
-    setVal(initialValue);
-  }, [initialValue]);
+    if (!isFocused) {
+      setVal(initialValue);
+    }
+  }, [initialValue, isFocused]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedOnChange = useCallback(
@@ -40,11 +43,73 @@ function DebouncedTextarea({
     [onChange],
   );
 
+  useEffect(() => {
+    return () => {
+      debouncedOnChange.flush();
+    };
+  }, [debouncedOnChange]);
+
   return (
     <Textarea
       placeholder={placeholder}
       className={className}
       value={val}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => {
+        setIsFocused(false);
+        debouncedOnChange.flush();
+      }}
+      onChange={(e) => {
+        setVal(e.target.value);
+        debouncedOnChange(e.target.value);
+      }}
+    />
+  );
+}
+
+// --- DEBOUNCED INPUT COMPONENT ---
+function DebouncedInput({
+  initialValue,
+  onChange,
+  placeholder,
+  className,
+}: {
+  initialValue: string;
+  onChange: (val: string) => void;
+  placeholder?: string;
+  className?: string;
+}) {
+  const [val, setVal] = useState(initialValue);
+  const [isFocused, setIsFocused] = useState(false);
+
+  useEffect(() => {
+    if (!isFocused) {
+      setVal(initialValue);
+    }
+  }, [initialValue, isFocused]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedOnChange = useCallback(
+    debounce((newVal: string) => onChange(newVal), 1000),
+    [onChange],
+  );
+
+  useEffect(() => {
+    return () => {
+      debouncedOnChange.flush();
+    };
+  }, [debouncedOnChange]);
+
+  return (
+    <Input
+      placeholder={placeholder}
+      className={className}
+      value={val}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => {
+        setIsFocused(false);
+        debouncedOnChange.flush();
+      }}
       onChange={(e) => {
         setVal(e.target.value);
         debouncedOnChange(e.target.value);
@@ -305,9 +370,9 @@ export default function FullScreenReview({
                   >
                     <div className="flex items-center gap-2">
                       <GripVertical className="h-5 w-5 text-muted-foreground/30 cursor-grab" />
-                      <Input
-                        value={q.question}
-                        onChange={(e) => updateQuestion(q.id, 'question', e.target.value)}
+                      <DebouncedInput
+                        initialValue={q.question}
+                        onChange={(newVal) => updateQuestion(q.id, 'question', newVal)}
                         className="h-9 font-semibold bg-transparent border-none px-0 shadow-none focus-visible:ring-0 text-base"
                         placeholder="Question..."
                       />
