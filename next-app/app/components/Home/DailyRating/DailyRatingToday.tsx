@@ -7,6 +7,7 @@ import { DebouncedTextarea } from './DebouncedTextarea';
 export interface DailyRatingTodayProps {
   stats: DailyRatingStatsResponse | undefined;
   initialJournal: string;
+  currentRating: number;
   handleRatingChange: (rating: number) => void;
   handleJournalChange: (journal: string) => void;
 }
@@ -14,6 +15,7 @@ export interface DailyRatingTodayProps {
 export function DailyRatingToday({
   stats,
   initialJournal,
+  currentRating,
   handleRatingChange,
   handleJournalChange,
 }: DailyRatingTodayProps) {
@@ -33,7 +35,7 @@ export function DailyRatingToday({
               >
                 <Star
                   className={`h-8 w-8 ${
-                    (stats?.today ?? 0) >= star
+                    currentRating >= star
                       ? 'fill-yellow-400 text-yellow-400'
                       : 'text-muted-foreground opacity-30 cursor-pointer'
                   }`}

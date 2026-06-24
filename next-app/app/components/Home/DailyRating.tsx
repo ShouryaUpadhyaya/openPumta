@@ -2,7 +2,11 @@
 
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { useDailyRatingStats, useSubmitDailyRating } from '@/hooks/useRatings';
+import {
+  useDailyRatingStats,
+  useSubmitDailyRating,
+  useDailyRatingByDate,
+} from '@/hooks/useRatings';
 import Loading from './review/Loading';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import FullScreenReview from './review/FullScreenReview';
@@ -18,30 +22,31 @@ export default function DailyRating() {
   const selectedDateStr = getLocalIsoDate(selectedDate);
   const isToday = selectedDateStr === getLocalIsoDate(new Date());
 
+  const { data: dailyData, isLoading: isLoadingDaily } = useDailyRatingByDate(selectedDateStr);
+
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false);
 
-  if (isLoading) {
+  if (isLoading || isLoadingDaily) {
     return <Loading />;
   }
 
-  const hasRatedToday = stats?.today !== null && stats?.today !== undefined && stats.today > 0;
+  const currentRating = dailyData?.rating?.rating || 0;
+  const hasRatedToday = currentRating > 0;
 
-  const todayStats = stats?.history?.find((h) => h.date.startsWith(selectedDateStr));
   let initialJournal = '';
-  if (todayStats?.content && !Array.isArray(todayStats.content)) {
+  const content = dailyData?.rating?.content || dailyData?.template;
+  if (content && !Array.isArray(content)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    initialJournal = (todayStats.content as any).journal || '';
-  } else if (todayStats?.content && Array.isArray(todayStats.content)) {
+    initialJournal = (content as any).journal || '';
+  } else if (content && Array.isArray(content)) {
     initialJournal = 'Legacy review format. Open fullscreen to view.';
   }
 
   const handleJournalChange = (newJournal: string) => {
-    const currentRating = todayStats?.rating || 0;
-
     const newContent = { journal: newJournal, customQuestions: [] };
-    if (todayStats?.content && !Array.isArray(todayStats.content)) {
+    if (dailyData?.rating?.content && !Array.isArray(dailyData.rating.content)) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      newContent.customQuestions = (todayStats.content as any).customQuestions || [];
+      newContent.customQuestions = (dailyData.rating.content as any).customQuestions || [];
     }
 
     submitRating.mutate({
@@ -53,9 +58,9 @@ export default function DailyRating() {
 
   const handleRatingChange = (newRating: number) => {
     const newContent = { journal: initialJournal, customQuestions: [] };
-    if (todayStats?.content && !Array.isArray(todayStats.content)) {
+    if (dailyData?.rating?.content && !Array.isArray(dailyData.rating.content)) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      newContent.customQuestions = (todayStats.content as any).customQuestions || [];
+      newContent.customQuestions = (dailyData.rating.content as any).customQuestions || [];
     }
 
     submitRating.mutate({
@@ -91,6 +96,7 @@ export default function DailyRating() {
           <DailyRatingToday
             stats={stats}
             initialJournal={initialJournal}
+            currentRating={currentRating}
             handleRatingChange={handleRatingChange}
             handleJournalChange={handleJournalChange}
           />

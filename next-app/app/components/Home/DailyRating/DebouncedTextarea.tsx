@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import debounce from 'lodash/debounce';
 
@@ -15,31 +15,24 @@ export function DebouncedTextarea({
 }) {
   const [val, setVal] = useState(initialValue);
   const [isFocused, setIsFocused] = useState(false);
-  const [prevInitial, setPrevInitial] = useState(initialValue);
 
-  if (initialValue !== prevInitial) {
-    setPrevInitial(initialValue);
+  useEffect(() => {
     if (!isFocused) {
       setVal(initialValue);
     }
-  }
+  }, [initialValue, isFocused]);
 
-  const onChangeRef = useRef(onChange);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedOnChange = useCallback(
+    debounce((newVal: string) => onChange(newVal), 1000),
+    [onChange],
+  );
+
   useEffect(() => {
-    onChangeRef.current = onChange;
-  }, [onChange]);
-
-  const debouncedOnChangeRef = useRef<ReturnType<typeof debounce> | null>(null);
-
-  useEffect(() => {
-    debouncedOnChangeRef.current = debounce((newVal: string) => {
-      onChangeRef.current(newVal);
-    }, 2000);
-
     return () => {
-      debouncedOnChangeRef.current?.cancel();
+      debouncedOnChange.flush();
     };
-  }, []);
+  }, [debouncedOnChange]);
 
   return (
     <Textarea
@@ -47,10 +40,13 @@ export function DebouncedTextarea({
       className={className}
       value={val}
       onFocus={() => setIsFocused(true)}
-      onBlur={() => setIsFocused(false)}
+      onBlur={() => {
+        setIsFocused(false);
+        debouncedOnChange.flush();
+      }}
       onChange={(e) => {
         setVal(e.target.value);
-        debouncedOnChangeRef.current?.(e.target.value);
+        debouncedOnChange(e.target.value);
       }}
     />
   );

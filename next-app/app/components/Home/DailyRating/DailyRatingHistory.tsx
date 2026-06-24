@@ -14,7 +14,9 @@ export function DailyRatingHistory({ stats, onSelectHistory }: DailyRatingHistor
       <div className="flex flex-col gap-3">
         {stats?.history?.length ? (
           stats.history
-            .filter((e) => e.rating > 0)
+            .filter(
+              (e) => e.rating > 0 || (e.content && !Array.isArray(e.content)) || e.description,
+            )
             .slice(0, 21)
             .map((entry) => {
               let journalText = '';

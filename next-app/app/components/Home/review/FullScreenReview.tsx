@@ -133,7 +133,7 @@ export default function FullScreenReview({
   const selectedDateStr = getLocalIsoDate(selectedDate);
   const isToday = selectedDateStr === getLocalIsoDate(new Date());
 
-  const { data, isLoading } = useDailyRatingByDate(selectedDateStr);
+  const { data, isLoading, isFetching } = useDailyRatingByDate(selectedDateStr);
   const submitRating = useSubmitDailyRating();
   const updateTemplate = useUpdateReviewTemplate();
 
@@ -147,11 +147,10 @@ export default function FullScreenReview({
 
   const [isTemplateEdited, setIsTemplateEdited] = useState(false);
 
-  // Track last initialized date to prevent overwriting user edits while typing
   const lastInitializedDate = useRef<string | null>(null);
 
   useEffect(() => {
-    if (data && lastInitializedDate.current !== selectedDateStr) {
+    if (data && !isFetching && lastInitializedDate.current !== selectedDateStr) {
       setRating(data.rating?.rating || 0);
 
       const content = data.rating?.content || data.template;
@@ -169,7 +168,7 @@ export default function FullScreenReview({
 
       lastInitializedDate.current = selectedDateStr;
     }
-  }, [data, selectedDateStr]);
+  }, [data, isFetching, selectedDateStr]);
 
   const handleRatingChange = (newRating: number) => {
     setRating(newRating);
@@ -182,7 +181,7 @@ export default function FullScreenReview({
       submitRating.mutate({
         rating: r === 0 ? undefined : r,
         date: selectedDateStr,
-        content: { journal: j, customQuestions: cq }, // Removing habits from generic content as we use real habits now
+        content: { journal: j, customQuestions: cq },
       });
     }, 1000),
     [selectedDateStr, submitRating],
