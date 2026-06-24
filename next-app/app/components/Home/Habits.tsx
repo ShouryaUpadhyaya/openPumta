@@ -30,20 +30,29 @@ export default function Habits({
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
 
   const habits: Habit[] = dashboardData?.habits || [];
-  const todayStats = dashboardData?.todayStats || [];
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const completedHabitIds = new Set(todayStats.map((log: any) => log.habitId));
-
-  const badDayPlanHabitIds = new Set(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    todayStats.filter((log: any) => log.isBadDayPlan).map((log: any) => log.habitId),
-  );
-  const isPerfectDay = completedHabitIds.size >= 4;
+  const completedHabitIds = dashboardData?.completedHabitIds || new Set<number>();
+  const badDayPlanHabitIds = dashboardData?.badDayPlanHabitIds || new Set<number>();
+  const isPerfectDay = dashboardData?.isPerfectDay || false;
 
   const openEditDialog = (habit: Habit) => {
     setEditingHabit(habit);
     setIsEditDialogOpen(true);
+  };
+
+  const handlePreviousDay = () => {
+    setSelectedDate((d) => {
+      const nd = new Date(d);
+      nd.setDate(nd.getDate() - 1);
+      return nd;
+    });
+  };
+
+  const handleNextDay = () => {
+    setSelectedDate((d) => {
+      const nd = new Date(d);
+      nd.setDate(nd.getDate() + 1);
+      return nd;
+    });
   };
 
   if (isLoading) {
@@ -60,13 +69,7 @@ export default function Habits({
           <div className="flex items-center gap-1">
             {!hideDatePicker && (
               <button
-                onClick={() =>
-                  setSelectedDate((d) => {
-                    const nd = new Date(d);
-                    nd.setDate(nd.getDate() - 1);
-                    return nd;
-                  })
-                }
+                onClick={handlePreviousDay}
                 className="p-1 hover:bg-muted rounded-full transition-colors"
               >
                 <ChevronLeft className="h-5 w-5 text-muted-foreground" />
@@ -82,13 +85,7 @@ export default function Habits({
             </h1>
             {!hideDatePicker && (
               <button
-                onClick={() =>
-                  setSelectedDate((d) => {
-                    const nd = new Date(d);
-                    nd.setDate(nd.getDate() + 1);
-                    return nd;
-                  })
-                }
+                onClick={handleNextDay}
                 disabled={isToday}
                 className="p-1 hover:bg-muted rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
               >

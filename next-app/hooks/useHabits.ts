@@ -14,6 +14,24 @@ export interface Habit {
   badDayPlan?: string | null;
 }
 
+export interface HabitTimeLog {
+  id: number;
+  startedAt: string;
+  endedAt?: string | null;
+  habitId: number;
+  isBadDayPlan: boolean;
+  deleted: boolean;
+}
+
+export interface HabitDashboardData {
+  habits: Habit[];
+  todayStats: HabitTimeLog[];
+  activeLog: HabitTimeLog | null;
+  completedHabitIds: Set<number>;
+  badDayPlanHabitIds: Set<number>;
+  isPerfectDay: boolean;
+}
+
 export const useHabits = () => {
   return useQuery<Habit[]>({
     queryKey: ['habits'],
@@ -68,7 +86,25 @@ export const useHabitDashboard = (dateStr?: string) => {
       const { data } = await api.get(`/habits/dashboard`, {
         params: { date: dateStr, from: from.toISOString(), to: to.toISOString() },
       });
-      return data.data; // { habits, todayStats, activeLog }
+      return data.data as {
+        habits: Habit[];
+        todayStats: HabitTimeLog[];
+        activeLog: HabitTimeLog | null;
+      };
+    },
+    select: (data): HabitDashboardData => {
+      const completedHabitIds = new Set(data.todayStats.map((log) => log.habitId));
+      const badDayPlanHabitIds = new Set(
+        data.todayStats.filter((log) => log.isBadDayPlan).map((log) => log.habitId),
+      );
+      const isPerfectDay = completedHabitIds.size >= 4;
+
+      return {
+        ...data,
+        completedHabitIds,
+        badDayPlanHabitIds,
+        isPerfectDay,
+      };
     },
   });
 };

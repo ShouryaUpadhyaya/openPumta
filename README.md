@@ -3,7 +3,7 @@
   <img src="next-app/public/banner.png" alt="openPumta Banner" width="100%" />
 
   <!-- <h1>openPumta</h1> -->
-  <p>An open-source, desktop-first productivity system integrating Pomodoro focus tracking, habit building, and AI-assisted reflection.</p>
+  <p>OpenPumta helps ambitious students stay consistent for 21 days at a time through accountability, reflection, and measurable progress.An open-source, desktop-first productivity system integrating Pomodoro focus tracking, habit building, and AI-assisted reflection.</p>
   <p><i>Inspired by Yeolpumta, Notion, and Atomic Habits.</i></p>
 
   <p>
