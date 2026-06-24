@@ -5,8 +5,7 @@ import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 
 const getAllSubject = asyncHandler(async (req: Request, res: Response) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
   const { to, from } = req.query;
 
   if (!userId) {
@@ -32,8 +31,7 @@ const getAllSubject = asyncHandler(async (req: Request, res: Response) => {
 
 const createSubject = asyncHandler(async (req: Request, res: Response) => {
   const { name, goalWorkSecs, color, habits } = req.body;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   if (!name || !userId) {
     throw new ApiError(400, 'Name is required');
@@ -64,8 +62,7 @@ const updateSubject = asyncHandler(async (req: Request, res: Response) => {
   const { name, goalWorkSecs, color, habits } = req.body;
   const { id } = req.params;
   const idNum = Number(id);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   if (!idNum) {
     throw new ApiError(400, 'Invalid Subject ID');
@@ -107,8 +104,7 @@ const updateSubject = asyncHandler(async (req: Request, res: Response) => {
 const deleteSubject = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const idNum = Number(id);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   // Soft delete and verify ownership
   const subject = await prisma.subject.updateMany({
@@ -131,8 +127,7 @@ const deleteSubject = asyncHandler(async (req: Request, res: Response) => {
 const startSubjectLog = asyncHandler(async (req: Request, res: Response) => {
   const { subjectId } = req.params;
   const subjectIdNum = Number(subjectId);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   // Verify ownership
   const subject = await prisma.subject.findFirst({
@@ -168,8 +163,7 @@ const endSubjectLog = asyncHandler(async (req: Request, res: Response) => {
   const { subjectId } = req.params;
   const { endedAt, from, to } = req.body;
   const subjectIdNum = Number(subjectId);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   const activeLog = await prisma.subjectLog.findFirst({
     where: {
@@ -265,8 +259,7 @@ const getSubjectLogs = asyncHandler(async (req: Request, res: Response) => {
   const { subjectId } = req.params;
   const subjectIdNum = Number(subjectId);
   const { from, to } = req.query;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   if (!subjectId) {
     throw new ApiError(400, 'Subject ID is required');
@@ -303,8 +296,7 @@ const getSubjectLogs = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const getAllSubjectsWithLogs = asyncHandler(async (req: Request, res: Response) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
   const { from, to } = req.query;
 
   if (!userId) {
@@ -367,8 +359,7 @@ const updateSubjectLog = asyncHandler(async (req: Request, res: Response) => {
   const { logId } = req.params;
   const { startedAt, endedAt } = req.body;
   const logIdNum = Number(logId);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   const log = await prisma.subjectLog.findFirst({
     where: {
@@ -399,8 +390,7 @@ const updateSubjectLog = asyncHandler(async (req: Request, res: Response) => {
 const deleteSubjectLog = asyncHandler(async (req: Request, res: Response) => {
   const { logId } = req.params;
   const logIdNum = Number(logId);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   const log = await prisma.subjectLog.findFirst({
     where: {
@@ -426,8 +416,7 @@ const deleteSubjectLog = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const getDashboardData = asyncHandler(async (req: Request, res: Response) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
   const { from, to } = req.query;
 
   if (!userId) {

@@ -5,8 +5,7 @@ import { ApiResponse } from '../utils/ApiResponse.js';
 import { ApiError } from '../utils/ApiError.js';
 
 const getSpaces = asyncHandler(async (req: Request, res: Response) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
   if (!userId) throw new ApiError(401, 'Unauthorized');
 
   const spaces = await prisma.space.findMany({
@@ -24,8 +23,7 @@ const getSpaces = asyncHandler(async (req: Request, res: Response) => {
 
 const createSpace = asyncHandler(async (req: Request, res: Response) => {
   const { name, icon, order } = req.body;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
   if (!userId) throw new ApiError(401, 'Unauthorized');
   if (!name) throw new ApiError(400, 'Name is required');
 
@@ -49,8 +47,7 @@ const createSpace = asyncHandler(async (req: Request, res: Response) => {
 const updateSpace = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name, icon, order, isArchived } = req.body;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   const existing = await prisma.space.findFirst({
     where: { id: Number(id), userId: Number(userId), deleted: false },
@@ -72,8 +69,7 @@ const updateSpace = asyncHandler(async (req: Request, res: Response) => {
 
 const deleteSpace = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   await prisma.space.updateMany({
     where: { id: Number(id), userId: Number(userId) },
@@ -86,8 +82,7 @@ const deleteSpace = asyncHandler(async (req: Request, res: Response) => {
 const reorderSpaces = asyncHandler(async (req: Request, res: Response) => {
   // Expects: { spaces: [{ id, order }] }
   const { spaces } = req.body;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
   if (!Array.isArray(spaces)) throw new ApiError(400, 'spaces array required');
 
   await prisma.$transaction(

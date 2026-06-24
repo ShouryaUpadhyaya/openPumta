@@ -6,8 +6,7 @@ import { ApiResponse } from '../utils/ApiResponse.js';
 
 const createOrUpdateDailyRating = asyncHandler(async (req: Request, res: Response) => {
   const { rating, description, content, date } = req.body || {};
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   if (!userId) {
     throw new ApiError(401, 'Unauthorized');
@@ -58,8 +57,7 @@ const createOrUpdateDailyRating = asyncHandler(async (req: Request, res: Respons
 });
 
 const getDailyRatingByDate = asyncHandler(async (req: Request, res: Response) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
   const dateStr = req.query.date as string;
 
   if (!userId) {
@@ -97,8 +95,7 @@ const getDailyRatingByDate = asyncHandler(async (req: Request, res: Response) =>
 });
 
 const updateReviewTemplate = asyncHandler(async (req: Request, res: Response) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
   const { template } = req.body;
 
   if (!userId) {
@@ -122,8 +119,7 @@ const updateReviewTemplate = asyncHandler(async (req: Request, res: Response) =>
 });
 
 const getDailyRatingStats = asyncHandler(async (req: Request, res: Response) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   if (!userId) {
     throw new ApiError(401, 'Unauthorized');

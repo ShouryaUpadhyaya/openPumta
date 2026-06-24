@@ -5,8 +5,7 @@ import { ApiResponse } from '../utils/ApiResponse.js';
 import { ApiError } from '../utils/ApiError.js';
 
 const getAllToDos = asyncHandler(async (req: Request, res: Response) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   if (!userId) {
     throw new ApiError(401, 'Unauthorized');
@@ -32,8 +31,7 @@ const getAllToDos = asyncHandler(async (req: Request, res: Response) => {
 
 const createToDo = asyncHandler(async (req: Request, res: Response) => {
   const { title, description, priority, dueDate, status } = req.body;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   if (!userId || !title) {
     throw new ApiError(400, 'Title is required');
@@ -58,8 +56,7 @@ const updateToDo = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { title, description, status, priority, dueDate } = req.body;
   const idNum = Number(id);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   if (!id) {
     throw new ApiError(400, 'ToDo ID is required');
@@ -103,8 +100,7 @@ const updateToDo = asyncHandler(async (req: Request, res: Response) => {
 const deleteToDo = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const idNum = Number(id);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   if (!id) {
     throw new ApiError(400, 'ToDo ID is required');
@@ -127,8 +123,7 @@ const deleteToDo = asyncHandler(async (req: Request, res: Response) => {
 const startToDoLog = asyncHandler(async (req: Request, res: Response) => {
   const { toDoId } = req.params;
   const toDoIdNum = Number(toDoId);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   if (!toDoId) {
     throw new ApiError(400, 'ToDo ID is required');
@@ -156,8 +151,7 @@ const startToDoLog = asyncHandler(async (req: Request, res: Response) => {
 const endToDoLog = asyncHandler(async (req: Request, res: Response) => {
   const { toDoId } = req.params;
   const toDoIdNum = Number(toDoId);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   if (!toDoId) {
     throw new ApiError(400, 'ToDo ID is required');

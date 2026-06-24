@@ -6,8 +6,7 @@ import { ApiError } from '../utils/ApiError.js';
 
 const getTextBoxes = asyncHandler(async (req: Request, res: Response) => {
   const { spaceId } = req.params;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   const space = await prisma.space.findFirst({
     where: { id: Number(spaceId), userId: Number(userId), deleted: false },
@@ -25,8 +24,7 @@ const getTextBoxes = asyncHandler(async (req: Request, res: Response) => {
 const createTextBox = asyncHandler(async (req: Request, res: Response) => {
   const { spaceId } = req.params;
   const { layout, content } = req.body;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   const space = await prisma.space.findFirst({
     where: { id: Number(spaceId), userId: Number(userId), deleted: false },
@@ -92,8 +90,7 @@ const deleteTextBox = asyncHandler(async (req: Request, res: Response) => {
 const moveTextBox = asyncHandler(async (req: Request, res: Response) => {
   const { id, spaceId } = req.params;
   const { targetSpaceId } = req.body;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   if (!targetSpaceId) throw new ApiError(400, 'targetSpaceId is required');
 

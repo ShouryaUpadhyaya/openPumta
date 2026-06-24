@@ -11,8 +11,7 @@ function getLocalIsoDate(date: Date | string | number = new Date()): string {
 }
 
 const getDailyTimeline = asyncHandler(async (req: Request, res: Response) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
   const { date, from, to } = req.query; // Expecting YYYY-MM-DD
 
   if (!userId) {
@@ -102,8 +101,7 @@ const getDailyTimeline = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const getDashboardStats = asyncHandler(async (req: Request, res: Response) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   if (!userId) {
     throw new ApiError(401, 'Unauthorized');

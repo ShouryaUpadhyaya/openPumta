@@ -9,5 +9,10 @@
     "outDir": "dist",
     "types": ["node"]
   },
-  "include": ["src/**/*", "prisma/prismaClient.ts", "generated/prisma/client.js"]
+  "include": [
+    "src/**/*",
+    "prisma/prismaClient.ts",
+    "generated/prisma/client.js",
+    "src/types/**/*.d.ts"
+  ]
 }

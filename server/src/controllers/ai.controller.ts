@@ -7,7 +7,7 @@ import { computeMetrics } from '../ai/engine.js';
 import { buildWeeklyReportPrompt, buildChatPrompt, callGroq } from '../ai/llm.js';
 
 const getWeeklyReport = asyncHandler(async (req: Request, res: Response) => {
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
   if (!userId) throw new ApiError(401, 'Unauthorized');
   const userIdNum = Number(userId);
 
@@ -41,7 +41,7 @@ const getWeeklyReport = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const chat = asyncHandler(async (req: Request, res: Response) => {
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
   if (!userId) throw new ApiError(401, 'Unauthorized');
   const userIdNum = Number(userId);
 

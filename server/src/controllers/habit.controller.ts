@@ -3,10 +3,10 @@ import { prisma } from '../../prisma/prismaClient.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { ApiError } from '../utils/ApiError.js';
+import { startOfDay, endOfDay, setHours as setDateHours } from 'date-fns';
 
 const getAllHabits = asyncHandler(async (req: Request, res: Response) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
   const { from, to } = req.query;
 
   if (!userId) {
@@ -38,8 +38,7 @@ const getAllHabits = asyncHandler(async (req: Request, res: Response) => {
 
 const createHabit = asyncHandler(async (req: Request, res: Response) => {
   const { name, description, difficulty, subjectId, autoCompleteTime, badDayPlan } = req.body;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   if (!userId || !name) {
     throw new ApiError(400, 'Name is required');
@@ -79,8 +78,7 @@ const updateHabit = asyncHandler(async (req: Request, res: Response) => {
   const { name, description, difficulty, subjectId, deleted, autoCompleteTime, badDayPlan } =
     req.body;
   const idNum = Number(id);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   // Verify ownership
   const existingHabit = await prisma.habit.findFirst({
@@ -128,8 +126,7 @@ const updateHabit = asyncHandler(async (req: Request, res: Response) => {
 const startHabitLog = asyncHandler(async (req: Request, res: Response) => {
   const { habitId } = req.params;
   const habitIdNum = Number(habitId);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   // Verify ownership
   const habit = await prisma.habit.findFirst({
@@ -153,8 +150,7 @@ const startHabitLog = asyncHandler(async (req: Request, res: Response) => {
 const endHabitLog = asyncHandler(async (req: Request, res: Response) => {
   const { habitId } = req.params;
   const habitIdNum = Number(habitId);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   const activeLog = await prisma.habitTimeLog.findFirst({
     where: {
@@ -186,8 +182,7 @@ const getHabitLogs = asyncHandler(async (req: Request, res: Response) => {
   const { habitId } = req.params;
   const habitIdNum = Number(habitId);
   const { from, to } = req.query;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   if (!habitId) {
     throw new ApiError(400, 'Habit ID is required');
@@ -224,8 +219,7 @@ const getHabitLogs = asyncHandler(async (req: Request, res: Response) => {
 });
 
 const getAllHabitsWithLogs = asyncHandler(async (req: Request, res: Response) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
   const { from, to } = req.query;
 
   if (!userId) {
@@ -266,8 +260,7 @@ const getAllHabitsWithLogs = asyncHandler(async (req: Request, res: Response) =>
 });
 
 const getHabitDashboardData = asyncHandler(async (req: Request, res: Response) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   if (!userId) {
     throw new ApiError(401, 'Unauthorized');
@@ -279,10 +272,8 @@ const getHabitDashboardData = asyncHandler(async (req: Request, res: Response) =
   const targetDate = date ? new Date(date as string) : new Date();
 
   // Use passed boundaries if available, otherwise default to midnight
-  let startBoundary = new Date(targetDate);
-  startBoundary.setHours(0, 0, 0, 0);
-  let endBoundary = new Date(targetDate);
-  endBoundary.setHours(23, 59, 59, 999);
+  let startBoundary = startOfDay(targetDate);
+  let endBoundary = endOfDay(targetDate);
 
   if (req.query.from && req.query.to) {
     startBoundary = new Date(req.query.from as string);
@@ -347,8 +338,7 @@ const toggleHabitCompletion = asyncHandler(async (req: Request, res: Response) =
   const { habitId } = req.params;
   const { isBadDayPlan, date, from, to } = req.body;
   const habitIdNum = Number(habitId);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   // Verify ownership
   const habit = await prisma.habit.findFirst({
@@ -361,10 +351,8 @@ const toggleHabitCompletion = asyncHandler(async (req: Request, res: Response) =
 
   const targetDateObj = date ? new Date(date as string) : new Date();
 
-  let startBoundary = new Date(targetDateObj);
-  startBoundary.setHours(0, 0, 0, 0);
-  let endBoundary = new Date(targetDateObj);
-  endBoundary.setHours(23, 59, 59, 999);
+  let startBoundary = startOfDay(targetDateObj);
+  let endBoundary = endOfDay(targetDateObj);
 
   if (from && to) {
     startBoundary = new Date(from as string);
@@ -389,7 +377,7 @@ const toggleHabitCompletion = asyncHandler(async (req: Request, res: Response) =
       .json(new ApiResponse(200, { completed: false }, 'Habit uncompleted for today'));
   } else {
     // If retroactively logging for a past day, use noon of that day. Otherwise use current time.
-    const logTime = date ? new Date(new Date(date as string).setHours(12, 0, 0, 0)) : new Date();
+    const logTime = date ? setDateHours(startOfDay(new Date(date as string)), 12) : new Date();
 
     await prisma.habitTimeLog.create({
       data: {
@@ -408,8 +396,7 @@ const toggleHabitCompletion = asyncHandler(async (req: Request, res: Response) =
 const deleteHabit = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const idNum = Number(id);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
 
   const existingHabit = await prisma.habit.findFirst({
     where: { id: idNum, userId: Number(userId), deleted: false },
