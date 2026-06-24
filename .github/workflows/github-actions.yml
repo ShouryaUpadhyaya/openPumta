@@ -1,0 +1,8 @@
+name: Deploy on VPS
+run-name: ${{github.action}} is running
+on: [push]
+jobs:
+  Ssh_into_VPS:
+    runs-on: uubuntu-24.04
+    steps:
+      - run: echo "test commit"
