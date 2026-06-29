@@ -148,19 +148,93 @@ Easily configure your profile, subjects, and preferences.
 
 ## Architecture
 
-openPumta utilizes a modern, decoupled architecture designed for scalability and developer experience.
+openPumta utilizes a modern, decoupled architecture designed for scalability, real-time syncing, and deep observability.
 
 ```mermaid
-graph TD;
-    Client[Next.js Client] -->|REST / OpenAPI| API[Express API];
-    API -->|Prisma| DB[(PostgreSQL)];
-    API <--> AI[LLM Provider - Groq];
-    Client <--> Auth[Google OAuth];
+flowchart TB
+    %% Clients
+    subgraph Clients["Clients"]
+        Browser["🌐 Web Browser"]
+        Mobile["📱 Mobile App"]
+    end
+
+    %% VPS / Host Server
+    subgraph VPS["VPS (Self-Hosted)"]
+        Nginx["🛡️ Nginx Reverse Proxy\n(SSL / Routing)"]
+
+        %% Docker Network
+        subgraph Docker["Docker Compose Network"]
+
+            %% Frontend Layer
+            NextJS["🖥️ Next.js\n(Web Frontend)"]
+
+            %% Backend Layer
+            subgraph Backend["Backend API Layer"]
+                Express["⚙️ Node.js + Express\n(REST + Zod Validation)"]
+                WS["⚡ WebSockets\n(Real-time Timer Sync)"]
+            end
+
+            %% Data Layer
+            subgraph DataLayer["Data Layer"]
+                Postgres[("🐘 PostgreSQL\n(Core Database)")]
+                Redis[("🔴 Redis\n(Stats Caching)")]
+            end
+
+            %% Observability Stack
+            subgraph Observability["Observability Stack"]
+                Prometheus["📊 Prometheus\n(Metrics Scraper)"]
+                Grafana["📈 Grafana\n(Monitoring Dashboards)"]
+            end
+
+        end
+    end
+
+    %% Client Connections
+    Browser -->|HTTP/HTTPS| Nginx
+    Browser -->|WSS| Nginx
+    Mobile -->|HTTP/HTTPS| Nginx
+    Mobile -->|WSS| Nginx
+
+    %% Proxy Routing
+    Nginx -->|Route /_next| NextJS
+    Nginx -->|Route /api| Express
+    Nginx -->|WebSocket Connection| WS
+
+    %% Internal Application Logic
+    NextJS -->|SSR / CSR API Calls| Express
+
+    %% Database and Caching
+    Express -->|Prisma ORM Queries| Postgres
+    Express -->|Cache Read/Write| Redis
+
+    %% Monitoring Metrics
+    Prometheus -.->|Scrape /metrics| Express
+    Prometheus -.->|Scrape /metrics| NextJS
+    Prometheus -.->|Scrape Exporter| Postgres
+    Prometheus -.->|Scrape Exporter| Redis
+
+    Grafana -->|Query Metrics| Prometheus
+
+    %% Styling
+    classDef client fill:#f9f9f9,stroke:#333,stroke-width:2px,color:#000
+    classDef proxy fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#000
+    classDef frontend fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#000
+    classDef backend fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+    classDef data fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#000
+    classDef observability fill:#ede7f6,stroke:#5e35b1,stroke-width:2px,color:#000
+
+    class Browser,Mobile client
+    class Nginx proxy
+    class NextJS frontend
+    class Express,WS backend
+    class Postgres,Redis data
+    class Prometheus,Grafana observability
 ```
 
 - **Frontend:** Next.js 16, React 19, TypeScript, Tailwind CSS, Zustand, TanStack Query, Recharts.
-- **Backend:** Express, TypeScript, Prisma, PostgreSQL, Passport, JWT, Google OAuth.
-- **Infrastructure:** Docker Compose.
+- **Backend:** Express, Node.js, WebSockets, TypeScript, Zod (Validation), Passport, JWT, Google OAuth.
+- **Data Layer:** PostgreSQL (via Prisma ORM), Redis (Stats Caching).
+- **Infrastructure & Observability:** Docker Compose, Nginx, Prometheus, Grafana.
 - **AI:** Groq API for fast LLM-powered reports.
 
 ---

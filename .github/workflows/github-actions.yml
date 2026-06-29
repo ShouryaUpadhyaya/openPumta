@@ -1,11 +1,14 @@
 name: Deploy on VPS
-run-name: ${{github.action}} is running
-on: push
+run-name: Deploying latest version
+on:
+  push:
+    branches:
+      - main
 jobs:
   Deploy_ON_PUSH:
     runs-on: ubuntu-24.04
     steps:
-      - name: Execute remote SSH commands using password
+      - name: Execute remote SSH commands
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.HOST }}
