@@ -90,7 +90,7 @@ function Subjects() {
           </div> */}
           </div>
         )}
-        <div className="flex-1 overflow-x-auto overflow-y-auto">
+        <div className="flex-1 overflow-x-auto overflow-y-auto custom-scrollbar">
           <table className="w-full text-xs sm:text-sm lg:text-base bg-dashboard-card">
             <tbody>
               {Subjects.map((subject: Subject) => (

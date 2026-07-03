@@ -106,7 +106,7 @@ export default function Habits({
         <AddHabitDialog subjects={subjects} habitsCount={habits.length} />
       </div>
 
-      <div className="flex-1 overflow-y-auto overflow-x-hidden grid gap-2 content-start p-1 -mx-1 py-2">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden grid gap-2 content-start p-1 -mx-1 py-2 custom-scrollbar">
         {habits.length > 0 ? (
           habits.map((habit) => {
             const isCompleted = completedHabitIds.has(habit.id);

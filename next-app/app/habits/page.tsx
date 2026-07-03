@@ -142,12 +142,12 @@ export default function HabitsPage() {
   return (
     <div className="flex flex-col h-full max-w-5xl mx-auto p-4 lg:p-8">
       <div className="flex items-center gap-3 mb-8">
-        <div className="bg-primary/20 p-3 rounded-xl text-primary">
+        <div className="bg-primary/20 p-3 rounded-xl text-primary hidden lg:block">
           <Activity className="h-6 w-6" />
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold tracking-tight">Behavior Tracking</h1>
+            <h1 className="lg:text-3xl text-2xl font-bold tracking-tight">Habits: </h1>
             <div className="flex items-center ml-4 bg-muted/30 rounded-full border border-muted-foreground/20 px-1 py-0.5">
               <button
                 onClick={() =>
@@ -179,7 +179,7 @@ export default function HabitsPage() {
               </button>
             </div>
           </div>
-          <p className="text-muted-foreground text-sm mt-1">
+          <p className="text-muted-foreground text-sm mt-1 hidden lg:block">
             Monitor your habit cycles and maintain your perfect days.
           </p>
         </div>
