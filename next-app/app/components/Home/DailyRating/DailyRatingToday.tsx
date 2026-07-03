@@ -20,9 +20,9 @@ export function DailyRatingToday({
   handleJournalChange,
 }: DailyRatingTodayProps) {
   return (
-    <TabsContent value="today" className="flex-1 flex flex-col gap-4 overflow-y-auto mt-0 pr-1">
-      <div className="flex flex-col gap-3 p-4 bg-muted/30 rounded-xl border border-dashed transition-colors hover:border-primary/30">
-        <div className="flex flex-col items-center justify-center py-2">
+    <TabsContent value="today" className="flex-1 flex flex-col gap-4 mt-0 pr-1">
+      <div className="flex flex-col gap-3 p-4 bg-muted/30 rounded-xl border border-dashed transition-colors hover:border-primary/30 flex-1">
+        <div className="flex flex-col items-center justify-center py-2 shrink-0">
           <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">
             Main Rating
           </span>
@@ -45,12 +45,12 @@ export function DailyRatingToday({
           </div>
         </div>
 
-        <div className="flex flex-col gap-1 w-full mt-2">
+        <div className="flex flex-col gap-1 w-full mt-2 flex-1">
           <DebouncedTextarea
             initialValue={initialJournal}
             onChange={handleJournalChange}
             placeholder="Journal your day here..."
-            className="min-h-[80px] text-sm resize-none bg-background rounded-xl border-border/50 focus-visible:ring-1"
+            className="min-h-[80px] h-full text-sm resize-y bg-background rounded-xl border-border/50 focus-visible:ring-1"
           />
         </div>
       </div>
