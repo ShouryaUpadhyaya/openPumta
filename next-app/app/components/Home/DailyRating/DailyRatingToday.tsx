@@ -20,7 +20,10 @@ export function DailyRatingToday({
   handleJournalChange,
 }: DailyRatingTodayProps) {
   return (
-    <TabsContent value="today" className="flex-1 flex flex-col gap-4 mt-0 pr-1">
+    <TabsContent
+      value="today"
+      className="flex-1 flex flex-col gap-4 overflow-y-auto custom-scrollbar mt-0 pr-1"
+    >
       <div className="flex flex-col gap-3 p-4 bg-muted/30 rounded-xl border border-dashed transition-colors hover:border-primary/30 flex-1">
         <div className="flex flex-col items-center justify-center py-2 shrink-0">
           <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">
@@ -50,12 +53,12 @@ export function DailyRatingToday({
             initialValue={initialJournal}
             onChange={handleJournalChange}
             placeholder="Journal your day here..."
-            className="min-h-[80px] h-full text-sm resize-y bg-background rounded-xl border-border/50 focus-visible:ring-1"
+            className="min-h-15 h-full text-sm resize-none bg-background rounded-xl border-border/50 focus-visible:ring-1 custom-scrollbar"
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mt-auto pt-2 shrink-0">
+      <div className="grid grid-cols-2 gap-3 mt-auto shrink-0">
         <div className="flex flex-col bg-card border rounded-xl p-3 items-center justify-center">
           <span className="text-xs text-muted-foreground">vs Yesterday</span>
           <div className="flex items-center gap-1 mt-1">

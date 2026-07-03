@@ -10,7 +10,7 @@ export interface DailyRatingHistoryProps {
 
 export function DailyRatingHistory({ stats, onSelectHistory }: DailyRatingHistoryProps) {
   return (
-    <TabsContent value="history" className="flex-1 overflow-y-auto mt-0 pr-1">
+    <TabsContent value="history" className="flex-1 overflow-y-auto custom-scrollbar mt-0 pr-1">
       <div className="flex flex-col gap-3">
         {stats?.history?.length ? (
           stats.history

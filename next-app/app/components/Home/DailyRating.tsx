@@ -73,7 +73,7 @@ export default function DailyRating() {
   return (
     <>
       <Card
-        className="h-full flex flex-col bg-background shadow-none border-border/40"
+        className="h-full flex flex-col bg-background lg:py-4 shadow-none border-border/40"
         data-tour-highlight="daily-review-section"
       >
         <DailyRatingHeader
@@ -86,9 +86,9 @@ export default function DailyRating() {
 
         <Tabs
           defaultValue="today"
-          className="flex-1 flex flex-col h-full overflow-hidden px-6 pb-6 pt-2"
+          className="flex-1 flex flex-col h-full overflow-hidden px-6 pb-2 pt-2"
         >
-          <TabsList className="grid w-full grid-cols-2 mb-4 shrink-0">
+          <TabsList className="grid w-full grid-cols-2 mb-2 shrink-0">
             <TabsTrigger value="today">Today</TabsTrigger>
             <TabsTrigger value="history">History</TabsTrigger>
           </TabsList>

@@ -123,7 +123,7 @@ function Stats() {
       .slice(-7) || [];
 
   return (
-    <section className="flex flex-col h-full p-4 overflow-hidden overflow-y-auto">
+    <section className="flex flex-col h-full p-4 overflow-hidden overflow-y-auto custom-scrollbar">
       <div className="flex justify-between items-center mb-4 shrink-0">
         <h1 className="text-2xl font-bold">21-Day Analytics</h1>
         {statsData?.summary && (
