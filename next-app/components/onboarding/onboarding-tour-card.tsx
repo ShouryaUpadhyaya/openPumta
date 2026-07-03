@@ -47,7 +47,8 @@ export function OnboardingTourCard({
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: 80, opacity: 0 }}
       transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-      className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] bg-card border border-border/40 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden"
+      className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 w-90 max-w-[calc(100vw-2rem)] bg-card border border-border/40 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden"
+      style={{ zIndex: 9999 }}
       role="dialog"
       aria-modal="false"
       aria-label={`Tour: ${slide.title}`}

@@ -95,7 +95,7 @@ export function GettingStartedCard() {
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: 120, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 360, damping: 32 }}
-          className="fixed bottom-6 right-6 z-40 w-[300px] max-w-[calc(100vw-2rem)] bg-card border border-border/40 rounded-2xl shadow-2xl shadow-black/30 overflow-hidden"
+          className="fixed lg:bottom-6 lg:right-6 z-40 w-75 max-w-[calc(100vw-2rem)] bg-card border border-border/40 rounded-2xl shadow-2xl shadow-black/30 overflow-hidden"
           role="complementary"
           aria-label="Getting started checklist"
         >

@@ -31,25 +31,47 @@ export function OnboardingSpotlight({ targetId, visible, padding = 10 }: Onboard
       width: r.width + padding * 2,
       height: r.height + padding * 2,
     });
-
-    // Scroll element into view smoothly
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [targetId, padding]);
 
+  // Handle initial focus and scrolling when target changes
+  useEffect(() => {
+    if (!visible || !targetId) return;
+
+    let timer: ReturnType<typeof setTimeout>;
+    let attempts = 0;
+    const maxAttempts = 30; // Up to 3 seconds of polling
+
+    const tryFocus = () => {
+      const el = document.querySelector(`[data-tour-highlight="${targetId}"]`);
+      if (el) {
+        // Element found, scroll it into view and update highlight
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        updateRect();
+      } else if (attempts < maxAttempts) {
+        // Element not yet rendered, keep trying
+        attempts++;
+        timer = setTimeout(tryFocus, 100);
+      }
+    };
+
+    // Wait a short moment to allow page transitions to begin
+    timer = setTimeout(tryFocus, 300);
+
+    return () => clearTimeout(timer);
+  }, [visible, targetId, updateRect]);
+
+  // Keep spotlight attached to the element during resize and scroll
   useEffect(() => {
     if (!visible) return;
 
-    // Allow page navigation + render to settle before measuring
-    const timer = setTimeout(updateRect, 600);
     window.addEventListener('resize', updateRect);
     window.addEventListener('scroll', updateRect, true);
 
     return () => {
-      clearTimeout(timer);
       window.removeEventListener('resize', updateRect);
       window.removeEventListener('scroll', updateRect, true);
     };
-  }, [visible, updateRect, targetId]);
+  }, [visible, updateRect]);
 
   if (!rect) return null;
 
