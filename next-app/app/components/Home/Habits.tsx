@@ -64,21 +64,21 @@ export default function Habits({
       className="flex flex-col h-full p-4 overflow-hidden relative"
       data-tour-highlight="habits-section"
     >
-      <div className="flex justify-between items-center mb-4 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1">
+      <div className="flex justify-between items-center mb-4 shrink-0 gap-1 w-full">
+        <div className="flex items-center gap-1 lg:gap-2">
+          <div className="flex items-center">
             {!hideDatePicker && (
               <button
                 onClick={handlePreviousDay}
-                className="p-1 hover:bg-muted rounded-full transition-colors"
+                className="p-1 hover:bg-muted rounded-full transition-colors shrink-0"
               >
-                <ChevronLeft className="h-5 w-5 text-muted-foreground" />
+                <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
               </button>
             )}
-            <h1 className="text-2xl font-bold flex flex-col justify-center items-center text-center">
+            <h1 className="text-base sm:text-lg lg:text-xl font-bold flex flex-col justify-center items-center text-center leading-tight whitespace-nowrap">
               Daily Habits
               {!hideDatePicker && (
-                <span className="text-[10px] font-normal text-muted-foreground uppercase tracking-wider text-center">
+                <span className="text-[9px] sm:text-[10px] font-normal text-muted-foreground uppercase tracking-wider text-center">
                   {isToday ? 'Today' : selectedDateStr}
                 </span>
               )}
@@ -87,15 +87,15 @@ export default function Habits({
               <button
                 onClick={handleNextDay}
                 disabled={isToday}
-                className="p-1 hover:bg-muted rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                className="p-1 hover:bg-muted rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent shrink-0"
               >
-                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
               </button>
             )}
           </div>
           {habits.length > 0 && (
             <span
-              className={`lg:text-xs text-sm lg:px-2 lg:py-1 py-1 rounded-full font-medium text-center w-16 mx-2 ${
+              className={`text-xs px-2 py-0.5 sm:py-1 rounded-full font-medium text-center whitespace-nowrap shrink-0 ${
                 isPerfectDay ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
               }`}
             >
@@ -103,7 +103,9 @@ export default function Habits({
             </span>
           )}
         </div>
-        <AddHabitDialog subjects={subjects} habitsCount={habits.length} />
+        <div className="shrink-0">
+          <AddHabitDialog subjects={subjects} habitsCount={habits.length} />
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto overflow-x-hidden grid gap-2 content-start p-1 -mx-1 py-2 custom-scrollbar">

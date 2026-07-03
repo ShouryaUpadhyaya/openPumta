@@ -30,7 +30,12 @@ export function HabitCard({
         isCompleted ? 'bg-primary/5 border-primary/20' : 'bg-background border-border/40'
       }`}
     >
-      <CardContent className="flex items-center justify-between px-3 py-1">
+      <CardContent
+        className="flex items-center justify-between px-3 py-1"
+        onClick={() =>
+          toggleHabit.mutate({ habitId: habit.id, isBadDayPlan: true, date: selectedDateStr })
+        }
+      >
         <div className="flex flex-col min-w-0">
           <span
             className={`text-sm font-medium truncate ${

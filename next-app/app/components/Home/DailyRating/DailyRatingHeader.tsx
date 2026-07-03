@@ -34,7 +34,7 @@ export function DailyRatingHeader({
           >
             <ChevronLeft className="h-5 w-5 text-muted-foreground" />
           </button>
-          <div className="text-lg md:text-2xl font-bold flex flex-col items-center">
+          <div className="text-lg lg:text-2xl font-bold flex flex-col items-center">
             Daily Review
             <span className="text-[10px] font-normal text-muted-foreground uppercase tracking-wider text-center">
               {isToday ? 'Today' : selectedDateStr}
