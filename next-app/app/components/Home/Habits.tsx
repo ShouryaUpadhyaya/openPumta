@@ -75,7 +75,7 @@ export default function Habits({
                 <ChevronLeft className="h-5 w-5 text-muted-foreground" />
               </button>
             )}
-            <h1 className="text-2xl font-bold flex flex-col">
+            <h1 className="text-2xl font-bold flex flex-col justify-center items-center text-center">
               Daily Habits
               {!hideDatePicker && (
                 <span className="text-[10px] font-normal text-muted-foreground uppercase tracking-wider text-center">
@@ -95,7 +95,7 @@ export default function Habits({
           </div>
           {habits.length > 0 && (
             <span
-              className={`text-xs px-2 py-1 rounded-full font-medium ${
+              className={`lg:text-xs text-sm lg:px-2 lg:py-1 py-1 rounded-full font-medium text-center w-16 mx-2 ${
                 isPerfectDay ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
               }`}
             >

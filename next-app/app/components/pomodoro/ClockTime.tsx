@@ -13,7 +13,7 @@ type ClockTimeProps = {
 function ClockTime({ hours, minutes, seconds, color, isOverflow }: ClockTimeProps) {
   const Color = color ? 'white' : 'primary';
   return (
-    <div className="relative text-4xl font-bold flex items-center justify-center">
+    <div className="relative text-3xl lg:text-4xl font-bold flex items-center justify-center">
       <h1 className={`font-bold  text-${Color}`}>
         {isOverflow ? '+' : ''}
         {pad(hours)} : {pad(minutes)} : {pad(seconds)}

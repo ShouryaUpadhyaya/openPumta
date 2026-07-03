@@ -8,8 +8,6 @@ import { SubjectSkeleton } from './Subjects/SubjectSkeleton';
 import { AddSubjectDialog } from './Subjects/AddSubjectDialog';
 import { EditSubjectDialog } from './Subjects/EditSubjectDialog';
 import { SubjectRow } from './Subjects/SubjectRow';
-import { CheckCircle } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
 import CallToAction from './Subjects/CallToAction';
 
 function Subjects() {
@@ -59,24 +57,28 @@ function Subjects() {
 
   console.log('empty ', Subjects.length === 0);
   return (
-    <section className="rounded-xl bg-background p-4" data-tour-highlight="subjects-section">
+    <section
+      className="flex flex-col h-full rounded-xl bg-background p-4"
+      data-tour-highlight="subjects-section"
+    >
       {subjectsLoading && <SubjectSkeleton />}
 
-      <div className="my-4 flex items-start justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl mb-2 font-semibold tracking-tight text-foreground">Subjects</h1>
+      <div className="shrink-0">
+        <div className="my-4 flex items-start justify-between ">
+          <div className="space-y-1">
+            <h1 className="text-2xl mb-2 font-semibold tracking-tight text-foreground">Subjects</h1>
+          </div>
+          <div>{Subjects.length > 0 && <AddSubjectDialog habits={habits} empty={false} />}</div>
         </div>
-        <div>{Subjects.length > 0 && <AddSubjectDialog habits={habits} empty={false} />}</div>
-      </div>
 
-      <div className="flex my-2 justify-between items-end gap-1.5 pt-1">
-        <p className="text-xs sm:text-sm font-medium text-muted-foreground">Total today:</p>
-        <span className="font-mono text-lg sm:text-2xl font-semibold leading-none tracking-tight text-foreground">
-          {totalTrackedFormatted}
-        </span>
+        <div className="flex my-2 justify-between items-end gap-1.5 pt-1">
+          <p className="text-xs sm:text-sm font-medium text-muted-foreground">Total today:</p>
+          <span className="font-mono text-lg sm:text-2xl font-semibold leading-none tracking-tight text-foreground">
+            {totalTrackedFormatted}
+          </span>
+        </div>
       </div>
-
-      <div className="rounded-lg border border-border">
+      <div className="flex-1 overflow-hidden flex flex-col rounded-lg border border-border mt-2">
         {Subjects.length === 0 && (
           <div>
             <CallToAction habits={habits} />
@@ -88,7 +90,7 @@ function Subjects() {
           </div> */}
           </div>
         )}
-        <div className="overflow-x-auto overflow-y-auto">
+        <div className="flex-1 overflow-x-auto overflow-y-auto">
           <table className="w-full text-xs sm:text-sm lg:text-base bg-dashboard-card">
             <tbody>
               {Subjects.map((subject: Subject) => (

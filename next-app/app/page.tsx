@@ -84,7 +84,7 @@ export default function Home() {
               <Clock />
             </div>
             {/* Middle Row - Habits and General Subjects/Stats space */}
-            <div className="lg:col-span-8 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-clip flex flex-col min-h-70 lg:min-h-0">
+            <div className="lg:col-span-8 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-70 lg:min-h-0">
               <Subjects />
             </div>
             <div className="lg:col-span-4 lg:row-span-7 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-70 lg:min-h-0">
