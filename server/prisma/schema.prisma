@@ -81,6 +81,7 @@ model Subject {
   userId       Int
   habits       Habit[]
   deleted      Boolean      @default(false)
+  deletedAt    DateTime?
   subjectLogs  SubjectLog[]
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
@@ -116,6 +117,7 @@ model Habit {
   autoCompleteTime Int?
   badDayPlan       String?
   deleted          Boolean        @default(false)
+  deletedAt        DateTime?
   log              HabitTimeLog[]
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
