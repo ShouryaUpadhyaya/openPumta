@@ -31,20 +31,20 @@ const getDailyTimeline = asyncHandler(async (req: Request, res: Response) => {
     endBoundary = new Date(to as string);
   }
 
-  // Fetch Subject Logs
+  // Fetch Subject Logs — include deleted subjects so their history shows in timeline
   const subjectLogs = await prisma.subjectLog.findMany({
     where: {
-      subject: { userId: userIdNum, deleted: false },
+      subject: { userId: userIdNum },
       startedAt: { gte: startBoundary, lte: endBoundary },
       deleted: false,
     },
     include: { subject: true },
   });
 
-  // Fetch Habit Logs
+  // Fetch Habit Logs — include deleted habits so their history shows in timeline
   const habitLogs = await prisma.habitTimeLog.findMany({
     where: {
-      habit: { userId: userIdNum, deleted: false },
+      habit: { userId: userIdNum },
       startedAt: { gte: startBoundary, lte: endBoundary },
       deleted: false,
     },
@@ -161,8 +161,9 @@ const getDashboardStats = asyncHandler(async (req: Request, res: Response) => {
     focusTimeArray.slice(-7).reduce((acc, curr) => acc + curr.focusTimeSecs, 0) / 7;
 
   // 2. Habit Stats
+  // Include deleted habits so their historical completion logs still count
   const userHabits = await prisma.habit.findMany({
-    where: { userId: userIdNum, deleted: false },
+    where: { userId: userIdNum },
   });
 
   const habitIds = userHabits.map((h) => h.id);

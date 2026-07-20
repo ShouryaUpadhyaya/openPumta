@@ -266,9 +266,9 @@ const getSubjectLogs = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, 'Subject ID is required');
   }
 
-  // Verify ownership
+  // Verify ownership — allow deleted subjects for log access
   const subject = await prisma.subject.findFirst({
-    where: { id: subjectIdNum, userId: Number(userId), deleted: false },
+    where: { id: subjectIdNum, userId: Number(userId) },
   });
 
   if (!subject) {
@@ -306,10 +306,10 @@ const getAllSubjectsWithLogs = asyncHandler(async (req: Request, res: Response) 
 
   const userIdNum = Number(userId);
 
+  // Include deleted subjects so their historical logs still appear in 21-Day Analytics
   const subjects = await prisma.subject.findMany({
     where: {
       userId: userIdNum,
-      deleted: false,
     },
     include: {
       habits: {

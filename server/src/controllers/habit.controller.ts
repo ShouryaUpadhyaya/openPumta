@@ -228,10 +228,10 @@ const getAllHabitsWithLogs = asyncHandler(async (req: Request, res: Response) =>
 
   const userIdNum = Number(userId);
 
+  // Include deleted habits so their historical logs still appear in the heatmap/stats
   const habits = await prisma.habit.findMany({
     where: {
       userId: userIdNum,
-      deleted: false,
     },
     include: {
       subject: true,
@@ -270,6 +270,7 @@ const getHabitDashboardData = asyncHandler(async (req: Request, res: Response) =
   const { date } = req.query;
 
   const targetDate = date ? new Date(date as string) : new Date();
+  const isPastDate = date && targetDate < startOfDay(new Date());
 
   // Use passed boundaries if available, otherwise default to midnight
   let startBoundary = startOfDay(targetDate);
@@ -280,21 +281,28 @@ const getHabitDashboardData = asyncHandler(async (req: Request, res: Response) =
     endBoundary = new Date(req.query.to as string);
   }
 
+  // For past dates: include habits that existed at that time (not yet deleted)
+  // For today: only active habits
   const habits = await prisma.habit.findMany({
     where: {
       userId: userIdNum,
-      deleted: false,
+      ...(isPastDate
+        ? {
+            createdAt: { lte: endBoundary },
+            OR: [{ deleted: false }, { deleted: true, deletedAt: { gt: endBoundary } }],
+          }
+        : { deleted: false }),
     },
     include: {
       subject: true,
     },
   });
 
+  // For today logs: only query active habits' logs
   const todayLogs = await prisma.habitTimeLog.findMany({
     where: {
       habit: {
         userId: userIdNum,
-        deleted: false,
       },
       startedAt: {
         gte: startBoundary,
@@ -321,11 +329,17 @@ const getHabitDashboardData = asyncHandler(async (req: Request, res: Response) =
     },
   });
 
+  // Annotate habits with isDeleted flag for frontend to render differently
+  const habitsWithStatus = habits.map((h) => ({
+    ...h,
+    isDeleted: h.deleted,
+  }));
+
   return res.status(200).json(
     new ApiResponse(
       200,
       {
-        habits,
+        habits: habitsWithStatus,
         todayStats: todayLogs,
         activeLog,
       },
@@ -340,9 +354,9 @@ const toggleHabitCompletion = asyncHandler(async (req: Request, res: Response) =
   const habitIdNum = Number(habitId);
   const userId = req.user?.id;
 
-  // Verify ownership
+  // Verify ownership — allow deleted habits for past-date toggling
   const habit = await prisma.habit.findFirst({
-    where: { id: habitIdNum, userId: Number(userId), deleted: false },
+    where: { id: habitIdNum, userId: Number(userId) },
   });
 
   if (!habit) {
