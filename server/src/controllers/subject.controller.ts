@@ -114,6 +114,7 @@ const deleteSubject = asyncHandler(async (req: Request, res: Response) => {
     },
     data: {
       deleted: true,
+      deletedAt: new Date(),
     },
   });
 

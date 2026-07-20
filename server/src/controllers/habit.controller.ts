@@ -408,7 +408,7 @@ const deleteHabit = asyncHandler(async (req: Request, res: Response) => {
 
   await prisma.habit.update({
     where: { id: idNum },
-    data: { deleted: true },
+    data: { deleted: true, deletedAt: new Date() },
   });
 
   return res.status(200).json(new ApiResponse(200, null, 'Habit deleted successfully'));
