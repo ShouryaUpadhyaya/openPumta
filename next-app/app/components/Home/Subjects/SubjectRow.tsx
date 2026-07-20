@@ -14,6 +14,7 @@ import { useDeleteSubject } from '@/hooks/useSubjects';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useRouter } from 'next/navigation';
 import SubjectLogsDialog from './SubjectLogsDialog';
+import { ConfirmDeleteDialog } from '@/components/ui/confirm-delete-dialog';
 
 interface SubjectRowProps {
   subject: Subject;
@@ -27,6 +28,7 @@ export function SubjectRow({ subject, onEdit }: SubjectRowProps) {
   const deleteSubjectMutation = useDeleteSubject();
   const { activeSubjectId, startWork, phase, running } = useTimerStore();
   const [isLogsDialogOpen, setIsLogsDialogOpen] = React.useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
 
   const handlePlayClick = async () => {
     try {
@@ -38,9 +40,8 @@ export function SubjectRow({ subject, onEdit }: SubjectRowProps) {
   };
 
   const handleDelete = () => {
-    if (confirm('Are you sure you want to delete this subject?')) {
-      deleteSubjectMutation.mutate(subject.id);
-    }
+    deleteSubjectMutation.mutate(subject.id);
+    setIsDeleteOpen(false);
   };
 
   const getSubjectLogSecs = (log: NonNullable<Subject['subjectLogs']>[number]) => {
@@ -181,7 +182,7 @@ export function SubjectRow({ subject, onEdit }: SubjectRowProps) {
                 View Logs
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={handleDelete}
+                onClick={() => setIsDeleteOpen(true)}
                 className="text-destructive focus:text-destructive focus:bg-destructive/10"
               >
                 Delete
@@ -194,6 +195,13 @@ export function SubjectRow({ subject, onEdit }: SubjectRowProps) {
         isOpen={isLogsDialogOpen}
         onClose={() => setIsLogsDialogOpen(false)}
         subject={subject}
+      />
+      <ConfirmDeleteDialog
+        open={isDeleteOpen}
+        onConfirm={handleDelete}
+        onCancel={() => setIsDeleteOpen(false)}
+        title="Delete Subject?"
+        description={`"${subject.name}" will be hidden from your active list. Its past focus time logs will still appear in your analytics.`}
       />
     </tr>
   );
