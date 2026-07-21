@@ -141,7 +141,7 @@ export default function SubjectLogsDialog({ isOpen, onClose, subject }: SubjectL
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto pt-2 pb-8 px-2 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden pt-2 pb-8 px-2 custom-scrollbar">
           {isLoading ? (
             <div className="flex justify-center items-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -198,10 +198,10 @@ export default function SubjectLogsDialog({ isOpen, onClose, subject }: SubjectL
                           </div>
 
                           {/* Content Block */}
-                          <div className="flex-1 pb-4 pl-2">
+                          <div className="flex-1 pb-4 pl-2 min-w-0">
                             {isEditing ? (
-                              <div className="p-4 border border-border/60 rounded-xl bg-card shadow-sm flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 animate-in fade-in zoom-in-95">
-                                <div className="flex-1 flex flex-col gap-3 w-full">
+                              <div className="p-4 border border-border/60 rounded-xl bg-card shadow-sm flex flex-col lg:flex-row items-start lg:items-end justify-between gap-4 animate-in fade-in zoom-in-95">
+                                <div className="flex-1 flex flex-col gap-3 w-full min-w-0">
                                   <div className="flex flex-col gap-1.5">
                                     <label className="text-xs font-medium text-muted-foreground">
                                       Start Time
@@ -215,12 +215,12 @@ export default function SubjectLogsDialog({ isOpen, onClose, subject }: SubjectL
                                     <DateTimePicker value={editEnd} onChange={setEditEnd} />
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-2 w-full sm:w-auto">
+                                <div className="flex items-center gap-2 w-full lg:w-auto shrink-0">
                                   <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleSaveEdit(log.id)}
-                                    className="flex-1 sm:flex-none h-9 gap-1.5 text-green-600 hover:text-green-700 hover:bg-green-500/10 border-green-500/20"
+                                    className="flex-1 lg:flex-none h-9 gap-1.5 text-green-600 hover:text-green-700 hover:bg-green-500/10 border-green-500/20"
                                   >
                                     <Check className="h-4 w-4" /> Save
                                   </Button>
