@@ -27,6 +27,7 @@ import { HabitHeatmapCard } from '@/app/components/Habits/HabitHeatmapCard';
 import { HabitCardSkeleton } from '@/app/components/Habits/HabitCardSkeleton';
 import { AddHabitDialog } from '@/app/components/Habits/AddHabitDialog';
 import { EditHabitDialog } from '@/app/components/Habits/EditHabitDialog';
+import { ArchivedHabitsPanel } from '@/app/components/Habits/ArchivedHabitsPanel';
 import { getLocalIsoDate } from '@/lib/utils';
 
 interface Habit {
@@ -319,6 +320,8 @@ export default function HabitsPage() {
         setEditingHabit={setEditingHabit}
         subjects={subjects}
       />
+
+      <ArchivedHabitsPanel activeHabitsCount={habits.filter((h: any) => !h.isDeleted).length} />
     </div>
   );
 }

@@ -44,20 +44,57 @@ const createHabit = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, 'Name is required');
   }
 
-  const habitCount = await prisma.habit.count({
+  const activeHabitCount = await prisma.habit.count({
     where: { userId: Number(userId), deleted: false },
   });
 
-  if (habitCount >= 6) {
+  if (activeHabitCount >= 6) {
     throw new ApiError(
       400,
       'You can only track up to 6 habits at a time. Delete an existing habit to add a new one.',
     );
   }
 
+  // Check if a soft-deleted habit with the same name exists — restore it instead
+  const existing = await prisma.habit.findFirst({
+    where: {
+      userId: Number(userId),
+      name: { equals: name.trim(), mode: 'insensitive' },
+      deleted: true,
+    },
+  });
+
+  if (existing) {
+    // Restore the old habit with updated settings, keeping all historical logs
+    const restored = await prisma.habit.update({
+      where: { id: existing.id },
+      data: {
+        deleted: false,
+        deletedAt: null,
+        description: description || existing.description,
+        difficulty: difficulty || existing.difficulty,
+        badDayPlan: badDayPlan !== undefined ? badDayPlan || null : existing.badDayPlan,
+        subjectId: subjectId ? parseInt(subjectId) : existing.subjectId,
+        autoCompleteTime:
+          autoCompleteTime !== undefined && autoCompleteTime !== null
+            ? Number(autoCompleteTime)
+            : existing.autoCompleteTime,
+      },
+    });
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { ...restored, restored: true },
+          'Habit restored with existing history',
+        ),
+      );
+  }
+
   const habit = await prisma.habit.create({
     data: {
-      name,
+      name: name.trim(),
       userId: Number(userId),
       description: description || '',
       difficulty: difficulty || 'MID',
@@ -428,6 +465,53 @@ const deleteHabit = asyncHandler(async (req: Request, res: Response) => {
   return res.status(200).json(new ApiResponse(200, null, 'Habit deleted successfully'));
 });
 
+const getDeletedHabits = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  if (!userId) throw new ApiError(401, 'Unauthorized');
+
+  const deleted = await prisma.habit.findMany({
+    where: { userId: Number(userId), deleted: true },
+    include: {
+      subject: true,
+      _count: { select: { log: { where: { deleted: false } } } },
+    },
+    orderBy: { deletedAt: 'desc' },
+  });
+
+  return res.status(200).json(new ApiResponse(200, deleted, 'Deleted habits fetched'));
+});
+
+const restoreHabit = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const idNum = Number(id);
+  const userId = req.user?.id;
+  if (!userId) throw new ApiError(401, 'Unauthorized');
+
+  // Verify ownership and that it is actually deleted
+  const habit = await prisma.habit.findFirst({
+    where: { id: idNum, userId: Number(userId), deleted: true },
+  });
+  if (!habit) throw new ApiError(404, 'Archived habit not found');
+
+  // Enforce 6-habit limit
+  const activeCount = await prisma.habit.count({
+    where: { userId: Number(userId), deleted: false },
+  });
+  if (activeCount >= 6) {
+    throw new ApiError(
+      400,
+      'You can only track up to 6 habits at a time. Remove an active habit first.',
+    );
+  }
+
+  const restored = await prisma.habit.update({
+    where: { id: idNum },
+    data: { deleted: false, deletedAt: null },
+  });
+
+  return res.status(200).json(new ApiResponse(200, restored, 'Habit restored successfully'));
+});
+
 export {
   getAllHabits,
   createHabit,
@@ -439,4 +523,6 @@ export {
   getAllHabitsWithLogs,
   getHabitDashboardData,
   toggleHabitCompletion,
+  getDeletedHabits,
+  restoreHabit,
 };

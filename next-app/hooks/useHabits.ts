@@ -197,3 +197,32 @@ export const useUpdateHabit = () => {
     },
   });
 };
+
+export const useArchivedHabits = () => {
+  return useQuery({
+    queryKey: ['archivedHabits'],
+    queryFn: async () => {
+      const { data } = await api.get('/habits/archived');
+      return data.data as Array<
+        Habit & { deleted: boolean; deletedAt: string | null; _count: { log: number } }
+      >;
+    },
+  });
+};
+
+export const useRestoreHabit = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (habitId: number) => {
+      const { data } = await api.patch(`/habits/${habitId}/restore`);
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['habits'] });
+      queryClient.invalidateQueries({ queryKey: ['habitDashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['habitsWithLogs'] });
+      queryClient.invalidateQueries({ queryKey: ['archivedHabits'] });
+    },
+  });
+};

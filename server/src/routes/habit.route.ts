@@ -11,6 +11,8 @@ import {
   getAllHabitsWithLogs,
   getHabitDashboardData,
   toggleHabitCompletion,
+  getDeletedHabits,
+  restoreHabit,
 } from '../controllers/habit.controller.js';
 
 const router = express.Router();
@@ -21,8 +23,10 @@ router.get('/', getAllHabits);
 router.post('/', createHabit);
 router.get('/logs', getAllHabitsWithLogs);
 router.get('/dashboard', getHabitDashboardData);
+router.get('/archived', getDeletedHabits);
 router.patch('/:id', updateHabit);
 router.delete('/:id', deleteHabit);
+router.patch('/:id/restore', restoreHabit);
 router.post('/:habitId/start', startHabitLog);
 router.post('/:habitId/end', endHabitLog);
 router.get('/:habitId/logs', getHabitLogs);

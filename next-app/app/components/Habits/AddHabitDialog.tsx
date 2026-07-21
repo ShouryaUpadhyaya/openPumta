@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useCreateHabit, HabitDifficulty } from '@/hooks/useHabits';
+import { useCreateHabit, HabitDifficulty, useArchivedHabits } from '@/hooks/useHabits';
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus } from 'lucide-react';
+import { Plus, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { DIFFICULTY_OPTIONS } from './constants';
 
@@ -40,6 +40,13 @@ export function AddHabitDialog({
   const [addBadDayPlan, setAddBadDayPlan] = useState('');
 
   const createHabit = useCreateHabit();
+  const { data: archived } = useArchivedHabits();
+
+  // Check if the typed name matches an archived habit (case-insensitive)
+  const matchedArchived = useMemo(() => {
+    if (!newTaskTitle.trim() || !archived?.length) return null;
+    return archived.find((h) => h.name.toLowerCase() === newTaskTitle.trim().toLowerCase()) ?? null;
+  }, [newTaskTitle, archived]);
 
   const resetAddForm = () => {
     setNewTaskTitle('');
@@ -70,10 +77,14 @@ export function AddHabitDialog({
             : null,
       },
       {
-        onSuccess: () => {
+        onSuccess: (data: any) => {
           resetAddForm();
           setOpen(false);
-          toast.success('Habit added');
+          if (data?.restored) {
+            toast.success(`"${data.name}" restored with all past history!`);
+          } else {
+            toast.success('Habit added');
+          }
         },
         onError: () => toast.error('Failed to add habit'),
       },
@@ -118,6 +129,17 @@ export function AddHabitDialog({
                 autoFocus
                 className="bg-muted/30 border-muted-foreground/20 focus-visible:ring-primary"
               />
+              {matchedArchived && (
+                <div className="flex items-start gap-2 mt-1.5 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary/90">
+                  <RotateCcw className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                  <span>
+                    <strong>Past history found!</strong> Adding this habit will restore{' '}
+                    <strong>&quot;{matchedArchived.name}&quot;</strong> with{' '}
+                    {matchedArchived._count.log} session
+                    {matchedArchived._count.log !== 1 ? 's' : ''} of history preserved.
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col gap-2">
