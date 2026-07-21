@@ -37,9 +37,44 @@ const createSubject = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(400, 'Name is required');
   }
 
+  // Check for an existing soft-deleted subject with the exact name (case-insensitive)
+  const existingArchived = await prisma.subject.findFirst({
+    where: {
+      userId: Number(userId),
+      name: { equals: name.trim(), mode: 'insensitive' },
+      deleted: true,
+    },
+  });
+
+  if (existingArchived) {
+    const restored = await prisma.subject.update({
+      where: { id: existingArchived.id },
+      data: {
+        deleted: false,
+        deletedAt: null,
+        goalWorkSecs:
+          goalWorkSecs !== undefined ? Number(goalWorkSecs) : existingArchived.goalWorkSecs,
+        ...(color !== undefined && { color }),
+        ...(habits && Array.isArray(habits) && habits.length > 0
+          ? {
+              habits: {
+                set: habits.map((id: number) => ({ id })),
+              },
+            }
+          : {}),
+      },
+      include: {
+        habits: true,
+      },
+    });
+    return res
+      .status(200)
+      .json(new ApiResponse(200, { ...restored, restored: true }, 'Subject restored successfully'));
+  }
+
   const subject = await prisma.subject.create({
     data: {
-      name,
+      name: name.trim(),
       userId: Number(userId),
       goalWorkSecs: goalWorkSecs !== undefined ? Number(goalWorkSecs) : 0,
       ...(color !== undefined && { color }),
@@ -123,6 +158,60 @@ const deleteSubject = asyncHandler(async (req: Request, res: Response) => {
   }
 
   res.status(200).json(new ApiResponse(200, null, 'Subject Deleted successfully'));
+});
+
+const getDeletedSubjects = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    throw new ApiError(401, 'Unauthorized');
+  }
+
+  const archived = await prisma.subject.findMany({
+    where: {
+      userId: Number(userId),
+      deleted: true,
+    },
+    include: {
+      _count: {
+        select: { subjectLogs: true },
+      },
+    },
+    orderBy: {
+      deletedAt: 'desc',
+    },
+  });
+
+  res.status(200).json(new ApiResponse(200, archived, 'Deleted subjects fetched successfully'));
+});
+
+const restoreSubject = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const idNum = Number(id);
+  const userId = req.user?.id;
+
+  // Verify ownership and deleted status
+  const existingArchived = await prisma.subject.findFirst({
+    where: {
+      id: idNum,
+      userId: Number(userId),
+      deleted: true,
+    },
+  });
+
+  if (!existingArchived) {
+    throw new ApiError(404, 'Archived subject not found');
+  }
+
+  const restored = await prisma.subject.update({
+    where: { id: idNum },
+    data: {
+      deleted: false,
+      deletedAt: null,
+    },
+  });
+
+  res.status(200).json(new ApiResponse(200, restored, 'Subject Restored successfully'));
 });
 
 const startSubjectLog = asyncHandler(async (req: Request, res: Response) => {
@@ -506,4 +595,6 @@ export {
   deleteSubjectLog,
   getAllSubjectsWithLogs,
   getDashboardData,
+  getDeletedSubjects,
+  restoreSubject,
 };

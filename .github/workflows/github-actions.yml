@@ -21,4 +21,5 @@ jobs:
             cd openPumta/
             git pull
             docker compose -f docker-compose.prod.yml up -d --build
+            docker compose -f docker-compose.prod.yml exec api pnpm prisma migrate deploy
             echo "New Changes deployed to VPS"

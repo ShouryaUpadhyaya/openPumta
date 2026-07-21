@@ -12,6 +12,8 @@ import {
   deleteSubjectLog,
   getAllSubjectsWithLogs,
   getDashboardData,
+  getDeletedSubjects,
+  restoreSubject,
 } from '../controllers/subject.controller.js';
 
 const router = express.Router();
@@ -20,7 +22,9 @@ router.use(passport.authenticate('jwt', { session: false }));
 
 router
   .get('/', getAllSubject)
+  .get('/archived', getDeletedSubjects)
   .post('/', createSubject)
+  .patch('/:id/restore', restoreSubject)
   .patch('/:subjectId/startTimer', startSubjectLog)
   .patch('/:subjectId/endTimer', endSubjectLog)
   .patch('/updateSubjectName/:id', updateSubject)

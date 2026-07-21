@@ -14,6 +14,8 @@ function Subjects() {
   const { data: Subjects = [], isLoading: subjectsLoading } = useSubjects();
   const { data: habits = [] } = useHabits();
 
+  const activeSubjects = Subjects.filter((s: Subject) => !s.deleted && !s.isDeleted);
+
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
 
@@ -36,7 +38,7 @@ function Subjects() {
     return 0;
   };
 
-  const totalTrackedSecsToday = Subjects.reduce((total: number, subject: Subject) => {
+  const totalTrackedSecsToday = activeSubjects.reduce((total: number, subject: Subject) => {
     const activeLog = subject.subjectLogs?.find((log) => !log.endedAt);
     const pastSecs =
       subject.subjectLogs?.reduce((acc, log) => acc + getSubjectLogSecs(log), 0) || 0;
@@ -68,7 +70,9 @@ function Subjects() {
           <div className="space-y-1">
             <h1 className="text-2xl mb-2 font-semibold tracking-tight text-foreground">Subjects</h1>
           </div>
-          <div>{Subjects.length > 0 && <AddSubjectDialog habits={habits} empty={false} />}</div>
+          <div>
+            {activeSubjects.length > 0 && <AddSubjectDialog habits={habits} empty={false} />}
+          </div>
         </div>
 
         <div className="flex my-2 justify-between items-end gap-1.5 pt-1">
@@ -79,7 +83,7 @@ function Subjects() {
         </div>
       </div>
       <div className="flex-1 overflow-hidden flex flex-col rounded-lg border border-border mt-2">
-        {Subjects.length === 0 && (
+        {activeSubjects.length === 0 && (
           <div>
             <CallToAction habits={habits} />
             {/* <div className="flex flex-col items-center justify-center p-8 text-center text-muted-foreground bg-muted/20 rounded-xl border border-dashed">
@@ -93,7 +97,7 @@ function Subjects() {
         <div className="flex-1 overflow-x-auto overflow-y-auto custom-scrollbar">
           <table className="w-full text-xs sm:text-sm lg:text-base bg-dashboard-card">
             <tbody>
-              {Subjects.map((subject: Subject) => (
+              {activeSubjects.map((subject: Subject) => (
                 <SubjectRow key={subject.id} subject={subject} onEdit={handleEdit} />
               ))}
             </tbody>

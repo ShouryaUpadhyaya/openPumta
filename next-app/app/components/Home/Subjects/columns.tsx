@@ -33,6 +33,9 @@ export type Subject = {
   createdAt?: string;
   color?: string;
   habits?: { id: number; name: string }[];
+  deleted?: boolean;
+  isDeleted?: boolean;
+  _count?: { subjectLogs: number };
 };
 
 const getSubjectLogSecs = (log: SubjectLog) => {

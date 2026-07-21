@@ -20,6 +20,10 @@ export interface Subject {
   goalWorkSecs?: number;
   color?: string;
   habits?: Habit[];
+  deleted?: boolean;
+  isDeleted?: boolean;
+  deletedAt?: string | null;
+  _count?: { subjectLogs: number };
 }
 
 import { useAuthStore } from '@/store/useAuthStore';
@@ -206,6 +210,34 @@ export const useDeleteSubjectLog = () => {
       queryClient.invalidateQueries({ queryKey: ['subjectsWithLogs21'] });
       queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
       queryClient.invalidateQueries({ queryKey: ['timeline'] });
+    },
+  });
+};
+
+export const useArchivedSubjects = () => {
+  return useQuery<Subject[]>({
+    queryKey: ['archivedSubjects'],
+    queryFn: async () => {
+      const { data } = await api.get('/subject/archived');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return data.data as any[];
+    },
+  });
+};
+
+export const useRestoreSubject = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const { data } = await api.patch(`/subject/${id}/restore`);
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subjects'] });
+      queryClient.invalidateQueries({ queryKey: ['archivedSubjects'] });
+      queryClient.invalidateQueries({ queryKey: ['subjectsWithLogs21'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
     },
   });
 };
