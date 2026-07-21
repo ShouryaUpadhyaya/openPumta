@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Pencil } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Habit, useToggleHabitCompletion } from '@/hooks/useHabits';
 
 interface HabitCardProps {
@@ -48,7 +49,9 @@ export function HabitCard({
             <span className="text-[10px] text-muted-foreground truncate">{linkedSubject.name}</span>
           )}
         </div>
+
         <div className="flex items-center gap-1 shrink-0">
+          {/* Edit — always visible on mobile, hover-only on desktop */}
           <Button
             variant="ghost"
             size="icon"
@@ -60,21 +63,60 @@ export function HabitCard({
           </Button>
 
           {habit.badDayPlan && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                toggleHabit.mutate({ habitId: habit.id, isBadDayPlan: true, date: selectedDateStr })
-              }
-              disabled={toggleHabit.isPending || isCompleted}
-              className={`h-7 px-2 text-[10px] transition-all ${
-                isCompletedMinimum
-                  ? 'bg-primary/20 text-primary border-primary/30 opacity-100'
-                  : 'opacity-0 group-hover:opacity-100 text-muted-foreground'
-              }`}
-            >
-              Min
-            </Button>
+            <>
+              {/* Mobile: always visible Min button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  toggleHabit.mutate({
+                    habitId: habit.id,
+                    isBadDayPlan: true,
+                    date: selectedDateStr,
+                  })
+                }
+                disabled={toggleHabit.isPending || isCompleted}
+                className={`h-7 px-2 text-[10px] transition-all sm:hidden ${
+                  isCompletedMinimum
+                    ? 'bg-primary/20 text-primary border-primary/30'
+                    : 'text-muted-foreground border-muted-foreground/30'
+                }`}
+              >
+                Min
+              </Button>
+
+              {/* Desktop: hover-reveal Min button with tooltip */}
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        toggleHabit.mutate({
+                          habitId: habit.id,
+                          isBadDayPlan: true,
+                          date: selectedDateStr,
+                        })
+                      }
+                      disabled={toggleHabit.isPending || isCompleted}
+                      className={`h-7 px-2 text-[10px] transition-all hidden sm:flex ${
+                        isCompletedMinimum
+                          ? 'bg-primary/20 text-primary border-primary/30 opacity-100'
+                          : 'opacity-0 group-hover:opacity-100 text-muted-foreground'
+                      }`}
+                    >
+                      Min
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs max-w-[200px]">
+                    <p>
+                      <span className="font-semibold">Bad Day Plan:</span> {habit.badDayPlan}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </>
           )}
 
           <Checkbox
