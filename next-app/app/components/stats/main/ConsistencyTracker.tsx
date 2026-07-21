@@ -67,6 +67,64 @@ export default function ConsistencyTracker({ habits, selectedDate }: Consistency
 
   const overallPercent = totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0;
 
+  const activeHabits = habitsWithCompletion.filter((h) => !h.deleted);
+  const archivedHabits = habitsWithCompletion.filter((h) => h.deleted);
+
+  const renderHabitList = (habitList: typeof habitsWithCompletion) => {
+    if (habitList.length === 0) {
+      return (
+        <div className="text-sm text-muted-foreground py-2 text-center">
+          No habits in this category.
+        </div>
+      );
+    }
+    return habitList.map((habit) => {
+      return (
+        <div key={habit.id} className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-foreground truncate" title={habit.name}>
+              {habit.name}
+            </span>
+            <span className="text-xs font-bold text-muted-foreground">{habit.percent}%</span>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-2 items-center justify-between custom-scrollbar">
+            {daysArray.map((dateStr) => {
+              const dateObj = new Date(dateStr);
+              const dayNum = dateObj.getDate();
+              const done = habit.completionDates.has(dateStr);
+              const isBadDayPlan = done ? habit.completionDates.get(dateStr) : false;
+              const isToday = dateStr === getLocalIsoDate(new Date());
+
+              return (
+                <div
+                  key={dateStr}
+                  className="flex flex-col items-center gap-1 group relative shrink-0"
+                >
+                  <div
+                    className={`w-8 h-8 rounded-md transition-colors ${
+                      done
+                        ? isBadDayPlan
+                          ? 'bg-primary/50'
+                          : 'bg-primary'
+                        : 'bg-muted/50 border border-border/50'
+                    } ${isToday && !done ? 'border-2 border-primary/40' : ''}`}
+                  />
+                  <span className="text-[10px] text-muted-foreground">{dayNum}</span>
+
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full mb-2 hidden group-hover:block z-10 w-max bg-popover text-popover-foreground text-xs px-2 py-1 rounded shadow-md border border-border">
+                    {dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}:{' '}
+                    {done ? (isBadDayPlan ? 'Minimum Met' : 'Goal Met') : 'Missed'}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    });
+  };
+
   return (
     <div className="bg-card border border-border rounded-xl p-4 flex flex-col w-full h-full ">
       <div className="flex flex-col gap-3 mb-4 shrink-0">
@@ -89,56 +147,31 @@ export default function ConsistencyTracker({ habits, selectedDate }: Consistency
 
       <div className="flex flex-col gap-4 overflow-y-auto pr-1 custom-scrollbar">
         {habitsWithCompletion.length === 0 ? (
-          <div className="text-sm text-muted-foreground text-center py-4">No active habits.</div>
+          <div className="text-sm text-muted-foreground text-center py-4">
+            No habits tracked in this period.
+          </div>
         ) : (
-          habitsWithCompletion.map((habit) => {
-            return (
-              <div key={habit.id} className="flex flex-col gap-1.5">
-                <div className="flex items-center justify-between">
-                  <span
-                    className="text-xs font-semibold text-foreground truncate"
-                    title={habit.name}
-                  >
-                    {habit.name}
-                  </span>
-                  <span className="text-xs font-bold text-muted-foreground">{habit.percent}%</span>
-                </div>
-                <div className="flex gap-2 overflow-x-auto pb-2 items-center justify-between custom-scrollbar">
-                  {daysArray.map((dateStr, i) => {
-                    const dateObj = new Date(dateStr);
-                    const dayNum = dateObj.getDate();
-                    const done = habit.completionDates.has(dateStr);
-                    const isBadDayPlan = done ? habit.completionDates.get(dateStr) : false;
-                    const isToday = dateStr === getLocalIsoDate(new Date());
-
-                    return (
-                      <div
-                        key={dateStr}
-                        className="flex flex-col items-center gap-1 group relative shrink-0"
-                      >
-                        <div
-                          className={`w-8 h-8 rounded-md transition-colors ${
-                            done
-                              ? isBadDayPlan
-                                ? 'bg-primary/50'
-                                : 'bg-primary'
-                              : 'bg-muted/50 border border-border/50'
-                          } ${isToday && !done ? 'border-2 border-primary/40' : ''}`}
-                        />
-                        <span className="text-[10px] text-muted-foreground">{dayNum}</span>
-
-                        {/* Tooltip */}
-                        <div className="absolute bottom-full mb-2 hidden group-hover:block z-10 w-max bg-popover text-popover-foreground text-xs px-2 py-1 rounded shadow-md border border-border">
-                          {dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}:{' '}
-                          {done ? (isBadDayPlan ? 'Minimum Met' : 'Goal Met') : 'Missed'}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+          <>
+            {activeHabits.length > 0 && (
+              <div className="flex flex-col gap-3">
+                {archivedHabits.length > 0 && (
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b pb-1">
+                    Active
+                  </h4>
+                )}
+                {renderHabitList(activeHabits)}
               </div>
-            );
-          })
+            )}
+
+            {archivedHabits.length > 0 && (
+              <div className="flex flex-col gap-3 mt-2">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b pb-1">
+                  Archived
+                </h4>
+                <div className="opacity-70 grayscale-[20%]">{renderHabitList(archivedHabits)}</div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
