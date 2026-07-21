@@ -18,6 +18,7 @@ import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import { errorHandler } from './middlewares/error.middleware.js';
 import { ApiResponse } from './utils/ApiResponse.js';
+import { connectRedis } from './config/redis.js';
 
 let app = express();
 
@@ -33,9 +34,10 @@ app.use(
 );
 
 app.use(passport.initialize());
+await connectRedis();
 
 app.listen(process.env.PORT || 4000, () => {
-  console.log(`Running on http://localhost:${process.env.PORT}`);
+  console.log(`Running on http://localhost:${process.env.PORT || 4000}`);
 });
 
 app.get('/', async (req: express.Request, res: express.Response) =>
