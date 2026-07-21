@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import type { Habit } from '@/types/habit';
 import { getLocalIsoDate } from '@/lib/utils';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
 interface ConsistencyTrackerProps {
   habits: Habit[];
@@ -9,6 +10,7 @@ interface ConsistencyTrackerProps {
 
 export default function ConsistencyTracker({ habits, selectedDate }: ConsistencyTrackerProps) {
   const [startDateStr, setStartDateStr] = useState<string>('');
+  const [showArchived, setShowArchived] = useState(false);
 
   const daysArray = useMemo(() => {
     const arr: string[] = [];
@@ -165,10 +167,22 @@ export default function ConsistencyTracker({ habits, selectedDate }: Consistency
 
             {archivedHabits.length > 0 && (
               <div className="flex flex-col gap-3 mt-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground border-b pb-1">
-                  Archived
-                </h4>
-                <div className="opacity-70 grayscale-[20%]">{renderHabitList(archivedHabits)}</div>
+                <button
+                  onClick={() => setShowArchived(!showArchived)}
+                  className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground border-b pb-1 hover:text-foreground transition-colors group text-left"
+                >
+                  {showArchived ? (
+                    <ChevronDown className="h-3 w-3 opacity-60 group-hover:opacity-100" />
+                  ) : (
+                    <ChevronRight className="h-3 w-3 opacity-60 group-hover:opacity-100" />
+                  )}
+                  Archived ({archivedHabits.length})
+                </button>
+                {showArchived && (
+                  <div className="opacity-70 grayscale-[20%]">
+                    {renderHabitList(archivedHabits)}
+                  </div>
+                )}
               </div>
             )}
           </>
