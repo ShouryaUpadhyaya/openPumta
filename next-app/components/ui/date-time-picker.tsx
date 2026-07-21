@@ -6,6 +6,13 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface DateTimePickerProps {
   value?: Date;
@@ -16,35 +23,43 @@ interface DateTimePickerProps {
 
 export function DateTimePicker({ value, onChange, disabled, className }: DateTimePickerProps) {
   const [date, setDate] = React.useState<Date | undefined>(value);
-  const [time, setTime] = React.useState<string>(value ? format(value, 'HH:mm') : '00:00');
+  const [hour, setHour] = React.useState<string>(value ? format(value, 'HH') : '00');
+  const [minute, setMinute] = React.useState<string>(value ? format(value, 'mm') : '00');
 
   React.useEffect(() => {
     if (value) {
       setDate(value);
-      setTime(format(value, 'HH:mm'));
+      setHour(format(value, 'HH'));
+      setMinute(format(value, 'mm'));
     } else {
       setDate(undefined);
-      setTime('00:00');
+      setHour('00');
+      setMinute('00');
     }
   }, [value]);
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     setDate(selectedDate);
     if (selectedDate) {
-      const [hours, minutes] = time.split(':').map(Number);
-      const newDate = setMinutes(setHours(selectedDate, hours), minutes);
+      const newDate = setMinutes(setHours(selectedDate, parseInt(hour)), parseInt(minute));
       onChange(newDate);
     } else {
       onChange(undefined);
     }
   };
 
-  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTime = e.target.value;
-    setTime(newTime);
+  const handleHourChange = (newHour: string) => {
+    setHour(newHour);
     if (date) {
-      const [hours, minutes] = newTime.split(':').map(Number);
-      const newDate = setMinutes(setHours(date, hours), minutes);
+      const newDate = setHours(date, parseInt(newHour));
+      onChange(newDate);
+    }
+  };
+
+  const handleMinuteChange = (newMinute: string) => {
+    setMinute(newMinute);
+    if (date) {
+      const newDate = setMinutes(date, parseInt(newMinute));
       onChange(newDate);
     }
   };
@@ -67,15 +82,41 @@ export function DateTimePicker({ value, onChange, disabled, className }: DateTim
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0 border-border shadow-md" align="start">
         <Calendar mode="single" selected={date} onSelect={handleDateSelect} autoFocus />
-        <div className="p-3 border-t border-border flex items-center justify-between gap-2 bg-muted/30">
+        <div className="p-3 border-t border-border flex items-center justify-between gap-2 bg-muted/10">
           <Clock className="h-4 w-4 text-muted-foreground" />
-          <input
-            type="time"
-            value={time}
-            onChange={handleTimeChange}
-            disabled={!date}
-            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          />
+          <div className="flex flex-1 items-center gap-2">
+            <Select value={hour} onValueChange={handleHourChange} disabled={!date}>
+              <SelectTrigger className="w-full text-center h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="h-[200px]">
+                {Array.from({ length: 24 }).map((_, i) => {
+                  const val = String(i).padStart(2, '0');
+                  return (
+                    <SelectItem key={val} value={val}>
+                      {val}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+            <span className="text-muted-foreground font-bold">:</span>
+            <Select value={minute} onValueChange={handleMinuteChange} disabled={!date}>
+              <SelectTrigger className="w-full text-center h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="h-[200px]">
+                {Array.from({ length: 60 }).map((_, i) => {
+                  const val = String(i).padStart(2, '0');
+                  return (
+                    <SelectItem key={val} value={val}>
+                      {val}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </PopoverContent>
     </Popover>
