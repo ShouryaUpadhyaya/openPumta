@@ -55,20 +55,45 @@ export default function Home() {
                     )}
                   </Link>
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={logout}
-                  className="gap-2 text-destructive hover:text-destructive"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Logout
-                </Button>
+                {user.isGuest ? (
+                  <Button asChild variant="default" size="sm" className="gap-2">
+                    <Link href="/signup">Sign Up Now</Link>
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={logout}
+                    className="gap-2 text-destructive hover:text-destructive"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </Button>
+                )}
               </div>
             )
           )}
         </div>
       </header>
+
+      {user?.isGuest && (
+        <div className="mb-4 p-4 rounded-xl border border-primary/20 bg-primary/5 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <User className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-sm">You are in Guest Mode</h3>
+              <p className="text-xs text-muted-foreground text-balance">
+                Sign up to sync your progress across devices and unlock all features.
+              </p>
+            </div>
+          </div>
+          <Button asChild size="sm" className="w-full sm:w-auto shrink-0">
+            <Link href="/signup">Sign Up Free</Link>
+          </Button>
+        </div>
+      )}
 
       <main className="flex-1 flex flex-col lg:grid lg:grid-cols-12 lg:grid-rows-12 gap-4 min-h-0">
         {!subjectsLoading && subjects.length === 0 ? (

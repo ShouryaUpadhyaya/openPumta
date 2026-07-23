@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useTimerStore } from '@/store/useTimerStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { useShallow } from 'zustand/react/shallow';
 import { toast } from 'sonner';
 
 export function useTimerEngine() {
   const [hasHydrated, setHasHydrated] = useState(false);
+  const { user } = useAuthStore();
 
   useEffect(() => {
     const timer = setTimeout(() => setHasHydrated(true), 0);
@@ -78,10 +80,21 @@ export function useTimerEngine() {
 
         if (settings.notificationsEnabled) {
           const title = phase === 'work' ? 'Focus Session Complete!' : 'Break Complete!';
-          const body =
+          let body =
             phase === 'work' ? 'Great job! Time for a break.' : 'Time to get back to work!';
+          let action;
 
-          toast.success(title, { description: body, duration: 8000 });
+          if (user?.isGuest && phase === 'work') {
+            body = 'Great job! Keep the streak going by creating an account to save your progress.';
+            action = {
+              label: 'Sign Up',
+              onClick: () => {
+                window.location.href = '/signup';
+              },
+            };
+          }
+
+          toast.success(title, { description: body, duration: 8000, action });
 
           if ('Notification' in window && Notification.permission === 'granted') {
             try {
@@ -99,7 +112,7 @@ export function useTimerEngine() {
         handleTransition();
       }
     }
-  }, [mode, phase, phaseStartedAt, durationMs, settings, handleTransition]);
+  }, [mode, phase, phaseStartedAt, durationMs, settings, handleTransition, user]);
 
   // Main tick loop
   useEffect(() => {

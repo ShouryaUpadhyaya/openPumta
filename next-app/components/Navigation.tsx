@@ -211,19 +211,35 @@ export default function Navigation({ mounted }: { mounted: boolean }) {
                       </div>
                     </Link>
                   )}
-                  {/* Logout Button */}
                   {isSidebarCollapsed ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div
-                          onClick={logout}
-                          className="flex items-center justify-center p-3 rounded-lg text-destructive hover:bg-destructive/10 transition-all duration-200 cursor-pointer"
-                        >
-                          <LogOut className="h-5 w-5 shrink-0" />
-                        </div>
+                        {user.isGuest ? (
+                          <Link href="/signup" className="w-full">
+                            <div className="flex items-center justify-center p-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all duration-200 cursor-pointer animate-pulse">
+                              <LogIn className="h-5 w-5 shrink-0" />
+                            </div>
+                          </Link>
+                        ) : (
+                          <div
+                            onClick={logout}
+                            className="flex items-center justify-center p-3 rounded-lg text-destructive hover:bg-destructive/10 transition-all duration-200 cursor-pointer"
+                          >
+                            <LogOut className="h-5 w-5 shrink-0" />
+                          </div>
+                        )}
                       </TooltipTrigger>
-                      <TooltipContent side="right">Logout</TooltipContent>
+                      <TooltipContent side="right">
+                        {user.isGuest ? 'Sign Up Now' : 'Logout'}
+                      </TooltipContent>
                     </Tooltip>
+                  ) : user.isGuest ? (
+                    <Link href="/signup" className="w-full">
+                      <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all duration-200 cursor-pointer animate-pulse">
+                        <LogIn className="h-5 w-5 shrink-0" />
+                        <span className="font-medium text-sm">Sign Up Now</span>
+                      </div>
+                    </Link>
                   ) : (
                     <div
                       onClick={logout}

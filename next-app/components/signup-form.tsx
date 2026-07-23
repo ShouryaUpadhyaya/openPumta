@@ -6,8 +6,10 @@ import { FieldDescription, FieldGroup } from '@/components/ui/field';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export function SignupForm({ className, ...props }: React.ComponentProps<'div'>) {
+  const { user, loading, fetchUser, logout } = useAuthStore();
   const queryClient = useQueryClient();
   const logoutMutation = useMutation({
     mutationFn: async () => api.post('/auth/logout'),
@@ -17,11 +19,11 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'div'>)
       queryClient.clear();
       console.log('cleared cache');
       setTimeout(() => {}, 1000);
+      logout(); // also call local store logout
     },
     onError: (error) => {
       console.error('logout failed', error);
     },
-
     onSettled: () => {
       console.log('mutation finished');
     },
@@ -30,18 +32,9 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'div'>)
     logoutMutation.mutate();
   };
 
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    api
-      .get('/auth/user')
-      .then((res) => {
-        setUser(res.data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+    fetchUser();
+  }, [fetchUser]);
 
   const handleGoogleSignup = () => {
     window.location.href = '/api/auth/google';
@@ -51,7 +44,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'div'>)
     return <div className="text-center">Loading...</div>;
   }
 
-  if (user) {
+  if (user && !user.isGuest) {
     return (
       <div className={cn('flex flex-col gap-6 text-center', className)}>
         <h1 className="text-2xl font-bold">Welcome, {user.name}!</h1>

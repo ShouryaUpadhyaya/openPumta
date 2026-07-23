@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run"
   },
   "dependencies": {
     "@base-ui/react": "^1.0.0",
@@ -45,6 +46,8 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@tanstack/eslint-plugin-query": "^5.91.4",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
     "@types/canvas-confetti": "^1.9.0",
     "@types/lodash": "^4.17.24",
     "@types/node": "^20",
@@ -53,11 +56,14 @@
     "@types/password": "^0.1.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.0.4",
     "autoprefixer": "^10.4.27",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
+    "jsdom": "^29.1.1",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }

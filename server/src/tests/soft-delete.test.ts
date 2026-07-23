@@ -1,7 +1,5 @@
 /**
- * Integration tests for soft-delete stat continuity.
- *
- * These tests verify the core business rules:
+ * integration test
  * 1. Deleting a habit keeps its historical logs visible in stats/analytics
  * 2. Deleting a subject keeps its focus time logs visible in analytics
  * 3. Past-date dashboard includes habits that existed at that date (even if now deleted)
@@ -10,8 +8,6 @@
 
 import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
 import { prisma } from '../../prisma/prismaClient.js';
-
-// ── Test data helpers ────────────────────────────────────────────────────────
 
 async function createTestUser() {
   return prisma.user.create({
@@ -63,7 +59,7 @@ async function logSubjectFocusTime(subjectId: number, startedAt: Date, endedAt: 
   });
 }
 
-// ── Test suite ───────────────────────────────────────────────────────────────
+//tests:
 
 describe('Soft-delete: Habit stat continuity', () => {
   let userId: number;
