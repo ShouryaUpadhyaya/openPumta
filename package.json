@@ -8,9 +8,11 @@
   "private": "true",
   "scripts": {
     "dev": "concurrently -n \"next,server\" -c \"cyan,magenta\" \"pnpm --filter next-app dev\" \"pnpm --filter server dev\"",
+    "build": "pnpm -r run build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "pnpm -r run test"
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [
