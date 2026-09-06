@@ -264,7 +264,7 @@ export default function SubjectLogsDialog({ isOpen, onClose, subject }: SubjectL
                                   <Button
                                     size="icon"
                                     variant="ghost"
-                                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                                    className="h-10 w-10 md:h-7 md:w-7 text-muted-foreground hover:text-foreground"
                                     onClick={() => handleEditClick(log)}
                                   >
                                     <Edit2 className="w-3.5 h-3.5" />
@@ -272,7 +272,7 @@ export default function SubjectLogsDialog({ isOpen, onClose, subject }: SubjectL
                                   <Button
                                     size="icon"
                                     variant="ghost"
-                                    className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                                    className="h-10 w-10 md:h-7 md:w-7 text-destructive hover:bg-destructive/10"
                                     onClick={() => handleDelete(log.id)}
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />

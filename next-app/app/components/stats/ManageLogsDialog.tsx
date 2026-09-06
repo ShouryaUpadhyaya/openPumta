@@ -34,8 +34,11 @@ export default function ManageLogsDialog({ subjects }: { subjects: Subject[] }) 
     <>
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant="outline" className="flex items-center gap-2 rounded-xl">
-            <Settings2 className="h-4 w-4" />
+          <Button
+            variant="outline"
+            className="flex items-center gap-2 rounded-xl h-11 px-4 md:h-9 md:px-3"
+          >
+            <Settings2 className="h-4 w-4 md:h-3.5 md:w-3.5" />
             Manage Logs
           </Button>
         </DialogTrigger>
