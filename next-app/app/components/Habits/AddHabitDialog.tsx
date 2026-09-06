@@ -112,7 +112,7 @@ export function AddHabitDialog({
           <span className="text-primary-foreground/60 text-xs font-normal">({habitsCount}/6)</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md rounded-2xl p-0 gap-0 overflow-hidden border-none shadow-2xl">
+      <DialogContent className="max-w-md max-h-[90vh] flex flex-col rounded-2xl p-0 gap-0 overflow-hidden border-none shadow-2xl">
         <DialogHeader className="p-6 pb-4 bg-muted/20">
           <DialogTitle className="text-xl font-bold tracking-tight">
             Install a New Habit
@@ -121,8 +121,8 @@ export function AddHabitDialog({
             Build consistency one day at a time.
           </p>
         </DialogHeader>
-        <form onSubmit={handleAddHabit} className="flex flex-col">
-          <div className="p-6 pt-4 space-y-5 max-h-[70vh] overflow-y-auto">
+        <form onSubmit={handleAddHabit} className="flex flex-col flex-1 overflow-hidden">
+          <div className="p-6 pt-4 space-y-5 overflow-y-auto flex-1">
             <div className="flex flex-col gap-2">
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Habit Name
@@ -254,7 +254,7 @@ export function AddHabitDialog({
             </div>
           </div>
 
-          <DialogFooter className="p-6 pt-0 gap-2 sm:gap-2">
+          <DialogFooter className="p-6 pt-0 gap-2 shrink-0 sm:gap-2">
             <Button
               type="button"
               variant="ghost"

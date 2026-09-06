@@ -112,21 +112,23 @@ export function HabitHeatmapCard({
               size="sm"
               onClick={() => onToggle(habit.id, true)}
               disabled={isCompletedOnSelectedDate}
-              className={`h-7 px-2 text-[10px] transition-all ${
+              className={`h-9 px-3 text-xs md:h-7 md:px-2 md:text-[10px] transition-all ${
                 isCompletedMinimum
                   ? 'bg-primary/20 text-primary border-primary/30 opacity-100'
-                  : 'opacity-0 group-hover:opacity-100 text-muted-foreground'
+                  : 'opacity-100 md:opacity-0 group-hover:opacity-100 text-muted-foreground'
               }`}
             >
               Min
             </Button>
           )}
 
-          <Checkbox
-            checked={isCompletedOnSelectedDate}
-            onCheckedChange={() => onToggle(habit.id, false)}
-            className="h-5 w-5 rounded-md mx-1"
-          />
+          <div className="p-1">
+            <Checkbox
+              checked={isCompletedOnSelectedDate}
+              onCheckedChange={() => onToggle(habit.id, false)}
+              className="h-6 w-6 md:h-5 md:w-5 rounded-md"
+            />
+          </div>
 
           {/* Desktop: hover-reveal delete */}
           <Button
@@ -145,7 +147,7 @@ export function HabitHeatmapCard({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 md:hidden text-muted-foreground hover:text-foreground"
+                className="h-10 w-10 md:hidden text-muted-foreground hover:text-foreground"
               >
                 <MoreVertical className="h-4 w-4" />
               </Button>
