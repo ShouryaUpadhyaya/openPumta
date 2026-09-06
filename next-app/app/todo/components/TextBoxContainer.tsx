@@ -13,7 +13,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 const TOOLBAR_HEIGHT = 32; // px — height of the hover toolbar
 const MIN_WIDTH = 300;
-const MIN_HEIGHT = 300;
+const MIN_HEIGHT = 150;
 const MAX_WIDTH = 1000;
 const MAX_HEIGHT = 800;
 

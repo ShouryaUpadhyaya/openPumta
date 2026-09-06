@@ -222,7 +222,7 @@ export function SpaceNav({ spaces, archivedSpaces, onOpenCreateModal }: SpaceNav
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 px-3 shrink-0 text-muted-foreground hover:text-foreground gap-1.5"
+          className="h-10 px-4 shrink-0 text-muted-foreground hover:text-foreground gap-1.5"
           onClick={onOpenCreateModal}
           aria-label="Create new workspace"
         >

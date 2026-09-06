@@ -43,7 +43,7 @@ function BlockEditor({
 
   return (
     // Override BlockNote's hardcoded background — let the parent bg-card show through, and force wrapping
-    <div className="w-full max-w-full [&_.bn-editor]:!bg-transparent [&_.bn-container]:!bg-transparent [&_.bn-mantine]:!bg-transparent [&_.bn-editor]:break-words [&_.bn-inline-content]:break-all [&_.bn-block-content]:break-words overflow-hidden">
+    <div className="w-full max-w-full [&_.bn-editor]:!bg-transparent [&_.bn-container]:!bg-transparent [&_.bn-mantine]:!bg-transparent [&_.bn-editor]:break-words [&_.bn-block-content]:break-words overflow-hidden">
       <BlockNoteView editor={editor} onChange={onChange} theme="dark" />
     </div>
   );
