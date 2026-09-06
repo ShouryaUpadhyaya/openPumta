@@ -102,9 +102,9 @@ export default function DailySummaryCard({
     <div className="bg-card border border-border rounded-xl p-4 flex flex-col w-full h-full">
       <h3 className="text-lg font-bold text-foreground mb-4">{dateStr}</h3>
 
-      <div className="flex flex-row gap-4 h-full">
+      <div className="flex flex-col lg:flex-row gap-4 h-full">
         {/* Left Side: Avatar & Metrics */}
-        <div className="flex flex-col gap-4 w-1/2 justify-center">
+        <div className="flex flex-col gap-4 w-full lg:w-1/2 justify-center">
           {/* Avatar Area */}
           <div className="flex justify-center items-center h-32 lg:h-56 bg-muted/20 rounded-2xl border border-border/50 shrink-0">
             {avatarState === 'fire' && (
@@ -167,7 +167,7 @@ export default function DailySummaryCard({
         {/* Right Side: Timetable Grid */}
         <div
           ref={scrollRef}
-          className="flex flex-col w-1/2 overflow-y-auto max-h-[350px] lg:max-h-[450px] custom-scrollbar pr-1 lg:pr-3"
+          className="flex flex-col w-full lg:w-1/2 overflow-y-auto max-h-[350px] lg:max-h-[450px] custom-scrollbar pr-1 lg:pr-3"
         >
           <div className="flex gap-2 w-full justify-center lg:justify-start">
             {/* Header column (Hours) */}

@@ -52,7 +52,7 @@ export default function StatsPage() {
       className="min-h-screen p-4 md:p-6 pb-28 max-w-[1400px] mx-auto"
       data-tour-highlight="stats-page"
     >
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
         <div className="flex items-center gap-3">
           <div className="p-3 rounded-xl bg-primary/20 text-primary">
             <BarChart3 className="h-6 w-6" />
@@ -62,7 +62,7 @@ export default function StatsPage() {
             <p className="text-muted-foreground text-sm">Comprehensive performance dashboard</p>
           </div>
         </div>
-        <div>
+        <div className="w-full md:w-auto flex justify-end">
           <ManageLogsDialog subjects={subjects as Subject[]} />
         </div>
       </div>

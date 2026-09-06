@@ -39,8 +39,11 @@ export default function WorkspaceCanvas() {
   const canvasRef = useRef<HTMLDivElement>(null);
 
   const [showAutoLayout, setShowAutoLayout] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsMounted(true);
     const t1 = setTimeout(() => setShowAutoLayout(true), 0);
     const t = setTimeout(() => setShowAutoLayout(false), 4000);
     return () => {
@@ -85,10 +88,10 @@ export default function WorkspaceCanvas() {
     });
   };
 
-  if (!activeSpaceId) {
+  if (!activeSpaceId || !isMounted) {
     return (
       <div className="flex-1 flex items-center justify-center text-muted-foreground h-full">
-        Select a workspace to view your canvas
+        {!isMounted ? 'Loading workspace...' : 'Select a workspace to view your canvas'}
       </div>
     );
   }
