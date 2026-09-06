@@ -68,11 +68,14 @@ export default function TextBoxContainer({
     setLocalOverride(null);
   }
 
-  // ── Content-driven height ────────────────────────────────────────────────────
-  // Start with saved height to avoid initial layout flash
-  const savedHeight = typeof layout.height === 'number' ? layout.height : 300;
-  const [contentHeight, setContentHeight] = useState<number>(savedHeight);
+  // ── Height Calculation ────────────────────────────────────────────────────────
+  const MIN_HEIGHT = 300;
+  const savedHeight = typeof layout.height === 'number' ? layout.height : MIN_HEIGHT;
+
+  // Track pure content height separately
+  const [contentHeight, setContentHeight] = useState<number>(0);
   const contentRef = useRef<HTMLDivElement>(null);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const el = contentRef.current;
@@ -81,7 +84,7 @@ export default function TextBoxContainer({
     const ro = new ResizeObserver((entries) => {
       for (const entry of entries) {
         // content height + toolbar height + small buffer
-        const measured = Math.max(80, Math.round(entry.contentRect.height) + TOOLBAR_HEIGHT + 8);
+        const measured = Math.round(entry.contentRect.height) + TOOLBAR_HEIGHT + 8;
         setContentHeight(measured);
       }
     });
@@ -89,13 +92,47 @@ export default function TextBoxContainer({
     return () => ro.disconnect();
   }, [isMobile]);
 
-  // Current pos/size for Rnd (not during active interaction — Rnd manages itself then)
+  const effectiveHeight = Math.max(MIN_HEIGHT, savedHeight, contentHeight);
+
+  // Auto-save height if content pushes it larger than saved layout
+  useEffect(() => {
+    if (isMobile || isInteracting || contentHeight <= savedHeight) return;
+
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      updateLayout.mutate({
+        id: textBox.id,
+        spaceId,
+        layout: {
+          ...textBox.layout,
+          [viewport]: { ...layout, height: contentHeight },
+        },
+      });
+    }, 800);
+
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [
+    contentHeight,
+    savedHeight,
+    isMobile,
+    isInteracting,
+    layout,
+    spaceId,
+    textBox.id,
+    textBox.layout,
+    updateLayout,
+    viewport,
+  ]);
+
+  // Current pos/size for Rnd
   const pos = isInteracting ? undefined : (localOverride?.pos ?? serverPos);
   const effectiveSizeForRnd = isInteracting
     ? undefined
     : {
         width: localOverride?.size.width ?? serverSize.width,
-        height: contentHeight,
+        height: effectiveHeight,
       };
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
@@ -145,10 +182,10 @@ export default function TextBoxContainer({
       setIsResizing(false);
       if (isMobile) return;
       const newWidth = parseInt(ref.style.width, 10);
-      // Height is content-driven — ignore ref.style.height
+      const newHeight = parseInt(ref.style.height, 10);
       setLocalOverride((prev) => ({
         pos: { x: position.x, y: position.y },
-        size: { width: newWidth, height: prev?.size.height ?? contentHeight },
+        size: { width: newWidth, height: newHeight },
       }));
 
       updateLayout.mutate({
@@ -161,13 +198,13 @@ export default function TextBoxContainer({
             x: position.x,
             y: position.y,
             width: newWidth,
-            // Don't persist height — content drives it
+            height: newHeight,
             positionSource: 'user',
           },
         },
       });
     },
-    [isMobile, updateLayout, textBox.id, textBox.layout, spaceId, viewport, layout, contentHeight],
+    [isMobile, updateLayout, textBox.id, textBox.layout, spaceId, viewport, layout],
   );
 
   const isFocused = focusedTextBoxId === textBox.id;
@@ -178,32 +215,18 @@ export default function TextBoxContainer({
         x: isMobile ? 0 : layout.x,
         y: isMobile ? 0 : layout.y,
         width: isMobile ? '100%' : layout.width,
-        height: contentHeight,
+        height: effectiveHeight,
       }}
       {...(pos ? { position: pos } : {})}
       {...(effectiveSizeForRnd ? { size: effectiveSizeForRnd } : {})}
       disableDragging={isMobile}
-      // Vertical resize disabled — height is purely content-driven
-      enableResizing={
-        isMobile
-          ? false
-          : {
-              top: false,
-              right: true,
-              bottom: false,
-              left: true,
-              topRight: false,
-              bottomRight: false,
-              bottomLeft: false,
-              topLeft: false,
-            }
-      }
+      enableResizing={isMobile ? false : true}
       onDragStart={handleDragStart}
       onDragStop={handleDragStop}
       onResizeStart={handleResizeStart}
       onResizeStop={handleResizeStop}
       minWidth={isMobile ? '100%' : 300}
-      minHeight={contentHeight}
+      minHeight={Math.max(MIN_HEIGHT, contentHeight)}
       bounds="parent"
       onMouseDown={() => setFocusedTextBox(textBox.id)}
       className={`rounded-xl border bg-card flex flex-col group ${
