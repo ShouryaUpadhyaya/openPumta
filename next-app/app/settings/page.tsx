@@ -93,7 +93,10 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      <form onSubmit={handleTimerSave} className="grid gap-6">
+      <form
+        onSubmit={handleTimerSave}
+        className="grid grid-cols-1 landscape:grid-cols-2 lg:landscape:grid-cols-1 lg:grid-cols-1 gap-6"
+      >
         <GeneralSettings />
         <WorkspaceSettings />
         <AutomationSettings />
@@ -112,7 +115,7 @@ export default function SettingsPage() {
         <ChartThemeSection />
 
         {/* ── Save Button ──────────────────────────────────────── */}
-        <div className="flex justify-end">
+        <div className="flex justify-end landscape:col-span-2 lg:landscape:col-span-1">
           <Button
             type="submit"
             disabled={isSaving}

@@ -176,103 +176,107 @@ function PomodoroPage() {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col justify-center items-center w-full px-4 md:px-10 gap-2 overflow-hidden">
-        <ClockCircle
-          percent={cyclePercent}
-          size="lg"
-          currentColor={currentColor}
-          backgroundColor={backgroundColor}
-        >
-          <div className="flex flex-col items-center justify-center p-2 text-center select-none">
-            <div
-              className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl landscape:text-4xl landscape:sm:text-5xl font-mono font-bold mb-1 transition-colors duration-500 tracking-tight"
-              style={{ color: primaryColor }}
+      <div className="flex-1 flex flex-col landscape:flex-row w-full justify-center items-center gap-2 landscape:gap-10 overflow-hidden">
+        <div className="flex-1 flex flex-col justify-center items-center w-full min-w-0">
+          <ClockCircle
+            percent={cyclePercent}
+            size="lg"
+            currentColor={currentColor}
+            backgroundColor={backgroundColor}
+          >
+            <div className="flex flex-col items-center justify-center p-2 text-center select-none">
+              <div
+                className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl landscape:text-3xl landscape:sm:text-4xl font-mono font-bold mb-1 transition-colors duration-500 tracking-tight"
+                style={{ color: primaryColor }}
+              >
+                {isOverflow ? '+' : ''}
+                {pad(displayTime.hours)}:{pad(displayTime.minutes)}:{pad(displayTime.seconds)}
+              </div>
+              <div className="text-xs sm:text-sm md:text-lg landscape:text-xs font-semibold text-muted-foreground uppercase tracking-widest mt-1">
+                {getPhaseLabel()}
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-x-8 gap-y-1 text-muted-foreground/70 landscape:mt-1">
+                <div className="min-w-0">
+                  <div className="truncate text-[10px] sm:text-xs landscape:text-[9px] font-medium">
+                    {runningSubject?.name || 'Subject'}
+                  </div>
+                  <div className="font-mono text-xs sm:text-sm md:text-base">
+                    {formatDuration(subjectWorkedSecs)}
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <div className="truncate text-[10px] sm:text-xs landscape:text-[9px] font-medium">
+                    Total time today
+                  </div>
+                  <div className="font-mono text-xs sm:text-sm md:text-base landscape:text-xs">
+                    {formatDuration(totalWorkedSecs)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ClockCircle>
+
+          {runningSubject && store.showProgressBar && (
+            <div className="w-full max-w-xs sm:max-w-md mt-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Progress
+                    value={goalProgressPercent}
+                    className="h-2.5 sm:h-4 transition-all"
+                    indicatorStyle={{ backgroundColor: getPhaseColor() }}
+                  />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="font-semibold text-xs sm:text-base">
+                    {formatDuration(goalWorkSecs)} / {formatDuration(subjectWorkedSecs)}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col items-center justify-center shrink-0 w-full landscape:w-auto landscape:h-full gap-4">
+          {store.showAvatar && (
+            <div className="mt-4 sm:mt-6 mb-2 sm:mb-4 z-10">
+              <AvatarSelectionDialog>
+                <AvatarDisplay activeAvatar={activeAvatar} focusMs={currentFocusMs} />
+              </AvatarSelectionDialog>
+            </div>
+          )}
+
+          <div className="flex items-center justify-center gap-6 md:gap-8 pb-6 sm:pb-8 landscape:pb-0 shrink-0">
+            <Button
+              onClick={handleReset}
+              variant="outline"
+              className="rounded-full w-12 h-12 sm:w-14 sm:h-14"
             >
-              {isOverflow ? '+' : ''}
-              {pad(displayTime.hours)}:{pad(displayTime.minutes)}:{pad(displayTime.seconds)}
-            </div>
-            <div className="text-xs sm:text-sm md:text-lg landscape:text-xs font-semibold text-muted-foreground uppercase tracking-widest mt-1">
-              {getPhaseLabel()}
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-x-8 gap-y-1 text-muted-foreground/70 landscape:mt-1">
-              <div className="min-w-0">
-                <div className="truncate text-[10px] sm:text-xs landscape:text-[9px] font-medium">
-                  {runningSubject?.name || 'Subject'}
-                </div>
-                <div className="font-mono text-xs sm:text-sm md:text-base">
-                  {formatDuration(subjectWorkedSecs)}
-                </div>
-              </div>
-              <div className="min-w-0">
-                <div className="truncate text-[10px] sm:text-xs landscape:text-[9px] font-medium">
-                  Total time today
-                </div>
-                <div className="font-mono text-xs sm:text-sm md:text-base landscape:text-xs">
-                  {formatDuration(totalWorkedSecs)}
-                </div>
-              </div>
-            </div>
+              <IoIosRefresh size={20} />
+            </Button>
+
+            {phase === 'work' || phase === 'idle' ? (
+              <Button
+                onClick={handleMainAction}
+                variant="secondary"
+                className="rounded-full w-20 h-20 sm:w-24 sm:h-24 shadow-lg hover:scale-105 transition-all flex items-center justify-center"
+              >
+                {phase === 'work' ? <IoIosSquare size={32} /> : <IoIosPlay size={40} />}
+              </Button>
+            ) : (
+              <div className="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center" />
+            )}
+
+            {isBreak && (
+              <Button
+                onClick={handleSkip}
+                variant="outline"
+                className="rounded-full w-12 h-12 sm:w-14 sm:h-14"
+              >
+                <IoIosSkipForward size={20} />
+              </Button>
+            )}
           </div>
-        </ClockCircle>
-
-        {runningSubject && store.showProgressBar && (
-          <div className="w-full max-w-xs sm:max-w-md mt-2">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Progress
-                  value={goalProgressPercent}
-                  className="h-2.5 sm:h-4 transition-all"
-                  indicatorStyle={{ backgroundColor: getPhaseColor() }}
-                />
-              </TooltipTrigger>
-              <TooltipContent>
-                <div className="font-semibold text-xs sm:text-base">
-                  {formatDuration(goalWorkSecs)} / {formatDuration(subjectWorkedSecs)}
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        )}
-
-        {store.showAvatar && (
-          <div className="mt-6 sm:mt-10 mb-4 sm:mb-8 z-10">
-            <AvatarSelectionDialog>
-              <AvatarDisplay activeAvatar={activeAvatar} focusMs={currentFocusMs} />
-            </AvatarSelectionDialog>
-          </div>
-        )}
-      </div>
-
-      <div className="flex items-center gap-6 md:gap-8 pb-6 sm:pb-8 shrink-0">
-        <Button
-          onClick={handleReset}
-          variant="outline"
-          className="rounded-full w-12 h-12 sm:w-14 sm:h-14"
-        >
-          <IoIosRefresh size={20} />
-        </Button>
-
-        {phase === 'work' || phase === 'idle' ? (
-          <Button
-            onClick={handleMainAction}
-            variant="secondary"
-            className="rounded-full w-20 h-20 sm:w-24 sm:h-24 shadow-lg hover:scale-105 transition-all flex items-center justify-center"
-          >
-            {phase === 'work' ? <IoIosSquare size={32} /> : <IoIosPlay size={40} />}
-          </Button>
-        ) : (
-          <div className="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center" />
-        )}
-
-        {isBreak && (
-          <Button
-            onClick={handleSkip}
-            variant="outline"
-            className="rounded-full w-12 h-12 sm:w-14 sm:h-14"
-          >
-            <IoIosSkipForward size={20} />
-          </Button>
-        )}
+        </div>
       </div>
     </section>
   );

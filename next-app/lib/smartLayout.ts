@@ -127,7 +127,18 @@ export function calculateAutoLayout(
     startY = Math.max(PADDING, maxY + SPACING);
   }
 
-  const availableHeight = Math.max(MIN_HEIGHT * 2, canvasH - startY - PADDING);
+  // Calculate required area based on the actual layout heights
+  const totalAreaNeeded = boxesToPlace.reduce((acc, b) => {
+    const l = (b.layout?.[viewport] || b.layout?.desktop || {}) as any;
+    const h = Math.max(MIN_HEIGHT, l.height || MIN_HEIGHT);
+    const w = Math.max(MIN_WIDTH, l.width || MIN_WIDTH);
+    return acc + w * h * 1.5; // Add 50% buffer for spacing and imperfect splits
+  }, 0);
+
+  const estimatedH = Math.ceil(totalAreaNeeded / Math.max(1, canvasW - PADDING * 2));
+  const finalCanvasH = Math.max(canvasH, estimatedH + startY + PADDING);
+
+  const availableHeight = Math.max(MIN_HEIGHT * 2, finalCanvasH - startY - PADDING);
 
   const rect: Rect = {
     x: PADDING,

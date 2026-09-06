@@ -95,7 +95,7 @@ export default function Home() {
         </div>
       )}
 
-      <main className="flex-1 flex flex-col lg:grid lg:grid-cols-12 lg:grid-rows-12 gap-4 min-h-0">
+      <main className="flex-1 flex flex-col landscape:grid landscape:grid-cols-2 lg:landscape:grid-cols-12 lg:grid lg:grid-cols-12 lg:grid-rows-12 gap-4 min-h-0">
         {!subjectsLoading && subjects.length === 0 ? (
           <div className="lg:col-span-12 lg:row-span-12 flex flex-col items-center justify-center h-full min-h-[60vh]">
             <div className="w-full max-w-2xl bg-background rounded-xl border shadow-sm overflow-hidden p-4 lg:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -121,7 +121,7 @@ export default function Home() {
             <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[220px] landscape:min-h-[160px] lg:landscape:min-h-0 lg:min-h-0">
               <DailyRating />
             </div>
-            <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[220px] landscape:min-h-[160px] lg:landscape:min-h-0 lg:min-h-0">
+            <div className="lg:col-span-4 lg:row-span-6 landscape:col-span-2 lg:landscape:col-span-4 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[220px] landscape:min-h-[160px] lg:landscape:min-h-0 lg:min-h-0">
               <Stats />
             </div>
           </>

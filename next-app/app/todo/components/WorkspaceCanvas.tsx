@@ -170,25 +170,31 @@ export default function WorkspaceCanvas() {
     });
   };
 
-  const handleReflowAutoBoxes = () => {
+  const handleReflowAutoBoxes = (arrangeAll = false) => {
     const canvasEl = canvasRef.current;
     const canvasW = canvasEl?.clientWidth ?? 1200;
 
-    const autoBoxes = (textBoxes || []).filter((b) => {
-      const l = b.layout?.[viewport] || b.layout?.desktop;
-      return (l as any)?.positionSource === 'auto';
-    });
-
-    if (autoBoxes.length === 0) {
-      toast.info('No auto-positioned text boxes to arrange.', {
-        description:
-          'Move a text box to set its position manually, or enable Auto-arrange in settings.',
+    let boxesToArrange = textBoxes || [];
+    if (!arrangeAll) {
+      boxesToArrange = boxesToArrange.filter((b) => {
+        const l = b.layout?.[viewport] || b.layout?.desktop;
+        return (l as any)?.positionSource === 'auto';
       });
+    }
+
+    if (boxesToArrange.length === 0) {
+      toast.info('No text boxes to arrange.');
       return;
     }
 
     const canvasH = typeof window !== 'undefined' ? window.innerHeight : 800;
-    const updates = calculateAutoLayout(textBoxes || [], autoBoxes, canvasW, viewport, canvasH);
+    const updates = calculateAutoLayout(
+      textBoxes || [],
+      boxesToArrange,
+      canvasW,
+      viewport,
+      canvasH,
+    );
 
     if (updates.length === 0) {
       toast.success('Already optimally arranged!');
@@ -301,7 +307,7 @@ export default function WorkspaceCanvas() {
         onMouseLeave={() => setShowAutoLayout(false)}
       >
         <Button
-          onClick={handleReflowAutoBoxes}
+          onClick={() => handleReflowAutoBoxes(true)}
           className={`h-11 w-11 rounded-full shadow-lg transition-all duration-300 ${showAutoLayout ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
           size="icon"
           variant="secondary"
