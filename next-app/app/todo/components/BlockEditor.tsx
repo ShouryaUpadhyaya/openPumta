@@ -4,9 +4,10 @@ import { useCreateBlockNote } from '@blocknote/react';
 import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/core/fonts/inter.css';
 import '@blocknote/mantine/style.css';
-import { useCallback, memo, useMemo, ContextType } from 'react';
+import { useCallback, memo, useMemo } from 'react';
 import { useUpdateTextBoxContent } from '@/hooks/useTextBoxes';
 import debounce from 'lodash/debounce';
+
 function BlockEditor({
   initialContent,
   textBoxId,
@@ -41,8 +42,9 @@ function BlockEditor({
   }, [editor, debouncedSave]);
 
   return (
-    <div className="w-full overflow-y-auto ">
-      <BlockNoteView editor={editor} onChange={onChange} theme="dark" color="black" />
+    // Override BlockNote's hardcoded background — let the parent bg-card show through
+    <div className="w-full [&_.bn-editor]:!bg-transparent [&_.bn-container]:!bg-transparent [&_.bn-mantine]:!bg-transparent">
+      <BlockNoteView editor={editor} onChange={onChange} theme="dark" />
     </div>
   );
 }

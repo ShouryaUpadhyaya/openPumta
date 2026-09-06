@@ -35,7 +35,6 @@ export default function TextBoxContainer({
     id: textBox.id,
   });
 
-  // Track whether the user is actively dragging or resizing
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const isInteracting = isDragging || isResizing;
@@ -46,7 +45,6 @@ export default function TextBoxContainer({
     ...(isMobile ? { position: 'relative', zIndex: isDragging ? 50 : 10 } : {}),
   } as React.CSSProperties;
 
-  // Server-derived position/size
   const serverPos = useMemo(
     () => ({ x: isMobile ? 0 : layout.x, y: isMobile ? 0 : layout.y }),
     [layout.x, layout.y, isMobile],
@@ -70,10 +68,11 @@ export default function TextBoxContainer({
     setLocalOverride(null);
   }
 
-  // ── Auto-expand: grow the Rnd height when content overflows ─────────────────
+  // ── Content-driven height ────────────────────────────────────────────────────
+  // Start with saved height to avoid initial layout flash
+  const savedHeight = typeof layout.height === 'number' ? layout.height : 300;
+  const [contentHeight, setContentHeight] = useState<number>(savedHeight);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [contentHeight, setContentHeight] = useState<number | null>(null);
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const el = contentRef.current;
@@ -81,50 +80,25 @@ export default function TextBoxContainer({
 
     const ro = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const newContentH = Math.round(entry.contentRect.height);
-        const totalNeeded = newContentH + TOOLBAR_HEIGHT + 16; // 16px padding buffer
-        setContentHeight(totalNeeded);
+        // content height + toolbar height + small buffer
+        const measured = Math.max(80, Math.round(entry.contentRect.height) + TOOLBAR_HEIGHT + 8);
+        setContentHeight(measured);
       }
     });
     ro.observe(el);
     return () => ro.disconnect();
   }, [isMobile]);
 
-  // The effective height: whichever is larger — saved layout or measured content
-  const savedHeight = typeof layout.height === 'number' ? layout.height : 300;
-  const effectiveHeight =
-    !isMobile && contentHeight !== null ? Math.max(savedHeight, contentHeight) : savedHeight;
-
-  // When content makes the box taller, debounce-save the new height
-  useEffect(() => {
-    if (isMobile || contentHeight === null || contentHeight <= savedHeight || isInteracting) return;
-
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => {
-      updateLayout.mutate({
-        id: textBox.id,
-        spaceId,
-        layout: {
-          ...textBox.layout,
-          [viewport]: {
-            ...layout,
-            height: contentHeight,
-          },
-        },
-      });
-    }, 800);
-
-    return () => {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contentHeight, savedHeight, isMobile, isInteracting]);
-
-  // When user manually resizes, accept that height and cancel auto-expand tracking
+  // Current pos/size for Rnd (not during active interaction — Rnd manages itself then)
   const pos = isInteracting ? undefined : (localOverride?.pos ?? serverPos);
   const effectiveSizeForRnd = isInteracting
     ? undefined
-    : (localOverride?.size ?? { ...serverSize, height: effectiveHeight });
+    : {
+        width: localOverride?.size.width ?? serverSize.width,
+        height: contentHeight,
+      };
+
+  // ── Handlers ─────────────────────────────────────────────────────────────────
 
   const handleDragStart = useCallback(() => {
     setIsDragging(true);
@@ -171,13 +145,11 @@ export default function TextBoxContainer({
       setIsResizing(false);
       if (isMobile) return;
       const newWidth = parseInt(ref.style.width, 10);
-      const newHeight = parseInt(ref.style.height, 10);
-      setLocalOverride({
+      // Height is content-driven — ignore ref.style.height
+      setLocalOverride((prev) => ({
         pos: { x: position.x, y: position.y },
-        size: { width: newWidth, height: newHeight },
-      });
-      // User manually set height — treat as their intent; reset content tracking
-      setContentHeight(null);
+        size: { width: newWidth, height: prev?.size.height ?? contentHeight },
+      }));
 
       updateLayout.mutate({
         id: textBox.id,
@@ -185,16 +157,17 @@ export default function TextBoxContainer({
         layout: {
           ...textBox.layout,
           [viewport]: {
+            ...layout,
             x: position.x,
             y: position.y,
             width: newWidth,
-            height: newHeight,
+            // Don't persist height — content drives it
             positionSource: 'user',
           },
         },
       });
     },
-    [isMobile, updateLayout, textBox.id, textBox.layout, spaceId, viewport],
+    [isMobile, updateLayout, textBox.id, textBox.layout, spaceId, viewport, layout, contentHeight],
   );
 
   const isFocused = focusedTextBoxId === textBox.id;
@@ -205,36 +178,48 @@ export default function TextBoxContainer({
         x: isMobile ? 0 : layout.x,
         y: isMobile ? 0 : layout.y,
         width: isMobile ? '100%' : layout.width,
-        height: effectiveHeight,
+        height: contentHeight,
       }}
       {...(pos ? { position: pos } : {})}
       {...(effectiveSizeForRnd ? { size: effectiveSizeForRnd } : {})}
       disableDragging={isMobile}
-      enableResizing={isMobile ? false : true}
+      // Vertical resize disabled — height is purely content-driven
+      enableResizing={
+        isMobile
+          ? false
+          : {
+              top: false,
+              right: true,
+              bottom: false,
+              left: true,
+              topRight: false,
+              bottomRight: false,
+              bottomLeft: false,
+              topLeft: false,
+            }
+      }
       onDragStart={handleDragStart}
       onDragStop={handleDragStop}
       onResizeStart={handleResizeStart}
       onResizeStop={handleResizeStop}
       minWidth={isMobile ? '100%' : 300}
-      minHeight={150}
+      minHeight={contentHeight}
       bounds="parent"
       onMouseDown={() => setFocusedTextBox(textBox.id)}
-      // No transition-all — it causes janky dragging
-      className={`rounded-xl border bg-[#1f1f1f] flex flex-col group ${
+      className={`rounded-xl border bg-card flex flex-col group ${
         isFocused
           ? 'z-50 border-primary/40 shadow-md shadow-primary/10'
-          : 'z-10 border-white/8 hover:border-white/15'
+          : 'z-10 border-border/50 hover:border-border/80'
       } ${isMobile ? 'relative! transform-none! h-auto! shrink-0' : ''}`}
       dragHandleClassName="drag-handle"
     >
       {/* ── Toolbar (hover-reveal) ── */}
       <div
-        className="h-8 flex items-center justify-between px-2 border-b border-white/6 bg-white/3 opacity-0 group-hover:opacity-100 shrink-0"
+        className="h-8 flex items-center justify-between px-2 border-b border-border/30 bg-muted/20 opacity-0 group-hover:opacity-100 shrink-0"
         style={{ transition: 'opacity 0.15s' }}
       >
-        {/* Left: drag handle */}
         <div
-          className="drag-handle cursor-grab active:cursor-grabbing flex items-center gap-1 text-white/40 hover:text-white/70 px-1 py-1 rounded"
+          className="drag-handle cursor-grab active:cursor-grabbing flex items-center gap-1 text-muted-foreground hover:text-foreground px-1 py-1 rounded"
           {...(isMobile ? listeners : {})}
           {...(isMobile ? attributes : {})}
           title="Drag to reposition"
@@ -242,14 +227,12 @@ export default function TextBoxContainer({
           <GripHorizontal className="h-3.5 w-3.5" />
         </div>
 
-        {/* Right: action icons */}
         <div className="flex items-center gap-0.5">
-          {/* Fullscreen button */}
           <Tooltip>
             <TooltipTrigger asChild>
               <button
                 onClick={() => setFullscreenTextBox(textBox.id)}
-                className="text-white/40 hover:text-white/80 p-1 rounded-md hover:bg-white/8"
+                className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted/60"
                 aria-label="Expand to fullscreen"
               >
                 <Maximize2 className="h-3.5 w-3.5" />
@@ -260,7 +243,6 @@ export default function TextBoxContainer({
             </TooltipContent>
           </Tooltip>
 
-          {/* Move to another space */}
           <div
             draggable
             onDragStart={(e) => {
@@ -272,7 +254,7 @@ export default function TextBoxContainer({
               setDraggingTextBox({ id: textBox.id, spaceId });
             }}
             onDragEnd={() => setDraggingTextBox(null)}
-            className="text-white/40 hover:text-white/80 p-1 rounded-md hover:bg-white/8 cursor-move"
+            className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted/60 cursor-move"
             title="Move to another workspace"
             aria-label="Move to another workspace"
             role="button"
@@ -281,14 +263,13 @@ export default function TextBoxContainer({
             <ArrowRightLeft className="h-3.5 w-3.5" />
           </div>
 
-          {/* Delete */}
           <button
             onClick={() => {
               if (confirm('Delete this text box?')) {
                 deleteTextBox.mutate({ id: textBox.id, spaceId });
               }
             }}
-            className="text-white/40 hover:text-red-400 p-1 rounded-md hover:bg-white/8"
+            className="text-muted-foreground hover:text-destructive p-1 rounded-md hover:bg-muted/60"
             aria-label="Delete text box"
           >
             <Trash2 className="h-3.5 w-3.5" />
