@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { useEffect, useState, Suspense, useMemo } from 'react';
 import { useSpaces, useCreateSpace } from '@/hooks/useSpaces';
 import { SpaceNav } from './components/SpaceNav';
 import WorkspaceCanvas from './components/WorkspaceCanvas';
@@ -25,8 +25,14 @@ function WorkspaceInner() {
   const showNudge = onboardingChoice !== null && !hasSeenConfetti;
 
   // Separate active vs archived spaces
-  const activeSpaces = spaces?.filter((s) => !s.isArchived) ?? [];
-  const archivedSpaces = spaces?.filter((s) => s.isArchived) ?? [];
+  const activeSpaces = useMemo(
+    () => spaces?.filter((s) => !s.isArchived && !s.deleted) ?? [],
+    [spaces],
+  );
+  const archivedSpaces = useMemo(
+    () => spaces?.filter((s) => s.isArchived && !s.deleted) ?? [],
+    [spaces],
+  );
 
   // Auto-select first space when loaded, or when active space is no longer valid
   useEffect(() => {

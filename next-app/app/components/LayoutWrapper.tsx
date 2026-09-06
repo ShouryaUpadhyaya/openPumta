@@ -50,7 +50,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   return (
     <>
       <OnboardingModal />
-      <div className="flex min-h-screen w-full max-w-[100vw] overflow-x-hidden">
+      <div className="flex min-h-screen w-full max-w-[100vw] overflow-x-clip">
         <Navigation mounted={isMounted} />
         <main
           className={cn(

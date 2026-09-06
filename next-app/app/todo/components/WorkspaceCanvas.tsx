@@ -20,6 +20,8 @@ import { useWorkspaceSettingsStore } from '@/store/useWorkspaceSettingsStore';
 import { calculateAutoLayout, BOX_WIDTH, BOX_HEIGHT, PADDING } from '@/lib/smartLayout';
 import { toast } from 'sonner';
 
+const pointerSensorOptions = { activationConstraint: { distance: 5 } };
+
 export default function WorkspaceCanvas() {
   const { activeSpaceId } = useWorkspaceStore();
   const { data: textBoxes, isLoading } = useTextBoxes(activeSpaceId as number);
@@ -63,7 +65,7 @@ export default function WorkspaceCanvas() {
     });
   }, [textBoxes, viewport]);
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const sensors = useSensors(useSensor(PointerSensor, pointerSensorOptions));
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;

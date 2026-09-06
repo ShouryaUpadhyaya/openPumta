@@ -124,14 +124,14 @@ export function AddSubjectDialog({ habits, empty }: AddSubjectDialogProps) {
           + Add Subject
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[450px] lg:max-w-[500px] overflow-hidden p-0 gap-0 border-none shadow-2xl rounded-2xl">
+      <DialogContent className="max-w-[450px] lg:max-w-[500px] max-h-[90vh] flex flex-col overflow-hidden p-0 gap-0 border-none shadow-2xl rounded-2xl">
         <DialogHeader className="p-6 bg-muted/20 pb-4">
           <DialogTitle className="text-xl font-bold tracking-tight text-foreground">
             Add New Subject
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col" noValidate>
-          <div className="p-6 pt-2 space-y-6 max-h-[60vh] overflow-y-auto scrollbar-hide">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden" noValidate>
+          <div className="p-6 pt-2 space-y-6 overflow-y-auto scrollbar-hide flex-1">
             <div className="flex flex-col gap-2">
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Name
@@ -258,7 +258,7 @@ export function AddSubjectDialog({ habits, empty }: AddSubjectDialogProps) {
               </div>
             )}
           </div>
-          <DialogFooter className="p-6 bg-muted/20 border-t border-muted-foreground/5 gap-3 sm:gap-0">
+          <DialogFooter className="p-6 shrink-0 bg-muted/20 border-t border-muted-foreground/5 gap-3 sm:gap-0">
             <Button
               type="button"
               variant="ghost"

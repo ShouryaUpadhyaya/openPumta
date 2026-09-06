@@ -85,7 +85,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased dark w-full max-w-[100vw] overflow-x-hidden`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased dark w-full max-w-[100vw] overflow-x-clip`}
         suppressHydrationWarning
       >
         <Providers>

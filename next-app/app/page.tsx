@@ -35,7 +35,7 @@ export default function Home() {
             </Button>
           ) : (
             user && (
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 sm:gap-4">
                 <div className="hidden sm:flex flex-col items-end">
                   <span className="text-sm font-medium">{user.name}</span>
                   <span className="text-xs text-muted-foreground">{user.email}</span>

@@ -98,7 +98,7 @@ export default function Navigation({ mounted }: { mounted: boolean }) {
   return (
     <>
       {/* Mobile Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t bg-background/80 backdrop-blur-md">
+      <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t bg-background/80 backdrop-blur-md pb-4 pt-1">
         <nav className="flex items-center justify-around p-2">
           {navItems.map((item) => {
             const isActive = pathname === item.href;

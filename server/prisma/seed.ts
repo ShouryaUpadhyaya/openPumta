@@ -12,284 +12,306 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log('Start seeding...');
 
-  // 1. Demo User
-  const user = await prisma.user.upsert({
-    where: { email: 'bahinchopda@gmail.com' },
-    update: {},
-    create: {
-      email: 'bahinchopda@gmail.com',
-      name: 'bahin chopda',
-      avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Demo',
-    },
-  });
+  // 1. Fetch all users (or create a dummy one if none exist)
+  let users = await prisma.user.findMany();
 
-  const userId = user.id;
-
-  // 2. Subjects
-  const subjectsData = [
-    { name: 'coding', color: '#3b82f6', goalWorkSecs: 10800 }, // 3 hours
-    { name: 'dsa', color: '#10b981', goalWorkSecs: 7200 }, // 2 hours
-    { name: 'backend', color: '#ef4444', goalWorkSecs: 5400 }, // 1.5 hours
-    { name: 'frontend', color: '#f59e0b', goalWorkSecs: 5400 }, // 1.5 hours
-    { name: 'devops', color: '#8b5cf6', goalWorkSecs: 5400 }, // 1.5 hours
-    { name: 'exam', color: '#ec4899', goalWorkSecs: 7200 },
-  ];
-
-  const subjects = [];
-  for (const s of subjectsData) {
-    const subject = await prisma.subject.upsert({
-      where: { userId_name: { userId, name: s.name } },
-      update: { color: s.color, goalWorkSecs: s.goalWorkSecs, deleted: false },
-      create: { ...s, userId },
-    });
-    subjects.push(subject);
-  }
-
-  // 3. Habits
-  const habitsData = [
-    {
-      name: 'dsa 2 question 0',
-      description: 'Solve 2 DSA questions',
-      difficulty: difficulty.MID,
-      subjectId: subjects[1].id, // dsa
-      badDayPlan: 'Read 1 DSA concept',
-    },
-    {
-      name: 'coding 3hr project .5',
-      description: 'Work on coding project',
-      difficulty: difficulty.HIGH,
-      subjectId: subjects[0].id, // coding
-      badDayPlan: 'Write 1 line of code',
-    },
-    {
-      name: 'devops 1.5hr 2',
-      description: 'DevOps practice',
-      difficulty: difficulty.MID,
-      subjectId: subjects[4].id, // devops
-      badDayPlan: 'Read 1 devops article',
-    },
-    {
-      name: 'backend 1.5hr 0',
-      description: 'Backend practice',
-      difficulty: difficulty.MID,
-      subjectId: subjects[2].id, // backend
-      badDayPlan: 'Watch 1 backend video',
-    },
-    {
-      name: 'gym',
-      description: 'Daily workout',
-      difficulty: difficulty.HIGH,
-      subjectId: null,
-      badDayPlan: 'Do 10 pushups',
-    },
-    {
-      name: 'call',
-      description: 'Daily check-in call',
-      difficulty: difficulty.LOW,
-      subjectId: null,
-      badDayPlan: 'Send a message instead',
-    },
-  ];
-
-  const habits = [];
-  for (const h of habitsData) {
-    const habit = await prisma.habit.upsert({
-      where: { userId_name: { userId, name: h.name } },
-      update: {
-        description: h.description,
-        difficulty: h.difficulty,
-        subjectId: h.subjectId,
-        badDayPlan: h.badDayPlan,
-        deleted: false,
+  if (users.length === 0) {
+    const defaultUser = await prisma.user.create({
+      data: {
+        email: 'demo@example.com',
+        name: 'Demo User',
+        avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Demo',
       },
-      create: { ...h, userId },
     });
-    habits.push(habit);
+    users = [defaultUser];
   }
 
-  // 4. ToDos
-  const todosData = [
-    {
-      title: 'Setup Project',
-      description: 'Initial repo and dependencies',
-      status: ToDoStatus.DONE,
-      priority: 3,
-      completedAt: new Date(),
-    },
-    {
-      title: 'Design Database',
-      description: 'Schema for todos and logs',
-      status: ToDoStatus.DONE,
-      priority: 2,
-      completedAt: new Date(),
-    },
-    {
-      title: 'Implement Auth',
-      description: 'Google OAuth and JWT',
-      status: ToDoStatus.IN_PROGRESS,
-      priority: 3,
-    },
-    {
-      title: 'Build UI',
-      description: 'React components for dashboard',
-      status: ToDoStatus.IN_PROGRESS,
-      priority: 2,
-    },
-    {
-      title: 'Write Tests',
-      description: 'Unit and integration tests',
-      status: ToDoStatus.PENDING,
-      priority: 1,
-    },
-    {
-      title: 'Refactor Logic',
-      description: 'Cleanup controllers',
-      status: ToDoStatus.PENDING,
-      priority: 1,
-    },
-    {
-      title: 'Legacy Task',
-      description: 'Old cancelled requirement',
-      status: ToDoStatus.CANCELLED,
-      priority: 0,
-    },
-    {
-      title: 'Documentation',
-      description: 'API docs and README',
-      status: ToDoStatus.PENDING,
-      priority: 1,
-    },
-  ];
+  // 2. Loop through every user and seed data
+  for (const user of users) {
+    const userId = user.id;
+    console.log(`Seeding data for user ${userId}...`);
 
-  for (const t of todosData) {
-    const existing = await prisma.toDo.findFirst({
-      where: { userId, title: t.title, deleted: false },
-    });
-    if (!existing) {
-      await prisma.toDo.create({
-        data: { ...t, userId },
+    // 2. Subjects
+    const subjectsData = [
+      { name: 'coding', color: '#3b82f6', goalWorkSecs: 10800 }, // 3 hours
+      { name: 'dsa', color: '#10b981', goalWorkSecs: 7200 }, // 2 hours
+      { name: 'backend', color: '#ef4444', goalWorkSecs: 5400 }, // 1.5 hours
+      { name: 'frontend', color: '#f59e0b', goalWorkSecs: 5400 }, // 1.5 hours
+      { name: 'devops', color: '#8b5cf6', goalWorkSecs: 5400 }, // 1.5 hours
+      { name: 'exam', color: '#ec4899', goalWorkSecs: 7200 },
+    ];
+
+    const subjects = [];
+    for (const s of subjectsData) {
+      const subject = await prisma.subject.upsert({
+        where: { userId_name: { userId, name: s.name } },
+        update: { color: s.color, goalWorkSecs: s.goalWorkSecs, deleted: false },
+        create: { ...s, userId },
       });
+      subjects.push(subject);
     }
-  }
 
-  // 4.5 Spaces & Columns
-  const space = await prisma.space.upsert({
-    where: { id: 1 },
-    update: { name: 'Daily Planner', icon: '📋', deleted: false },
-    create: { name: 'Daily Planner', icon: '📋', userId },
-  });
-
-  // Delete existing textBoxes to avoid duplicates on re-seed
-  await prisma.textBox.deleteMany({ where: { spaceId: space.id } });
-
-  function generateId() {
-    return Math.random().toString(36).substr(2, 9);
-  }
-
-  await prisma.textBox.create({
-    data: {
-      spaceId: space.id,
-      layout: {
-        desktop: { x: 0, y: 0, width: 350, height: 400 },
-        tablet: { x: 0, y: 0, width: 300, height: 400 },
-        mobile: { x: 0, y: 0, width: '100%', height: 400 },
+    // 3. Habits
+    const habitsData = [
+      {
+        name: 'dsa 2 question 0',
+        description: 'Solve 2 DSA questions',
+        difficulty: difficulty.MID,
+        subjectId: subjects[1].id, // dsa
+        badDayPlan: 'Read 1 DSA concept',
       },
-      content: [
-        { id: generateId(), type: 'heading', props: { level: 2 }, content: 'to do a session' },
-        { id: generateId(), type: 'checkListItem', props: { checked: false }, content: 'Q1' },
-        { id: generateId(), type: 'checkListItem', props: { checked: false }, content: 'Q2' },
-      ],
-    },
-  });
-
-  await prisma.textBox.create({
-    data: {
-      spaceId: space.id,
-      layout: {
-        desktop: { x: 370, y: 0, width: 350, height: 500 },
-        tablet: { x: 320, y: 0, width: 300, height: 500 },
-        mobile: { x: 0, y: 420, width: '100%', height: 500 },
+      {
+        name: 'coding 3hr project .5',
+        description: 'Work on coding project',
+        difficulty: difficulty.HIGH,
+        subjectId: subjects[0].id, // coding
+        badDayPlan: 'Write 1 line of code',
       },
-      content: [
-        { id: generateId(), type: 'heading', props: { level: 2 }, content: 'to do today' },
-        {
-          id: generateId(),
-          type: 'checkListItem',
-          props: { checked: false },
-          content: 'dsa 2 questions 10-1 (30min minimum)',
-        },
-        {
-          id: generateId(),
-          type: 'checkListItem',
-          props: { checked: false },
-          content: '1:30-3:30 devops(kubernetes 30min), sql(30min)',
-        },
-        {
-          id: generateId(),
-          type: 'checkListItem',
-          props: { checked: false },
-          content: '4-7 project (see how catching is working fe and improve it)',
-        },
-        { id: generateId(), type: 'checkListItem', props: { checked: false }, content: 'gym' },
-        {
-          id: generateId(),
-          type: 'checkListItem',
-          props: { checked: false },
-          content: '9-11 apply for jobs',
-        },
-      ],
-    },
-  });
-
-  // 5. Logs (Subject & Habit)
-  const today = new Date();
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(today);
-    date.setDate(today.getDate() - i);
-    date.setHours(10, 0, 0, 0);
-
-    // Daily Rating
-    await prisma.dailyRating.upsert({
-      where: { userId_date: { userId, date } },
-      update: { rating: Math.floor(Math.random() * 3) + 3 },
-      create: {
-        userId,
-        date,
-        rating: Math.floor(Math.random() * 3) + 3,
-        description: 'Seeded rating',
+      {
+        name: 'devops 1.5hr 2',
+        description: 'DevOps practice',
+        difficulty: difficulty.MID,
+        subjectId: subjects[4].id, // devops
+        badDayPlan: 'Read 1 devops article',
       },
+      {
+        name: 'backend 1.5hr 0',
+        description: 'Backend practice',
+        difficulty: difficulty.MID,
+        subjectId: subjects[2].id, // backend
+        badDayPlan: 'Watch 1 backend video',
+      },
+      {
+        name: 'gym',
+        description: 'Daily workout',
+        difficulty: difficulty.HIGH,
+        subjectId: null,
+        badDayPlan: 'Do 10 pushups',
+      },
+      {
+        name: 'call',
+        description: 'Daily check-in call',
+        difficulty: difficulty.LOW,
+        subjectId: null,
+        badDayPlan: 'Send a message instead',
+      },
+    ];
+
+    const habits = [];
+    for (const h of habitsData) {
+      const habit = await prisma.habit.upsert({
+        where: { userId_name: { userId, name: h.name } },
+        update: {
+          description: h.description,
+          difficulty: h.difficulty,
+          ...(h.subjectId ? { subjects: { connect: { id: h.subjectId } } } : {}),
+          badDayPlan: h.badDayPlan,
+          deleted: false,
+        },
+        create: {
+          name: h.name,
+          description: h.description,
+          difficulty: h.difficulty,
+          badDayPlan: h.badDayPlan,
+          userId,
+          ...(h.subjectId ? { subjects: { connect: { id: h.subjectId } } } : {}),
+        },
+      });
+      habits.push(habit);
+    }
+
+    // 4. ToDos
+    const todosData = [
+      {
+        title: 'Setup Project',
+        description: 'Initial repo and dependencies',
+        status: ToDoStatus.DONE,
+        priority: 3,
+        completedAt: new Date(),
+      },
+      {
+        title: 'Design Database',
+        description: 'Schema for todos and logs',
+        status: ToDoStatus.DONE,
+        priority: 2,
+        completedAt: new Date(),
+      },
+      {
+        title: 'Implement Auth',
+        description: 'Google OAuth and JWT',
+        status: ToDoStatus.IN_PROGRESS,
+        priority: 3,
+      },
+      {
+        title: 'Build UI',
+        description: 'React components for dashboard',
+        status: ToDoStatus.IN_PROGRESS,
+        priority: 2,
+      },
+      {
+        title: 'Write Tests',
+        description: 'Unit and integration tests',
+        status: ToDoStatus.PENDING,
+        priority: 1,
+      },
+      {
+        title: 'Refactor Logic',
+        description: 'Cleanup controllers',
+        status: ToDoStatus.PENDING,
+        priority: 1,
+      },
+      {
+        title: 'Legacy Task',
+        description: 'Old cancelled requirement',
+        status: ToDoStatus.CANCELLED,
+        priority: 0,
+      },
+      {
+        title: 'Documentation',
+        description: 'API docs and README',
+        status: ToDoStatus.PENDING,
+        priority: 1,
+      },
+    ];
+
+    for (const t of todosData) {
+      const existing = await prisma.toDo.findFirst({
+        where: { userId, title: t.title, deleted: false },
+      });
+      if (!existing) {
+        await prisma.toDo.create({
+          data: { ...t, userId },
+        });
+      }
+    }
+
+    // 4.5 Spaces & Columns
+    let space = await prisma.space.findFirst({
+      where: { userId, name: 'Daily Planner' },
     });
 
-    // Subject Log
-    const existingSubjectLog = await prisma.subjectLog.findFirst({
-      where: { subjectId: subjects[0].id, startedAt: date },
-    });
-    if (!existingSubjectLog) {
-      await prisma.subjectLog.create({
-        data: {
-          subjectId: subjects[0].id,
-          startedAt: date,
-          endedAt: new Date(date.getTime() + 3600000), // 1 hour
-        },
+    if (!space) {
+      space = await prisma.space.create({
+        data: { name: 'Daily Planner', icon: '📋', userId },
+      });
+    } else {
+      space = await prisma.space.update({
+        where: { id: space.id },
+        data: { deleted: false },
       });
     }
 
-    // Habit Log
-    const existingHabitLog = await prisma.habitTimeLog.findFirst({
-      where: { habitId: habits[0].id, startedAt: date },
+    // Delete existing textBoxes to avoid duplicates on re-seed
+    await prisma.textBox.deleteMany({ where: { spaceId: space.id } });
+
+    function generateId() {
+      return Math.random().toString(36).substr(2, 9);
+    }
+
+    await prisma.textBox.create({
+      data: {
+        spaceId: space.id,
+        layout: {
+          desktop: { x: 0, y: 0, width: 350, height: 400 },
+          tablet: { x: 0, y: 0, width: 300, height: 400 },
+          mobile: { x: 0, y: 0, width: '100%', height: 400 },
+        },
+        content: [
+          { id: generateId(), type: 'heading', props: { level: 2 }, content: 'to do a session' },
+          { id: generateId(), type: 'checkListItem', props: { checked: false }, content: 'Q1' },
+          { id: generateId(), type: 'checkListItem', props: { checked: false }, content: 'Q2' },
+        ],
+      },
     });
-    if (!existingHabitLog) {
-      await prisma.habitTimeLog.create({
-        data: {
-          habitId: habits[0].id,
-          startedAt: date,
-          endedAt: new Date(date.getTime() + 1800000), // 30 mins
-          isBadDayPlan: i % 3 === 0, // Every 3rd log is a minimum completion
+
+    await prisma.textBox.create({
+      data: {
+        spaceId: space.id,
+        layout: {
+          desktop: { x: 370, y: 0, width: 350, height: 500 },
+          tablet: { x: 320, y: 0, width: 300, height: 500 },
+          mobile: { x: 0, y: 420, width: '100%', height: 500 },
+        },
+        content: [
+          { id: generateId(), type: 'heading', props: { level: 2 }, content: 'to do today' },
+          {
+            id: generateId(),
+            type: 'checkListItem',
+            props: { checked: false },
+            content: 'dsa 2 questions 10-1 (30min minimum)',
+          },
+          {
+            id: generateId(),
+            type: 'checkListItem',
+            props: { checked: false },
+            content: '1:30-3:30 devops(kubernetes 30min), sql(30min)',
+          },
+          {
+            id: generateId(),
+            type: 'checkListItem',
+            props: { checked: false },
+            content: '4-7 project (see how catching is working fe and improve it)',
+          },
+          { id: generateId(), type: 'checkListItem', props: { checked: false }, content: 'gym' },
+          {
+            id: generateId(),
+            type: 'checkListItem',
+            props: { checked: false },
+            content: '9-11 apply for jobs',
+          },
+        ],
+      },
+    });
+
+    // 5. Logs (Subject & Habit)
+    const today = new Date();
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      date.setHours(10, 0, 0, 0);
+
+      // Daily Rating
+      await prisma.dailyRating.upsert({
+        where: { userId_date: { userId, date } },
+        update: { rating: Math.floor(Math.random() * 3) + 3 },
+        create: {
+          userId,
+          date,
+          rating: Math.floor(Math.random() * 3) + 3,
+          description: 'Seeded rating',
         },
       });
-    }
-  }
 
+      // Subject Log
+      const existingSubjectLog = await prisma.subjectLog.findFirst({
+        where: { subjectId: subjects[0].id, startedAt: date },
+      });
+      if (!existingSubjectLog) {
+        await prisma.subjectLog.create({
+          data: {
+            subjectId: subjects[0].id,
+            startedAt: date,
+            endedAt: new Date(date.getTime() + 3600000), // 1 hour
+          },
+        });
+      }
+
+      // Habit Log
+      const existingHabitLog = await prisma.habitTimeLog.findFirst({
+        where: { habitId: habits[0].id, startedAt: date },
+      });
+      if (!existingHabitLog) {
+        await prisma.habitTimeLog.create({
+          data: {
+            habitId: habits[0].id,
+            startedAt: date,
+            endedAt: new Date(date.getTime() + 1800000), // 30 mins
+            isBadDayPlan: i % 3 === 0, // Every 3rd log is a minimum completion
+          },
+        });
+      }
+    }
+  } // End of user loop
   console.log('Seeding finished.');
 }
 
