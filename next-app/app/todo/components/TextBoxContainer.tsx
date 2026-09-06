@@ -342,7 +342,7 @@ export default function TextBoxContainer({
           : isFocused
             ? 'z-50 border-primary/40 shadow-md shadow-primary/10'
             : 'z-10 border-border/50 hover:border-border/80'
-      } ${isMobile && !isFullscreen ? 'relative! transform-none! h-auto! shrink-0' : ''}`}
+      } ${isMobile && !isFullscreen ? '!relative !transform-none !h-auto shrink-0' : ''}`}
       dragHandleClassName="drag-handle"
     >
       {/* ── Toolbar (hover-reveal or fullscreen) ── */}
