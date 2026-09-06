@@ -12,6 +12,10 @@ import { CSS } from '@dnd-kit/utilities';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const TOOLBAR_HEIGHT = 32; // px — height of the hover toolbar
+const MIN_WIDTH = 300;
+const MIN_HEIGHT = 300;
+const MAX_WIDTH = 1000;
+const MAX_HEIGHT = 800;
 
 export default function TextBoxContainer({
   textBox,
@@ -49,9 +53,14 @@ export default function TextBoxContainer({
     () => ({ x: isMobile ? 0 : layout.x, y: isMobile ? 0 : layout.y }),
     [layout.x, layout.y, isMobile],
   );
+
+  // Make sure we have numbers for width/height (fallbacks to defaults)
+  const currentWidth = typeof layout.width === 'number' ? layout.width : 400;
+  const currentHeight = typeof layout.height === 'number' ? layout.height : 300;
+
   const serverSize = useMemo(
-    () => ({ width: isMobile ? '100%' : layout.width, height: isMobile ? 'auto' : layout.height }),
-    [layout.width, layout.height, isMobile],
+    () => ({ width: isMobile ? '100%' : currentWidth, height: isMobile ? 'auto' : currentHeight }),
+    [currentWidth, currentHeight, isMobile],
   );
 
   // Local override: set on drag/resize stop for instant feedback
@@ -68,63 +77,7 @@ export default function TextBoxContainer({
     setLocalOverride(null);
   }
 
-  // ── Height Calculation ────────────────────────────────────────────────────────
-  const MIN_HEIGHT = 300;
-  const savedHeight = typeof layout.height === 'number' ? layout.height : MIN_HEIGHT;
-
-  // Track pure content height separately
-  const [contentHeight, setContentHeight] = useState<number>(0);
   const contentRef = useRef<HTMLDivElement>(null);
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    const el = contentRef.current;
-    if (!el || isMobile) return;
-
-    const ro = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        // content height + toolbar height + small buffer
-        const measured = Math.round(entry.contentRect.height) + TOOLBAR_HEIGHT + 8;
-        setContentHeight(measured);
-      }
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [isMobile]);
-
-  const effectiveHeight = Math.max(MIN_HEIGHT, savedHeight, contentHeight);
-
-  // Auto-save height if content pushes it larger than saved layout
-  useEffect(() => {
-    if (isMobile || isInteracting || contentHeight <= savedHeight) return;
-
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => {
-      updateLayout.mutate({
-        id: textBox.id,
-        spaceId,
-        layout: {
-          ...textBox.layout,
-          [viewport]: { ...layout, height: contentHeight },
-        },
-      });
-    }, 800);
-
-    return () => {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    };
-  }, [
-    contentHeight,
-    savedHeight,
-    isMobile,
-    isInteracting,
-    layout,
-    spaceId,
-    textBox.id,
-    textBox.layout,
-    updateLayout,
-    viewport,
-  ]);
 
   // Current pos/size for Rnd
   const pos = isInteracting ? undefined : (localOverride?.pos ?? serverPos);
@@ -132,7 +85,7 @@ export default function TextBoxContainer({
     ? undefined
     : {
         width: localOverride?.size.width ?? serverSize.width,
-        height: effectiveHeight,
+        height: localOverride?.size.height ?? serverSize.height,
       };
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
@@ -183,10 +136,11 @@ export default function TextBoxContainer({
       if (isMobile) return;
       const newWidth = parseInt(ref.style.width, 10);
       const newHeight = parseInt(ref.style.height, 10);
-      setLocalOverride((prev) => ({
+
+      setLocalOverride({
         pos: { x: position.x, y: position.y },
         size: { width: newWidth, height: newHeight },
-      }));
+      });
 
       updateLayout.mutate({
         id: textBox.id,
@@ -207,6 +161,81 @@ export default function TextBoxContainer({
     [isMobile, updateLayout, textBox.id, textBox.layout, spaceId, viewport, layout],
   );
 
+  // ── Auto-Resize on Paste ─────────────────────────────────────────────────────
+
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent) => {
+      if (isMobile) return;
+
+      // We only trigger auto-resize logic if we can read the pasted text
+      const text = e.clipboardData.getData('text/plain');
+      if (!text) return;
+
+      // 1. Calculate estimated required width based on longest line
+      const lines = text.split('\n');
+      const longestLine = lines.reduce((a, b) => (a.length > b.length ? a : b), '');
+      const approxCharWidth = 8.5; // pixels per character
+      const padding = 64; // left/right padding + margins
+
+      // Width can expand up to MAX_WIDTH, but never shrink below current
+      const calculatedWidth = Math.min(
+        MAX_WIDTH,
+        Math.max(MIN_WIDTH, longestLine.length * approxCharWidth + padding),
+      );
+      const finalWidth = Math.max(currentWidth, calculatedWidth);
+
+      // 2. Wait for DOM to render the pasted content to get actual height
+      setTimeout(() => {
+        if (!contentRef.current) return;
+
+        // BlockNote might have expanded the scrollHeight
+        const actualScrollHeight = contentRef.current.scrollHeight;
+
+        // Height can expand up to MAX_HEIGHT, but never shrink below current
+        const calculatedHeight = Math.min(
+          MAX_HEIGHT,
+          Math.max(MIN_HEIGHT, actualScrollHeight + TOOLBAR_HEIGHT),
+        );
+        const finalHeight = Math.max(currentHeight, calculatedHeight);
+
+        // Only fire mutation if dimensions actually grew
+        if (finalWidth > currentWidth || finalHeight > currentHeight) {
+          // Optimistic UI update
+          setLocalOverride({
+            pos: { x: layout.x, y: layout.y },
+            size: { width: finalWidth, height: finalHeight },
+          });
+
+          // Persist to backend
+          updateLayout.mutate({
+            id: textBox.id,
+            spaceId,
+            layout: {
+              ...textBox.layout,
+              [viewport]: {
+                ...layout,
+                width: finalWidth,
+                height: finalHeight,
+                positionSource: 'auto_paste', // Tag it so we know it wasn't a direct manual drag
+              },
+            },
+          });
+        }
+      }, 100); // 100ms gives BlockNote time to parse and render the clipboard data
+    },
+    [
+      currentWidth,
+      currentHeight,
+      isMobile,
+      layout,
+      spaceId,
+      textBox.id,
+      textBox.layout,
+      updateLayout,
+      viewport,
+    ],
+  );
+
   const isFocused = focusedTextBoxId === textBox.id;
 
   const rndContent = (
@@ -215,7 +244,7 @@ export default function TextBoxContainer({
         x: isMobile ? 0 : layout.x,
         y: isMobile ? 0 : layout.y,
         width: isMobile ? '100%' : layout.width,
-        height: effectiveHeight,
+        height: layout.height,
       }}
       {...(pos ? { position: pos } : {})}
       {...(effectiveSizeForRnd ? { size: effectiveSizeForRnd } : {})}
@@ -225,8 +254,10 @@ export default function TextBoxContainer({
       onDragStop={handleDragStop}
       onResizeStart={handleResizeStart}
       onResizeStop={handleResizeStop}
-      minWidth={isMobile ? '100%' : 300}
-      minHeight={Math.max(MIN_HEIGHT, contentHeight)}
+      minWidth={isMobile ? '100%' : MIN_WIDTH}
+      minHeight={MIN_HEIGHT}
+      maxWidth={MAX_WIDTH}
+      maxHeight={MAX_HEIGHT}
       bounds="parent"
       onMouseDown={() => setFocusedTextBox(textBox.id)}
       className={`rounded-xl border bg-card flex flex-col group ${
@@ -301,7 +332,11 @@ export default function TextBoxContainer({
       </div>
 
       {/* ── Editor ── */}
-      <div ref={contentRef} className="flex-1 p-2 cursor-text">
+      <div
+        ref={contentRef}
+        onPaste={handlePaste}
+        className="flex-1 p-2 cursor-text overflow-y-auto overflow-x-hidden min-h-0"
+      >
         <BlockEditor
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           initialContent={textBox.content as any[]}
