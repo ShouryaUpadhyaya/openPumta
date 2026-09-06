@@ -116,7 +116,7 @@ export default function SettingsPage() {
           <Button
             type="submit"
             disabled={isSaving}
-            className="rounded-xl px-8 shadow-lg shadow-primary/20 transition-all active:scale-95"
+            className="rounded-xl px-8 h-11 md:h-10 shadow-lg shadow-primary/20 transition-all active:scale-95"
           >
             {isSaving ? 'Saving...' : 'Save Timer Settings'}
           </Button>

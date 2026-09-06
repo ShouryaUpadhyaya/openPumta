@@ -26,7 +26,7 @@ export function SystemSettings() {
             type="button"
             onClick={() => resetOnboarding()}
             variant="outline"
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 h-11 px-4 md:h-10 md:px-4"
           >
             <RotateCcw className="h-4 w-4" />
             Restart Tour
@@ -57,7 +57,7 @@ export function SystemSettings() {
               }
             }}
             variant="destructive"
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 h-11 px-4 md:h-10 md:px-4"
           >
             <Trash2 className="h-4 w-4" />
             Clear Local Data

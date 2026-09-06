@@ -80,7 +80,7 @@ export function ColorPicker({
             key={color}
             type="button"
             onClick={() => onChange(color)}
-            className="group relative h-8 w-8 rounded-full border border-black/10 transition-transform hover:scale-110 active:scale-95 flex items-center justify-center shadow-sm"
+            className="group relative h-10 w-10 md:h-8 md:w-8 rounded-full border border-black/10 transition-transform hover:scale-110 active:scale-95 flex items-center justify-center shadow-sm"
             style={{ backgroundColor: color }}
           >
             {value === color && (

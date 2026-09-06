@@ -101,7 +101,7 @@ export function DataExportSection() {
           type="button"
           onClick={() => handleExport('json')}
           variant="default"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 h-11 px-4 md:h-9 md:px-3"
         >
           <Download className="h-4 w-4" />
           Export as JSON
@@ -110,7 +110,7 @@ export function DataExportSection() {
           type="button"
           onClick={() => handleExport('txt')}
           variant="outline"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 h-11 px-4 md:h-9 md:px-3"
         >
           <Download className="h-4 w-4" />
           Export as Text
@@ -119,7 +119,7 @@ export function DataExportSection() {
           type="button"
           onClick={handleExportStats}
           variant="secondary"
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 h-11 px-4 md:h-9 md:px-3"
           disabled={isExportingStats}
         >
           {isExportingStats ? (

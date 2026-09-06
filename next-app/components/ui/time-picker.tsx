@@ -29,7 +29,7 @@ export function TimePicker({ value, onChange }: TimePickerProps) {
   return (
     <div className="flex items-center gap-2">
       <Select value={hours} onValueChange={handleHourChange}>
-        <SelectTrigger className="w-[80px]">
+        <SelectTrigger className="w-[80px] h-11 md:h-10">
           <SelectValue placeholder="HH" />
         </SelectTrigger>
         <SelectContent>
@@ -42,7 +42,7 @@ export function TimePicker({ value, onChange }: TimePickerProps) {
       </Select>
       <span className="text-muted-foreground font-semibold">:</span>
       <Select value={minutes} onValueChange={handleMinuteChange}>
-        <SelectTrigger className="w-[80px]">
+        <SelectTrigger className="w-[80px] h-11 md:h-10">
           <SelectValue placeholder="MM" />
         </SelectTrigger>
         <SelectContent>
