@@ -75,7 +75,7 @@ export default function GoalRealityBars({ data }: GoalRealityBarsProps) {
               tick={{ fontSize: 12, fill: 'var(--foreground)', fontWeight: 500 }}
               tickLine={false}
               axisLine={false}
-              width={80}
+              width={140}
             />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--muted)', opacity: 0.2 }} />
 

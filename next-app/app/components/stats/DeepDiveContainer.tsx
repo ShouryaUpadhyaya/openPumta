@@ -96,7 +96,8 @@ export default function DeepDiveContainer({
 
   // C12: Goal Reality Bars
   const goalRealityData = useMemo(() => {
-    return computeGoalProgress(subjects).map((g) => ({
+    const activeSubjects = subjects.filter((s) => !s.deleted);
+    return computeGoalProgress(activeSubjects).map((g) => ({
       subject: g.name,
       actual: g.actual / 3600,
       goal: g.goal / 3600,
@@ -106,9 +107,12 @@ export default function DeepDiveContainer({
 
   // BlockNote Review Deep Dive Data
   const reviewHistory = ratingStats?.history || [];
-  
+
   const checkboxAnalytics = useMemo(() => computeCheckboxAnalytics(reviewHistory), [reviewHistory]);
-  const moodCorrelations = useMemo(() => computeCorrelationInsights(reviewHistory), [reviewHistory]);
+  const moodCorrelations = useMemo(
+    () => computeCorrelationInsights(reviewHistory),
+    [reviewHistory],
+  );
   const reviewStreaks = useMemo(() => computeReviewStreaks(reviewHistory), [reviewHistory]);
 
   return (
@@ -135,7 +139,7 @@ export default function DeepDiveContainer({
       {/* Reviews & Journaling Deep Dive */}
       <div className="flex flex-col gap-6">
         <h2 className="text-xl font-bold border-b pb-2 mt-4">Reviews & Journaling</h2>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-8">
             <MoodTrendsChart history={reviewHistory} />
@@ -144,11 +148,11 @@ export default function DeepDiveContainer({
             <ReviewStreaksPanel streaks={reviewStreaks} />
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 gap-6">
           <RatingHeatmap history={reviewHistory} />
         </div>
-        
+
         {checkboxAnalytics.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <CheckboxAnalyticsPanel analytics={checkboxAnalytics} />

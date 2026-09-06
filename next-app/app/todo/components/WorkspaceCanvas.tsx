@@ -291,7 +291,7 @@ export default function WorkspaceCanvas() {
 
       {/* ── FAB buttons ── */}
       <div
-        className="fixed bottom-6 right-6 flex flex-col gap-3 items-end z-50"
+        className="fixed bottom-24 md:bottom-6 right-6 flex flex-col gap-3 items-end z-50"
         onMouseEnter={() => setShowAutoLayout(true)}
         onMouseLeave={() => setShowAutoLayout(false)}
       >

@@ -142,15 +142,15 @@ export default function HabitsPage() {
   const activeFilterLabel = FILTER_OPTIONS.find((o) => o.value === filterRange)?.label ?? '21 Days';
 
   return (
-    <div className="flex flex-col h-full max-w-5xl mx-auto p-4 lg:p-8">
-      <div className="flex items-center gap-3 mb-8">
+    <div className="flex flex-col h-full max-w-5xl mx-auto p-4 pb-24 md:pb-8 lg:p-8">
+      <div className="flex flex-wrap items-center gap-3 mb-8">
         <div className="bg-primary/20 p-3 rounded-xl text-primary hidden lg:block">
           <Activity className="h-6 w-6" />
         </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
+        <div className="flex-1 min-w-[200px]">
+          <div className="flex flex-wrap items-center gap-2">
             <h1 className="lg:text-3xl text-2xl font-bold tracking-tight">Habits: </h1>
-            <div className="flex items-center ml-4 bg-muted/30 rounded-full border border-muted-foreground/20 px-1 py-0.5">
+            <div className="flex items-center ml-0 sm:ml-4 bg-muted/30 rounded-full border border-muted-foreground/20 px-1 py-0.5">
               <button
                 onClick={() =>
                   setSelectedDate((d) => {
@@ -205,7 +205,7 @@ export default function HabitsPage() {
 
       <SystemGuideModal open={guideOpen} onOpenChange={setGuideOpen} />
 
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex flex-wrap items-center gap-2 mb-3">
         <AddHabitDialog habitsCount={habits.length} subjects={subjects} />
 
         <div className="flex-1" />
