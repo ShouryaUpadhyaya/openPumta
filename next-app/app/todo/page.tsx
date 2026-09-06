@@ -106,7 +106,7 @@ function WorkspaceInner() {
   return (
     <div className="flex flex-col h-full" data-tour-highlight="workspace-page">
       {/* ── Top bar ── */}
-      <div className="flex flex-col border-b border-border/30 pb-3 pt-4 landscape:pt-1 landscape:pb-1 gap-3">
+      <div className="flex flex-col border-b border-border/30 pb-3 pt-4 gap-3">
         {/* Space title row */}
         <div className="px-4 flex items-center justify-between gap-4">
           <div className="group flex items-center gap-2 min-w-0">

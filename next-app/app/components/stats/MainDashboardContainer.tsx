@@ -274,15 +274,15 @@ export default function MainDashboardContainer({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 landscape:grid-cols-2 lg:landscape:grid-cols-12 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-5 landscape:col-span-1 lg:landscape:col-span-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-5">
           <MonthlyCalendarNav
             selectedDate={selectedDate}
             onSelectDate={onSelectDate}
             focusLogs={augmentedFocusLogs}
           />
         </div>
-        <div className="lg:col-span-7 landscape:col-span-1 lg:landscape:col-span-7">
+        <div className="lg:col-span-7">
           <DailySummaryCard
             selectedDate={selectedDate}
             timeline={augmentedTimeline}
@@ -293,11 +293,11 @@ export default function MainDashboardContainer({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 landscape:grid-cols-2 lg:landscape:grid-cols-6 lg:grid-cols-6 gap-6">
-        <div className="flex flex-col justify-end h-full lg:col-span-4 landscape:col-span-1 lg:landscape:col-span-4">
+      <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
+        <div className="flex flex-col justify-end h-full lg:col-span-4">
           <ConsistencyTracker habits={habitsData} selectedDate={selectedDate} />
         </div>
-        <div className="flex flex-col lg:col-span-2 landscape:col-span-1 lg:landscape:col-span-2 justify-end gap-6">
+        <div className="flex flex-col lg:col-span-2 justify-end gap-6">
           <WeeklyRadarChart data={weeklyRadarData} />
           <GoalRealityBars data={goalRealityData} />
         </div>
@@ -311,8 +311,8 @@ export default function MainDashboardContainer({
         />
       </div>
 
-      <div className="grid grid-cols-1 landscape:grid-cols-2 lg:landscape:grid-cols-12 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-4 landscape:col-span-1 lg:landscape:col-span-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-4">
           <SubjectDonutChart
             subjectData={selectedDateSubjectData}
             totalStudySecs={studySecs}
@@ -321,19 +321,19 @@ export default function MainDashboardContainer({
             otherSecs={otherSecs}
           />
         </div>
-        <div className="lg:col-span-8 landscape:col-span-1 lg:landscape:col-span-8 flex flex-col gap-6">
+        <div className="lg:col-span-8 flex flex-col gap-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
             <SessionStatsPanel stats={sessionStats} />
             <ReviewInsightsPanel moodRating={moodData.rating} reviewInsights={moodData.insights} />
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-1 landscape:grid-cols-2 lg:landscape:grid-cols-12 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-3 landscape:col-span-1 lg:landscape:col-span-3">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-3">
           <TasksProgressRing {...taskStats} />
         </div>
 
-        <div className="lg:col-span-4 landscape:col-span-1 lg:landscape:col-span-4">
+        <div className="lg:col-span-4">
           <AdvancedPeriodTrends trendData={focusTrend} />
         </div>
       </div>

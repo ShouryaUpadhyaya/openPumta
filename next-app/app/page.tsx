@@ -95,7 +95,7 @@ export default function Home() {
         </div>
       )}
 
-      <main className="flex-1 flex flex-col landscape:grid landscape:grid-cols-2 lg:landscape:grid-cols-12 lg:grid lg:grid-cols-12 lg:grid-rows-12 gap-4 min-h-0">
+      <main className="flex-1 flex flex-col lg:grid lg:grid-cols-12 lg:grid-rows-12 gap-4 min-h-0">
         {!subjectsLoading && subjects.length === 0 ? (
           <div className="lg:col-span-12 lg:row-span-12 flex flex-col items-center justify-center h-full min-h-[60vh]">
             <div className="w-full max-w-2xl bg-background rounded-xl border shadow-sm overflow-hidden p-4 lg:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -106,22 +106,22 @@ export default function Home() {
         ) : (
           <>
             {/* Top Row - Clock and Subjects */}
-            <div className="lg:col-span-4 lg:row-span-5 bg-background rounded-xl border shadow-sm overflow-clip flex flex-col items-center justify-center p-4 min-h-[260px] landscape:min-h-[180px] lg:landscape:min-h-0 lg:min-h-0">
+            <div className="lg:col-span-4 lg:row-span-5 bg-background rounded-xl border shadow-sm overflow-clip flex flex-col items-center justify-center p-4 min-h-[260px] lg:min-h-0">
               <Clock />
             </div>
             {/* Middle Row - Habits and General Subjects/Stats space */}
-            <div className="lg:col-span-8 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[280px] landscape:min-h-[200px] lg:landscape:min-h-0 lg:min-h-0">
+            <div className="lg:col-span-8 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[280px] lg:min-h-0">
               <Subjects />
             </div>
-            <div className="lg:col-span-4 lg:row-span-7 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[280px] landscape:min-h-[200px] lg:landscape:min-h-0 lg:min-h-0">
+            <div className="lg:col-span-4 lg:row-span-7 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[280px] lg:min-h-0">
               <Habits />
             </div>
 
             {/* Bottom Row - Rating and Stats */}
-            <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[220px] landscape:min-h-[160px] lg:landscape:min-h-0 lg:min-h-0">
+            <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[220px] lg:min-h-0">
               <DailyRating />
             </div>
-            <div className="lg:col-span-4 lg:row-span-6 landscape:col-span-2 lg:landscape:col-span-4 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[220px] landscape:min-h-[160px] lg:landscape:min-h-0 lg:min-h-0">
+            <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[220px] lg:min-h-0">
               <Stats />
             </div>
           </>
