@@ -24,7 +24,7 @@ let app = express();
 
 app.set('trust proxy', true);
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(cookieParser());
 app.use(
   cors({
