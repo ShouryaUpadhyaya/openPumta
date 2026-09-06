@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Platform, SafeAreaView, StyleSheet, StatusBar } from 'react-native';
+import { Platform, StyleSheet, StatusBar } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
@@ -38,22 +39,24 @@ export default function App() {
   `;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-      <WebView
-        ref={webViewRef}
-        source={{ uri: webUrl }}
-        injectedJavaScript={injectedJavaScript}
-        onMessage={(event) => {
-          // If the web app wants to talk back to the native shell, it uses:
-          // window.ReactNativeWebView.postMessage(...)
-          console.log('Message from web app:', event.nativeEvent.data);
-        }}
-        style={styles.webview}
-        allowsBackForwardNavigationGestures
-        bounces={false}
-      />
-    </SafeAreaView>
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+        <WebView
+          ref={webViewRef}
+          source={{ uri: webUrl }}
+          injectedJavaScript={injectedJavaScript}
+          onMessage={(event) => {
+            // If the web app wants to talk back to the native shell, it uses:
+            // window.ReactNativeWebView.postMessage(...)
+            console.log('Message from web app:', event.nativeEvent.data);
+          }}
+          style={styles.webview}
+          allowsBackForwardNavigationGestures
+          bounces={false}
+        />
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 

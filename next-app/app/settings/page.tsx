@@ -15,6 +15,7 @@ import { ThemeColorsSettings } from '@/components/settings/ThemeColorsSettings';
 import { ChartThemeSection } from '@/components/settings/ChartThemeSection';
 import { DataExportSection } from '@/components/settings/DataExportSection';
 import { SystemSettings } from '@/components/settings/SystemSettings';
+import { WorkspaceSettings } from '@/components/settings/WorkspaceSettings';
 
 export default function SettingsPage() {
   const store = useTimerStore();
@@ -94,6 +95,7 @@ export default function SettingsPage() {
 
       <form onSubmit={handleTimerSave} className="grid gap-6">
         <GeneralSettings />
+        <WorkspaceSettings />
         <AutomationSettings />
         <AccountPreferences />
         <DurationsSettings work={work} shortBreak={shortBreak} longBreak={longBreak} />

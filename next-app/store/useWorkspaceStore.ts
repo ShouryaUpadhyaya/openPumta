@@ -13,11 +13,13 @@ interface WorkspaceState {
   dateRange: DateRange | undefined;
   focusedTextBoxId: number | null;
   draggingTextBox: { id: number; spaceId: number } | null;
+  fullscreenTextBoxId: number | null;
   // Actions
   setActiveSpace: (id: number | null) => void;
   setFilter: (filter: FilterType, dateRange?: DateRange) => void;
   setFocusedTextBox: (id: number | null) => void;
   setDraggingTextBox: (data: { id: number; spaceId: number } | null) => void;
+  setFullscreenTextBox: (id: number | null) => void;
 }
 
 export const useWorkspaceStore = create<WorkspaceState>((set) => ({
@@ -26,9 +28,11 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
   dateRange: undefined,
   focusedTextBoxId: null,
   draggingTextBox: null,
+  fullscreenTextBoxId: null,
 
   setActiveSpace: (id) => set({ activeSpaceId: id }),
   setFilter: (filter, dateRange) => set({ activeFilter: filter, dateRange }),
   setFocusedTextBox: (id) => set({ focusedTextBoxId: id }),
   setDraggingTextBox: (data) => set({ draggingTextBox: data }),
+  setFullscreenTextBox: (id) => set({ fullscreenTextBoxId: id }),
 }));

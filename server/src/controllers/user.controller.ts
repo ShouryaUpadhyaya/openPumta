@@ -1,4 +1,5 @@
 import { prisma } from '../../prisma/prismaClient.js';
+import { Expo } from 'expo-server-sdk';
 import { Request, Response } from 'express';
 import asyncHandler from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
@@ -114,4 +115,58 @@ const savePushToken = asyncHandler(async (req: Request, res: Response) => {
     );
 });
 
-export { getAllUsers, addUser, updateUser, deleteUser, getLifetimeFocusTime, savePushToken };
+const testPushNotification = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user ? (req.user as { id: number }).id : null;
+  if (!userId) {
+    throw new ApiError(401, 'Unauthorized');
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user || !user.expoPushToken) {
+    throw new ApiError(400, 'User does not have an Expo push token saved');
+  }
+
+  const expo = new Expo();
+  if (!Expo.isExpoPushToken(user.expoPushToken)) {
+    throw new ApiError(400, `Push token ${user.expoPushToken} is not a valid Expo push token`);
+  }
+
+  const messages = [
+    {
+      to: user.expoPushToken,
+      sound: 'default' as const,
+      title: 'Test Notification',
+      body: 'This is a test push notification from your app!',
+      data: { withSome: 'data' },
+    },
+  ];
+
+  try {
+    const chunks = expo.chunkPushNotifications(messages);
+    const tickets = [];
+    for (const chunk of chunks) {
+      try {
+        const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+        tickets.push(...ticketChunk);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    return res.status(200).json(new ApiResponse(200, { tickets }, 'Push notification sent'));
+  } catch (error) {
+    throw new ApiError(500, 'Error sending push notification');
+  }
+});
+
+export {
+  getAllUsers,
+  addUser,
+  updateUser,
+  deleteUser,
+  getLifetimeFocusTime,
+  savePushToken,
+  testPushNotification,
+};

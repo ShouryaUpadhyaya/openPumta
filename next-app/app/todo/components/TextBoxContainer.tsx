@@ -4,11 +4,12 @@ import { Rnd } from 'react-rnd';
 import { TextBox } from '@/types/space';
 import BlockEditor from './BlockEditor';
 import { useUpdateTextBoxLayout, useDeleteTextBox } from '@/hooks/useTextBoxes';
-import { GripHorizontal, Trash2, ArrowRightLeft } from 'lucide-react';
+import { GripHorizontal, Trash2, ArrowRightLeft, Maximize2 } from 'lucide-react';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { Viewport } from '@/hooks/useViewport';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function TextBoxContainer({
   textBox,
@@ -21,7 +22,8 @@ export default function TextBoxContainer({
 }) {
   const updateLayout = useUpdateTextBoxLayout();
   const deleteTextBox = useDeleteTextBox();
-  const { focusedTextBoxId, setFocusedTextBox, setDraggingTextBox } = useWorkspaceStore();
+  const { focusedTextBoxId, setFocusedTextBox, setDraggingTextBox, setFullscreenTextBox } =
+    useWorkspaceStore();
 
   const layout = textBox.layout?.[viewport] ||
     textBox.layout?.desktop || { x: 0, y: 0, width: 400, height: 300 };
@@ -66,8 +68,6 @@ export default function TextBoxContainer({
     setLocalOverride(null);
   }
 
-  // When NOT interacting, use local override (if set) or server values
-  // When interacting, pass undefined so react-rnd manages its own DOM transforms freely
   const pos = isInteracting ? undefined : (localOverride?.pos ?? serverPos);
   const size = isInteracting ? undefined : (localOverride?.size ?? serverSize);
 
@@ -86,7 +86,7 @@ export default function TextBoxContainer({
         spaceId,
         layout: {
           ...textBox.layout,
-          [viewport]: { ...layout, x: d.x, y: d.y },
+          [viewport]: { ...layout, x: d.x, y: d.y, positionSource: 'user' },
         },
       });
     },
@@ -128,6 +128,7 @@ export default function TextBoxContainer({
             y: position.y,
             width: newWidth,
             height: newHeight,
+            positionSource: 'user',
           },
         },
       });
@@ -157,18 +158,40 @@ export default function TextBoxContainer({
       minHeight={150}
       bounds="parent"
       onMouseDown={() => setFocusedTextBox(textBox.id)}
-      className={`bg-[#1f1f1f] min-h-fit! h-fit! rounded-xl border border-border shadow-sm group hover:shadow-md transition-shadow flex flex-col ${isFocused ? 'z-50 ring-1 ring-primary/30' : 'z-10'} ${isMobile ? 'relative! transform-none! h-auto!  shrink-0' : 'min-h-fit!'}`}
+      className={`rounded-xl border border-border/60 shadow-sm group hover:shadow-md hover:border-border/80 transition-all duration-200 flex flex-col bg-card ${isFocused ? 'z-50 ring-1 ring-primary/40 border-primary/30' : 'z-10'} ${isMobile ? 'relative! transform-none! h-auto! shrink-0' : ''}`}
       dragHandleClassName="drag-handle"
     >
-      <div className="h-8 flex items-center justify-between px-3 border-b border-border/50 bg-muted/30 opacity-0 group-hover:opacity-100 transition-opacity">
+      {/* ── Toolbar (hover-reveal) ── */}
+      <div className="h-8 flex items-center justify-between px-2 border-b border-border/40 bg-muted/20 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+        {/* Left: drag handle */}
         <div
-          className="drag-handle cursor-grab active:cursor-grabbing flex-1 h-full flex items-center"
+          className="drag-handle cursor-grab active:cursor-grabbing flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors px-1 py-1 rounded"
           {...(isMobile ? listeners : {})}
           {...(isMobile ? attributes : {})}
+          title="Drag to reposition"
         >
-          <GripHorizontal className="h-4 w-4 text-muted-foreground" />
+          <GripHorizontal className="h-3.5 w-3.5" />
         </div>
+
+        {/* Right: action icons */}
         <div className="flex items-center gap-0.5">
+          {/* Fullscreen button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setFullscreenTextBox(textBox.id)}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted/60 transition-colors"
+                aria-label="Expand to fullscreen"
+              >
+                <Maximize2 className="h-3.5 w-3.5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>Fullscreen (focus mode)</p>
+            </TooltipContent>
+          </Tooltip>
+
+          {/* Move to another space */}
           <div
             draggable
             onDragStart={(e) => {
@@ -179,27 +202,33 @@ export default function TextBoxContainer({
               e.dataTransfer.effectAllowed = 'move';
               setDraggingTextBox({ id: textBox.id, spaceId });
             }}
-            onDragEnd={() => {
-              setDraggingTextBox(null);
-            }}
-            className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted cursor-move"
-            title="Drag to another space"
+            onDragEnd={() => setDraggingTextBox(null)}
+            className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted/60 cursor-move transition-colors"
+            title="Move to another workspace"
+            aria-label="Move to another workspace"
+            role="button"
+            tabIndex={0}
           >
-            <ArrowRightLeft className="h-4 w-4" />
+            <ArrowRightLeft className="h-3.5 w-3.5" />
           </div>
+
+          {/* Delete */}
           <button
             onClick={() => {
               if (confirm('Delete this text box?')) {
                 deleteTextBox.mutate({ id: textBox.id, spaceId });
               }
             }}
-            className="text-muted-foreground hover:text-destructive p-1 rounded-md hover:bg-muted"
+            className="text-muted-foreground hover:text-destructive p-1 rounded-md hover:bg-muted/60 transition-colors"
+            aria-label="Delete text box"
           >
-            <Trash2 className="h-4 w-4" />
+            <Trash2 className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
-      <div className="flex-1 p-2 overflow-y-auto cursor-text min-h-25 lg:min-h-75">
+
+      {/* ── Editor ── */}
+      <div className="flex-1 p-2 overflow-y-auto cursor-text min-h-0">
         <BlockEditor
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           initialContent={textBox.content as any[]}

@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "c71e8012-d18c-4c97-a529-563ff4732e8a"
+      }
+    },
+    "android": {
+      "package": "com.shouryaexpodev.openpumta"
+    }
+  }
+}

@@ -13,13 +13,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -30,9 +23,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { MoreHorizontal, Edit, Trash } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { MoreHorizontal, Edit, Trash, Archive, ArchiveRestore } from 'lucide-react';
 import EditDialog from './EditDialog';
 
 const SPACE_ICONS = ['📋', '🏠', '💼', '🎓', '💻', '🏋️', '🎯', '📚', '🧪', '🌟'];
@@ -44,7 +35,7 @@ interface SpaceSettingsMenuProps {
 export function SpaceSettingsMenu({ space }: SpaceSettingsMenuProps) {
   const updateSpace = useUpdateSpace();
   const deleteSpace = useDeleteSpace();
-  const { setActiveSpace } = useWorkspaceStore();
+  const { activeSpaceId, setActiveSpace } = useWorkspaceStore();
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -64,12 +55,39 @@ export function SpaceSettingsMenu({ space }: SpaceSettingsMenuProps) {
       { id: space.id, name: editName.trim(), icon: editIcon },
       {
         onSuccess: () => {
-          toast.success('Space updated');
+          toast.success('Workspace updated');
           setIsEditDialogOpen(false);
         },
-        onError: () => {
-          toast.error('Failed to update space');
+        onError: () => toast.error('Failed to update workspace'),
+      },
+    );
+  };
+
+  const handleArchive = () => {
+    updateSpace.mutate(
+      { id: space.id, isArchived: true },
+      {
+        onSuccess: () => {
+          toast.success(`"${space.name}" archived`);
+          // If this was the active space, clear it so the page auto-selects another
+          if (activeSpaceId === space.id) {
+            setActiveSpace(null);
+          }
         },
+        onError: () => toast.error('Failed to archive workspace'),
+      },
+    );
+  };
+
+  const handleRestore = () => {
+    updateSpace.mutate(
+      { id: space.id, isArchived: false },
+      {
+        onSuccess: () => {
+          toast.success(`"${space.name}" restored`);
+          setActiveSpace(space.id);
+        },
+        onError: () => toast.error('Failed to restore workspace'),
       },
     );
   };
@@ -77,14 +95,13 @@ export function SpaceSettingsMenu({ space }: SpaceSettingsMenuProps) {
   const handleDeleteSpace = () => {
     deleteSpace.mutate(space.id, {
       onSuccess: () => {
-        toast.success('Space deleted');
-        // Clear active space so it auto-selects another one
-        setActiveSpace(0);
+        toast.success(`"${space.name}" deleted`);
+        if (activeSpaceId === space.id) {
+          setActiveSpace(null);
+        }
         setIsDeleteDialogOpen(false);
       },
-      onError: () => {
-        toast.error('Failed to delete space');
-      },
+      onError: () => toast.error('Failed to delete workspace'),
     });
   };
 
@@ -95,20 +112,35 @@ export function SpaceSettingsMenu({ space }: SpaceSettingsMenuProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
+            className="h-7 w-7 text-muted-foreground hover:text-foreground shrink-0"
+            aria-label={`Workspace options for ${space.name}`}
           >
-            <MoreHorizontal className="h-4 w-4" />
+            <MoreHorizontal className="h-3.5 w-3.5" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
           <DropdownMenuItem onClick={() => setIsEditDialogOpen(true)}>
             <Edit className="mr-2 h-4 w-4" />
-            Edit Space
+            Edit workspace
           </DropdownMenuItem>
+
+          {space.isArchived ? (
+            <DropdownMenuItem onClick={handleRestore}>
+              <ArchiveRestore className="mr-2 h-4 w-4" />
+              Restore
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem onClick={handleArchive}>
+              <Archive className="mr-2 h-4 w-4" />
+              Archive
+            </DropdownMenuItem>
+          )}
+
           <DropdownMenuSeparator />
+
           <DropdownMenuItem variant="destructive" onClick={() => setIsDeleteDialogOpen(true)}>
             <Trash className="mr-2 h-4 w-4" />
-            Delete Space
+            Delete workspace
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -130,10 +162,10 @@ export function SpaceSettingsMenu({ space }: SpaceSettingsMenuProps) {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>Delete &quot;{space.name}&quot;?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the space &quot;{space.name}&quot; and all of its columns
-              and tasks. This action cannot be undone.
+              This will permanently delete this workspace and all of its content. This action cannot
+              be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -143,7 +175,7 @@ export function SpaceSettingsMenu({ space }: SpaceSettingsMenuProps) {
               onClick={handleDeleteSpace}
               disabled={deleteSpace.isPending}
             >
-              {deleteSpace.isPending ? 'Deleting...' : 'Delete Space'}
+              {deleteSpace.isPending ? 'Deleting...' : 'Delete workspace'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

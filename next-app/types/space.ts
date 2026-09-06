@@ -16,11 +16,35 @@ export interface Space {
   textBoxes?: TextBox[];
 }
 
+export interface TextBoxLayout {
+  desktop?: {
+    x: number;
+    y: number;
+    width: number | string;
+    height: number | string;
+    positionSource?: 'auto' | 'user';
+  };
+  tablet?: {
+    x: number;
+    y: number;
+    width: number | string;
+    height: number | string;
+    positionSource?: 'auto' | 'user';
+  };
+  mobile?: {
+    x: number;
+    y: number;
+    width: number | string;
+    height: number | string;
+    order?: number;
+  };
+}
+
 export interface TextBox {
   id: number;
   spaceId: number;
   content: any[];
-  layout: any;
+  layout: TextBoxLayout;
   deleted: boolean;
   createdAt: Date | string;
   updatedAt: Date | string;

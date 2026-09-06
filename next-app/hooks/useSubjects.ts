@@ -42,7 +42,7 @@ export const useSubjects = () => {
       const { data } = await api.get(
         `/subject/stats?from=${from.toISOString()}&to=${to.toISOString()}`,
       );
-      return data.data; // ApiResponse.data
+      return data.data;
     },
   });
 };
@@ -58,7 +58,7 @@ export const useCreateSubject = () => {
       habits?: number[];
     }) => {
       const { data } = await api.post('/subject', newSubject);
-      return data.data; // ApiResponse.data
+      return data.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subjects'] });
