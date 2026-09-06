@@ -106,22 +106,22 @@ export default function Home() {
         ) : (
           <>
             {/* Top Row - Clock and Subjects */}
-            <div className="lg:col-span-4 lg:row-span-5 bg-background rounded-xl border shadow-sm overflow-clip flex flex-col items-center justify-center p-4 min-h-[260px] lg:min-h-0">
+            <div className="lg:col-span-4 lg:row-span-5 bg-background rounded-xl border shadow-sm overflow-clip flex flex-col items-center justify-center p-4 min-h-[260px] landscape:min-h-[180px] lg:landscape:min-h-0 lg:min-h-0">
               <Clock />
             </div>
             {/* Middle Row - Habits and General Subjects/Stats space */}
-            <div className="lg:col-span-8 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[280px] lg:min-h-0">
+            <div className="lg:col-span-8 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[280px] landscape:min-h-[200px] lg:landscape:min-h-0 lg:min-h-0">
               <Subjects />
             </div>
-            <div className="lg:col-span-4 lg:row-span-7 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[280px] lg:min-h-0">
+            <div className="lg:col-span-4 lg:row-span-7 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[280px] landscape:min-h-[200px] lg:landscape:min-h-0 lg:min-h-0">
               <Habits />
             </div>
 
             {/* Bottom Row - Rating and Stats */}
-            <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[220px] lg:min-h-0">
+            <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[220px] landscape:min-h-[160px] lg:landscape:min-h-0 lg:min-h-0">
               <DailyRating />
             </div>
-            <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[220px] lg:min-h-0">
+            <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[220px] landscape:min-h-[160px] lg:landscape:min-h-0 lg:min-h-0">
               <Stats />
             </div>
           </>

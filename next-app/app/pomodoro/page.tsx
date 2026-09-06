@@ -154,7 +154,7 @@ function PomodoroPage() {
   }
 
   return (
-    <section className="flex flex-col justify-between items-center h-[calc(100dvh-5.5rem)] lg:h-screen w-full p-4 md:p-6 lg:p-8 relative overflow-hidden bg-background">
+    <section className="flex flex-col justify-between items-center h-[calc(100dvh-5.5rem)] lg:h-screen w-full p-4 md:p-6 lg:p-8 relative overflow-y-auto overflow-x-hidden bg-background">
       <div className="w-full max-w-md flex items-center justify-center px-4 py-2 shrink-0 relative">
         {runningSubject && (
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-center truncate mx-2 text-foreground px-8">
