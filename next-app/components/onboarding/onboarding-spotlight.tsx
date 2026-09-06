@@ -61,10 +61,16 @@ export function OnboardingSpotlight({ targetId, visible, padding = 10 }: Onboard
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         measureAfterScroll();
-      } else if (attempts < MAX_ATTEMPTS) {
+        return;
+      }
+
+      if (attempts < MAX_ATTEMPTS) {
         attempts++;
         pollTimer = setTimeout(tryFindAndScroll, 100);
+        return;
       }
+
+      setRect(null);
     };
 
     // Small initial delay to let page transition begin rendering

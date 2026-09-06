@@ -39,7 +39,29 @@ export function AddSubjectDialog({ habits, empty }: AddSubjectDialogProps) {
   const [color, setColor] = useState('#f97316');
   const [selectedHabits, setSelectedHabits] = useState<number[]>([]);
   const [typedName, setTypedName] = useState('');
+  const [minutesValue, setMinutesValue] = useState('0');
+  const [secondsValue, setSecondsValue] = useState('0');
   const [showArchived, setShowArchived] = useState(false);
+
+  const clampDurationInput = (
+    rawValue: string,
+    setter: React.Dispatch<React.SetStateAction<string>>,
+  ) => {
+    const digitsOnly = rawValue.replace(/\D/g, '');
+
+    if (!digitsOnly) {
+      setter('');
+      return;
+    }
+
+    const parsedValue = Number(digitsOnly);
+    if (Number.isNaN(parsedValue) || parsedValue > 59) {
+      setter('59');
+      return;
+    }
+
+    setter(digitsOnly);
+  };
 
   // Check if the typed name matches an archived subject
   const matchedArchived = useMemo(() => {
@@ -59,10 +81,11 @@ export function AddSubjectDialog({ habits, empty }: AddSubjectDialogProps) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user) return;
+
     const formData = new FormData(e.currentTarget);
     const hours = Number(formData.get('hours')) || 0;
-    const minutes = Number(formData.get('minutes')) || 0;
-    const seconds = Number(formData.get('seconds')) || 0;
+    const minutes = Number(minutesValue) || 0;
+    const seconds = Number(secondsValue) || 0;
     const goalWorkSecs = hours * 3600 + minutes * 60 + seconds;
 
     createSubject.mutate(
@@ -107,7 +130,7 @@ export function AddSubjectDialog({ habits, empty }: AddSubjectDialogProps) {
             Add New Subject
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col">
+        <form onSubmit={handleSubmit} className="flex flex-col" noValidate>
           <div className="p-6 pt-2 space-y-6 max-h-[60vh] overflow-y-auto scrollbar-hide">
             <div className="flex flex-col gap-2">
               <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -148,18 +171,22 @@ export function AddSubjectDialog({ habits, empty }: AddSubjectDialogProps) {
                 <span className="text-muted-foreground font-medium">:</span>
                 <Input
                   name="minutes"
-                  type="number"
-                  min={0}
-                  max={59}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={minutesValue}
+                  onChange={(e) => clampDurationInput(e.target.value, setMinutesValue)}
                   placeholder="00"
                   className="w-12 h-8 border-0 bg-transparent text-center focus-visible:ring-0 focus-visible:ring-offset-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0"
                 />
                 <span className="text-muted-foreground font-medium">:</span>
                 <Input
                   name="seconds"
-                  type="number"
-                  min={0}
-                  max={59}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={secondsValue}
+                  onChange={(e) => clampDurationInput(e.target.value, setSecondsValue)}
                   placeholder="00"
                   className="w-12 h-8 border-0 bg-transparent text-center focus-visible:ring-0 focus-visible:ring-offset-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0"
                 />
