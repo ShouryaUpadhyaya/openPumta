@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Metadata, Viewport } from 'next';
-import { Geist, Geist_Mono, Inter } from 'next/font/google';
+import { Geist, Geist_Mono, Inter, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 import Providers from './components/Providers';
 import { Toaster } from 'sonner';
@@ -16,6 +16,12 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  variable: '--font-timer',
+  subsets: ['latin'],
+  weight: ['400', '700'],
 });
 
 export const metadata: Metadata = {
@@ -85,7 +91,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased dark w-full max-w-[100vw] overflow-x-clip`}
+        className={`${geistSans.variable} ${geistMono.variable} ${ibmPlexMono.variable} antialiased dark w-full max-w-[100vw] overflow-x-clip`}
         suppressHydrationWarning
       >
         <Providers>

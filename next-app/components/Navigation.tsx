@@ -180,7 +180,7 @@ export default function Navigation({ mounted }: { mounted: boolean }) {
                         : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
                     )}
                   >
-                    <item.icon className={cn('h-5 w-5 shrink-0', isActive && 'animate-pulse')} />
+                    <item.icon className={cn('h-5 w-5 shrink-0')} />
                     {!isSidebarCollapsed && (
                       <span className="font-medium text-sm whitespace-nowrap overflow-hidden transition-all duration-300">
                         {item.label}

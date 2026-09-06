@@ -185,29 +185,35 @@ function PomodoroPage() {
         >
           <div className="flex flex-col items-center justify-center p-2 text-center select-none">
             <div
-              className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl landscape:text-4xl landscape:sm:text-5xl font-mono font-bold mb-1 transition-colors duration-500 tracking-tight"
-              style={{ color: primaryColor }}
+              className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl font-bold mb-1 transition-colors duration-500 tracking-tight tabular-nums"
+              style={{ color: primaryColor, fontFamily: 'var(--font-timer)' }}
             >
               {isOverflow ? '+' : ''}
               {pad(displayTime.hours)}:{pad(displayTime.minutes)}:{pad(displayTime.seconds)}
             </div>
-            <div className="text-xs sm:text-sm md:text-lg landscape:text-xs font-semibold text-muted-foreground uppercase tracking-widest mt-1">
-              {getPhaseLabel()}
+            <div className="text-xs sm:text-sm font-medium text-muted-foreground/70 tracking-wide mt-1">
+              {getPhaseLabel().charAt(0).toUpperCase() + getPhaseLabel().slice(1).toLowerCase()}
             </div>
             <div className="mt-3 grid grid-cols-2 gap-x-8 gap-y-1 text-muted-foreground/70 landscape:mt-1">
               <div className="min-w-0">
-                <div className="truncate text-[10px] sm:text-xs landscape:text-[9px] font-medium">
+                <div className="truncate text-[10px] sm:text-xs font-medium text-muted-foreground/50">
                   {runningSubject?.name || 'Subject'}
                 </div>
-                <div className="font-mono text-xs sm:text-sm md:text-base">
+                <div
+                  className="text-xs sm:text-sm md:text-base tabular-nums"
+                  style={{ fontFamily: 'var(--font-timer)' }}
+                >
                   {formatDuration(subjectWorkedSecs)}
                 </div>
               </div>
               <div className="min-w-0">
-                <div className="truncate text-[10px] sm:text-xs landscape:text-[9px] font-medium">
-                  Total time today
+                <div className="truncate text-[10px] sm:text-xs font-medium text-muted-foreground/50">
+                  Total today
                 </div>
-                <div className="font-mono text-xs sm:text-sm md:text-base landscape:text-xs">
+                <div
+                  className="text-xs sm:text-sm md:text-base tabular-nums"
+                  style={{ fontFamily: 'var(--font-timer)' }}
+                >
                   {formatDuration(totalWorkedSecs)}
                 </div>
               </div>
