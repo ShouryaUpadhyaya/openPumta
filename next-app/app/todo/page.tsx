@@ -6,7 +6,7 @@ import { SpaceNav } from './components/SpaceNav';
 import WorkspaceCanvas from './components/WorkspaceCanvas';
 import { SpaceSettingsMenu } from './components/SpaceSettingsMenu';
 import { CreateSpaceModal } from './components/CreateSpaceModal';
-import { TextBoxFullscreen } from './components/TextBoxFullscreen';
+
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { useOnboardingStore } from '@/store/useOnboardingStore';
 import { toast } from 'sonner';
@@ -159,15 +159,6 @@ function WorkspaceInner() {
         onCreateSpace={handleCreateSpace}
         isLoading={createSpace.isPending}
       />
-
-      {/* ── Fullscreen text box portal ── */}
-      {activeSpaceId && activeSpace && (
-        <TextBoxFullscreen
-          spaceId={activeSpaceId}
-          spaceName={activeSpace.name}
-          spaceIcon={activeSpace.icon}
-        />
-      )}
     </div>
   );
 }

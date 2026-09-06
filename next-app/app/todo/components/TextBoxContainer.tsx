@@ -28,8 +28,15 @@ export default function TextBoxContainer({
 }) {
   const updateLayout = useUpdateTextBoxLayout();
   const deleteTextBox = useDeleteTextBox();
-  const { focusedTextBoxId, setFocusedTextBox, setDraggingTextBox, setFullscreenTextBox } =
-    useWorkspaceStore();
+  const {
+    focusedTextBoxId,
+    setFocusedTextBox,
+    setDraggingTextBox,
+    fullscreenTextBoxId,
+    setFullscreenTextBox,
+  } = useWorkspaceStore();
+
+  const isFullscreen = fullscreenTextBoxId === textBox.id;
 
   const layout = textBox.layout?.[viewport] ||
     textBox.layout?.desktop || { x: 0, y: 0, width: 400, height: 300 };
@@ -54,7 +61,6 @@ export default function TextBoxContainer({
     [layout.x, layout.y, isMobile],
   );
 
-  // Make sure we have numbers for width/height (fallbacks to defaults)
   const currentWidth = typeof layout.width === 'number' ? layout.width : 400;
   const currentHeight = typeof layout.height === 'number' ? layout.height : 300;
 
@@ -63,13 +69,11 @@ export default function TextBoxContainer({
     [currentWidth, currentHeight, isMobile],
   );
 
-  // Local override: set on drag/resize stop for instant feedback
   const [localOverride, setLocalOverride] = useState<{
     pos: { x: number; y: number };
     size: { width: number | string; height: number | string };
   } | null>(null);
 
-  // Clear local override when server data updates
   const layoutKey = `${layout.x}-${layout.y}-${layout.width}-${layout.height}`;
   const [prevLayoutKey, setPrevLayoutKey] = useState(layoutKey);
   if (layoutKey !== prevLayoutKey) {
@@ -79,14 +83,105 @@ export default function TextBoxContainer({
 
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Current pos/size for Rnd
-  const pos = isInteracting ? undefined : (localOverride?.pos ?? serverPos);
-  const effectiveSizeForRnd = isInteracting
-    ? undefined
-    : {
-        width: localOverride?.size.width ?? serverSize.width,
-        height: localOverride?.size.height ?? serverSize.height,
-      };
+  // ── Height Calculation ────────────────────────────────────────────────────────
+  const savedHeight = typeof layout.height === 'number' ? layout.height : MIN_HEIGHT;
+  const [contentHeight, setContentHeight] = useState<number>(0);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (isMobile) return;
+    const el = contentRef.current;
+    if (!el || !el.firstElementChild) return;
+
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        // content height + toolbar height + small buffer
+        const measured = Math.round(entry.contentRect.height) + TOOLBAR_HEIGHT + 8;
+        setContentHeight(measured);
+      }
+    });
+    ro.observe(el.firstElementChild);
+
+    return () => ro.disconnect();
+  }, [isMobile]);
+
+  const effectiveHeight = Math.max(MIN_HEIGHT, savedHeight, contentHeight);
+
+  // Auto-save height if content pushes it larger than saved layout
+  useEffect(() => {
+    if (isMobile || isInteracting || contentHeight <= savedHeight) return;
+
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      updateLayout.mutate({
+        id: textBox.id,
+        spaceId,
+        layout: {
+          ...textBox.layout,
+          [viewport]: {
+            ...layout,
+            height: contentHeight,
+            positionSource: (layout as any).positionSource === 'user' ? 'user' : 'auto_paste',
+          },
+        },
+      });
+    }, 800);
+
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [
+    contentHeight,
+    savedHeight,
+    isMobile,
+    isInteracting,
+    layout,
+    spaceId,
+    textBox.id,
+    textBox.layout,
+    updateLayout,
+    viewport,
+  ]);
+
+  const pos = isFullscreen
+    ? { x: 0, y: 0 }
+    : isInteracting
+      ? undefined
+      : (localOverride?.pos ?? serverPos);
+
+  const effectiveSizeForRnd = isFullscreen
+    ? {
+        width: typeof window !== 'undefined' ? window.innerWidth : '100vw',
+        height: typeof window !== 'undefined' ? window.innerHeight : '100vh',
+      }
+    : isInteracting
+      ? undefined
+      : {
+          width: localOverride?.size.width ?? serverSize.width,
+          height: effectiveHeight,
+        };
+
+  // Handle Escape for fullscreen
+  useEffect(() => {
+    if (!isFullscreen) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setFullscreenTextBox(null);
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [isFullscreen, setFullscreenTextBox]);
+
+  // Prevent body scroll in fullscreen
+  useEffect(() => {
+    if (isFullscreen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isFullscreen]);
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
 
@@ -167,61 +262,40 @@ export default function TextBoxContainer({
     (e: React.ClipboardEvent) => {
       if (isMobile) return;
 
-      // We only trigger auto-resize logic if we can read the pasted text
       const text = e.clipboardData.getData('text/plain');
       if (!text) return;
 
-      // 1. Calculate estimated required width based on longest line
       const lines = text.split('\n');
       const longestLine = lines.reduce((a, b) => (a.length > b.length ? a : b), '');
-      const approxCharWidth = 8.5; // pixels per character
-      const padding = 64; // left/right padding + margins
+      const approxCharWidth = 8.5;
+      const padding = 64;
 
-      // Width can expand up to MAX_WIDTH, but never shrink below current
+      const dynamicMaxWidth = typeof window !== 'undefined' ? window.innerWidth - 64 : MAX_WIDTH;
       const calculatedWidth = Math.min(
-        MAX_WIDTH,
+        dynamicMaxWidth,
         Math.max(MIN_WIDTH, longestLine.length * approxCharWidth + padding),
       );
       const finalWidth = Math.max(currentWidth, calculatedWidth);
 
-      // 2. Wait for DOM to render the pasted content to get actual height
-      setTimeout(() => {
-        if (!contentRef.current) return;
+      if (finalWidth > currentWidth) {
+        setLocalOverride((prev) => ({
+          pos: prev?.pos ?? { x: layout.x, y: layout.y },
+          size: { width: finalWidth, height: prev?.size.height ?? currentHeight },
+        }));
 
-        // BlockNote might have expanded the scrollHeight
-        const actualScrollHeight = contentRef.current.scrollHeight;
-
-        // Height can expand up to MAX_HEIGHT, but never shrink below current
-        const calculatedHeight = Math.min(
-          MAX_HEIGHT,
-          Math.max(MIN_HEIGHT, actualScrollHeight + TOOLBAR_HEIGHT),
-        );
-        const finalHeight = Math.max(currentHeight, calculatedHeight);
-
-        // Only fire mutation if dimensions actually grew
-        if (finalWidth > currentWidth || finalHeight > currentHeight) {
-          // Optimistic UI update
-          setLocalOverride({
-            pos: { x: layout.x, y: layout.y },
-            size: { width: finalWidth, height: finalHeight },
-          });
-
-          // Persist to backend
-          updateLayout.mutate({
-            id: textBox.id,
-            spaceId,
-            layout: {
-              ...textBox.layout,
-              [viewport]: {
-                ...layout,
-                width: finalWidth,
-                height: finalHeight,
-                positionSource: 'auto_paste', // Tag it so we know it wasn't a direct manual drag
-              },
+        updateLayout.mutate({
+          id: textBox.id,
+          spaceId,
+          layout: {
+            ...textBox.layout,
+            [viewport]: {
+              ...layout,
+              width: finalWidth,
+              positionSource: (layout as any).positionSource === 'user' ? 'user' : 'auto_paste',
             },
-          });
-        }
-      }, 100); // 100ms gives BlockNote time to parse and render the clipboard data
+          },
+        });
+      }
     },
     [
       currentWidth,
@@ -248,28 +322,32 @@ export default function TextBoxContainer({
       }}
       {...(pos ? { position: pos } : {})}
       {...(effectiveSizeForRnd ? { size: effectiveSizeForRnd } : {})}
-      disableDragging={isMobile}
-      enableResizing={isMobile ? false : true}
+      disableDragging={isMobile || isFullscreen}
+      enableResizing={isMobile || isFullscreen ? false : true}
       onDragStart={handleDragStart}
       onDragStop={handleDragStop}
       onResizeStart={handleResizeStart}
       onResizeStop={handleResizeStop}
       minWidth={isMobile ? '100%' : MIN_WIDTH}
-      minHeight={MIN_HEIGHT}
-      maxWidth={MAX_WIDTH}
-      maxHeight={MAX_HEIGHT}
-      bounds="parent"
+      minHeight={isFullscreen ? '100vh' : Math.max(MIN_HEIGHT, contentHeight)}
+      maxWidth={isFullscreen ? '100vw' : MAX_WIDTH}
+      maxHeight={isFullscreen ? '100vh' : MAX_HEIGHT}
+      bounds={isFullscreen ? undefined : 'parent'}
       onMouseDown={() => setFocusedTextBox(textBox.id)}
       className={`rounded-xl border bg-card flex flex-col group ${
-        isFocused
-          ? 'z-50 border-primary/40 shadow-md shadow-primary/10'
-          : 'z-10 border-border/50 hover:border-border/80'
-      } ${isMobile ? 'relative! transform-none! h-auto! shrink-0' : ''}`}
+        !isInteracting ? 'transition-all duration-300 ease-in-out' : ''
+      } ${
+        isFullscreen
+          ? '!fixed !inset-0 !z-[100] !w-[100vw] !h-[100vh] !rounded-none !border-none !bg-background !transform-none'
+          : isFocused
+            ? 'z-50 border-primary/40 shadow-md shadow-primary/10'
+            : 'z-10 border-border/50 hover:border-border/80'
+      } ${isMobile && !isFullscreen ? 'relative! transform-none! h-auto! shrink-0' : ''}`}
       dragHandleClassName="drag-handle"
     >
-      {/* ── Toolbar (hover-reveal) ── */}
+      {/* ── Toolbar (hover-reveal or fullscreen) ── */}
       <div
-        className="h-8 flex items-center justify-between px-2 border-b border-border/30 bg-muted/20 opacity-0 group-hover:opacity-100 shrink-0"
+        className={`h-8 flex items-center justify-between px-2 border-b border-border/30 shrink-0 ${isFullscreen ? 'bg-background' : 'bg-muted/20 opacity-0 group-hover:opacity-100'}`}
         style={{ transition: 'opacity 0.15s' }}
       >
         <div
@@ -278,56 +356,71 @@ export default function TextBoxContainer({
           {...(isMobile ? attributes : {})}
           title="Drag to reposition"
         >
-          <GripHorizontal className="h-3.5 w-3.5" />
+          {!isFullscreen && <GripHorizontal className="h-3.5 w-3.5" />}
         </div>
 
         <div className="flex items-center gap-0.5">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => setFullscreenTextBox(textBox.id)}
-                className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted/60"
-                aria-label="Expand to fullscreen"
+          {isFullscreen ? (
+            <button
+              onClick={() => setFullscreenTextBox(null)}
+              className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted/60 flex items-center gap-1"
+              aria-label="Exit fullscreen"
+            >
+              <Maximize2 className="h-3.5 w-3.5" />
+              <span className="text-xs">Exit Fullscreen</span>
+            </button>
+          ) : (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setFullscreenTextBox(textBox.id)}
+                  className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted/60"
+                  aria-label="Expand to fullscreen"
+                >
+                  <Maximize2 className="h-3.5 w-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom">
+                <p>Fullscreen (focus mode)</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+
+          {!isFullscreen && (
+            <>
+              <div
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData(
+                    'application/textbox-move',
+                    JSON.stringify({ textBoxId: textBox.id, sourceSpaceId: spaceId }),
+                  );
+                  e.dataTransfer.effectAllowed = 'move';
+                  setDraggingTextBox({ id: textBox.id, spaceId });
+                }}
+                onDragEnd={() => setDraggingTextBox(null)}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted/60 cursor-move"
+                title="Move to another workspace"
+                aria-label="Move to another workspace"
+                role="button"
+                tabIndex={0}
               >
-                <Maximize2 className="h-3.5 w-3.5" />
+                <ArrowRightLeft className="h-3.5 w-3.5" />
+              </div>
+
+              <button
+                onClick={() => {
+                  if (confirm('Delete this text box?')) {
+                    deleteTextBox.mutate({ id: textBox.id, spaceId });
+                  }
+                }}
+                className="text-muted-foreground hover:text-destructive p-1 rounded-md hover:bg-muted/60"
+                aria-label="Delete text box"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
               </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <p>Fullscreen (focus mode)</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <div
-            draggable
-            onDragStart={(e) => {
-              e.dataTransfer.setData(
-                'application/textbox-move',
-                JSON.stringify({ textBoxId: textBox.id, sourceSpaceId: spaceId }),
-              );
-              e.dataTransfer.effectAllowed = 'move';
-              setDraggingTextBox({ id: textBox.id, spaceId });
-            }}
-            onDragEnd={() => setDraggingTextBox(null)}
-            className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted/60 cursor-move"
-            title="Move to another workspace"
-            aria-label="Move to another workspace"
-            role="button"
-            tabIndex={0}
-          >
-            <ArrowRightLeft className="h-3.5 w-3.5" />
-          </div>
-
-          <button
-            onClick={() => {
-              if (confirm('Delete this text box?')) {
-                deleteTextBox.mutate({ id: textBox.id, spaceId });
-              }
-            }}
-            className="text-muted-foreground hover:text-destructive p-1 rounded-md hover:bg-muted/60"
-            aria-label="Delete text box"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -335,7 +428,7 @@ export default function TextBoxContainer({
       <div
         ref={contentRef}
         onPaste={handlePaste}
-        className="flex-1 p-2 cursor-text overflow-y-auto overflow-x-hidden min-h-0"
+        className="flex-1 p-2 cursor-text overflow-y-auto overflow-x-hidden min-h-0 break-words"
       >
         <BlockEditor
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

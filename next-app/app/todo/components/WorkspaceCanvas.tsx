@@ -17,7 +17,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useWorkspaceSettingsStore } from '@/store/useWorkspaceSettingsStore';
-import { calculateAutoLayout, BOX_WIDTH, BOX_HEIGHT, PADDING } from '@/lib/layoutAlgorithm';
+import { calculateAutoLayout, BOX_WIDTH, BOX_HEIGHT, PADDING } from '@/lib/smartLayout';
 import { toast } from 'sonner';
 
 export default function WorkspaceCanvas() {
@@ -108,15 +108,46 @@ export default function WorkspaceCanvas() {
 
     let x = PADDING;
     let y = PADDING;
+    let width: number | string = BOX_WIDTH;
+    let height: number | string = BOX_HEIGHT;
     let positionSource: 'auto' | 'user' = 'user';
 
     if (autoArrange && viewport !== 'mobile') {
       const dummyBox = { id: -1, layout: {} } as any;
-      const result = calculateAutoLayout(textBoxes || [], [dummyBox], canvasW, viewport);
+      const autoBoxes = (textBoxes || []).filter((b) => {
+        const l = (b.layout?.[viewport] || b.layout?.desktop) as any;
+        return l?.positionSource === 'auto';
+      });
+      const boxesToDwindle = [...autoBoxes, dummyBox];
+
+      const canvasH = typeof window !== 'undefined' ? window.innerHeight : 800;
+      const result = calculateAutoLayout(
+        textBoxes || [],
+        boxesToDwindle,
+        canvasW,
+        viewport,
+        canvasH,
+      );
+
       if (result.length > 0) {
-        x = result[0].layout[viewport].x;
-        y = result[0].layout[viewport].y;
-        positionSource = 'auto';
+        const newBoxLayout = result.find((r) => r.id === -1);
+        if (newBoxLayout) {
+          x = newBoxLayout.layout[viewport].x;
+          y = newBoxLayout.layout[viewport].y;
+          width = newBoxLayout.layout[viewport].width;
+          height = newBoxLayout.layout[viewport].height;
+          positionSource = 'auto';
+        }
+
+        result.forEach((update) => {
+          if (update.id !== -1) {
+            updateLayout.mutate({
+              id: update.id,
+              spaceId: activeSpaceId as number,
+              layout: update.layout,
+            });
+          }
+        });
       }
     } else {
       x = Math.max(PADDING, (canvasW - BOX_WIDTH) / 2);
@@ -127,9 +158,9 @@ export default function WorkspaceCanvas() {
     createTextBox.mutate({
       spaceId: activeSpaceId as number,
       layout: {
-        desktop: { x, y, width: BOX_WIDTH, height: BOX_HEIGHT, positionSource },
-        tablet: { x: Math.min(x, 20), y, width: 350, height: BOX_HEIGHT, positionSource },
-        mobile: { x: 0, y, width: '100%', height: BOX_HEIGHT, order: textBoxes?.length ?? 0 },
+        desktop: { x, y, width, height, positionSource },
+        tablet: { x: Math.min(x, 20), y, width: 350, height, positionSource },
+        mobile: { x: 0, y, width: '100%', height, order: textBoxes?.length ?? 0 },
       },
     });
   };
@@ -151,7 +182,8 @@ export default function WorkspaceCanvas() {
       return;
     }
 
-    const updates = calculateAutoLayout(textBoxes || [], autoBoxes, canvasW, viewport);
+    const canvasH = typeof window !== 'undefined' ? window.innerHeight : 800;
+    const updates = calculateAutoLayout(textBoxes || [], autoBoxes, canvasW, viewport, canvasH);
 
     if (updates.length === 0) {
       toast.success('Already optimally arranged!');
