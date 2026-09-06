@@ -8,6 +8,8 @@ import { IoIosPlay, IoIosRefresh, IoIosSkipForward, IoIosSquare } from 'react-ic
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Settings2 } from 'lucide-react';
+import ClockDialogBox from '../components/ClockDialogBox';
 import { useSubjects } from '@/hooks/useSubjects';
 import { useAuthStore } from '@/store/useAuthStore';
 import { AvatarDisplay } from '../components/pomodoro/AvatarDisplay';
@@ -152,13 +154,26 @@ function PomodoroPage() {
   }
 
   return (
-    <section className="flex flex-col justify-between items-center h-[calc(100dvh-4rem)] lg:h-screen w-full p-4 md:p-6 lg:p-8 relative overflow-hidden bg-background">
-      <div className="w-full max-w-md flex items-center justify-center px-4 py-2 shrink-0">
+    <section className="flex flex-col justify-between items-center h-[calc(100dvh-5.5rem)] lg:h-screen w-full p-4 md:p-6 lg:p-8 relative overflow-hidden bg-background">
+      <div className="w-full max-w-md flex items-center justify-center px-4 py-2 shrink-0 relative">
         {runningSubject && (
-          <h1 className="text-xl sm:text-2xl  font-bold tracking-tight text-center truncate mx-2 text-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-center truncate mx-2 text-foreground px-8">
             {runningSubject.name}
           </h1>
         )}
+        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+          <ClockDialogBox
+            child={
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full text-muted-foreground hover:text-foreground"
+              >
+                <Settings2 className="h-5 w-5" />
+              </Button>
+            }
+          />
+        </div>
       </div>
 
       <div className="flex-1 flex flex-col justify-center items-center w-full px-4 md:px-10 gap-2 overflow-hidden">
@@ -170,18 +185,18 @@ function PomodoroPage() {
         >
           <div className="flex flex-col items-center justify-center p-2 text-center select-none">
             <div
-              className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl font-mono font-bold mb-1 transition-colors duration-500 tracking-tight"
+              className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl landscape:text-4xl landscape:sm:text-5xl font-mono font-bold mb-1 transition-colors duration-500 tracking-tight"
               style={{ color: primaryColor }}
             >
               {isOverflow ? '+' : ''}
               {pad(displayTime.hours)}:{pad(displayTime.minutes)}:{pad(displayTime.seconds)}
             </div>
-            <div className="text-xs sm:text-sm md:text-lg font-semibold text-muted-foreground uppercase tracking-widest mt-1">
+            <div className="text-xs sm:text-sm md:text-lg landscape:text-xs font-semibold text-muted-foreground uppercase tracking-widest mt-1">
               {getPhaseLabel()}
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-x-8 gap-y-1 text-muted-foreground/70">
+            <div className="mt-3 grid grid-cols-2 gap-x-8 gap-y-1 text-muted-foreground/70 landscape:mt-1">
               <div className="min-w-0">
-                <div className="truncate text-[10px] sm:text-xs font-medium">
+                <div className="truncate text-[10px] sm:text-xs landscape:text-[9px] font-medium">
                   {runningSubject?.name || 'Subject'}
                 </div>
                 <div className="font-mono text-xs sm:text-sm md:text-base">
@@ -189,8 +204,10 @@ function PomodoroPage() {
                 </div>
               </div>
               <div className="min-w-0">
-                <div className="truncate text-[10px] sm:text-xs font-medium">Total time today</div>
-                <div className="font-mono text-xs sm:text-sm md:text-base">
+                <div className="truncate text-[10px] sm:text-xs landscape:text-[9px] font-medium">
+                  Total time today
+                </div>
+                <div className="font-mono text-xs sm:text-sm md:text-base landscape:text-xs">
                   {formatDuration(totalWorkedSecs)}
                 </div>
               </div>
