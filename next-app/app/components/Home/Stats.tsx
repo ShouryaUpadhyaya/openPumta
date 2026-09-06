@@ -136,12 +136,12 @@ function Stats() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-75 lg:h-100 mb-4 shrink-0">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-[300px] lg:h-[400px] mb-4 shrink-0">
         <FocusTimeChart data={focusData} color={chartColors[0]} />
         <HabitConsistencyChart data={habitData} color={chartColors[1]} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-62.5 lg:h-75 shrink-0">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-[250px] lg:h-[300px] shrink-0">
         <WeeklyPatternChart data={dayOfWeek} color={chartColors[2] || FALLBACK_COLORS[2]} />
         <SessionStatsCard stats={sessionStats} color={chartColors[0] || FALLBACK_COLORS[0]} />
       </div>
