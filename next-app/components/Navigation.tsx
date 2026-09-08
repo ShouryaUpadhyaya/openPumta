@@ -98,29 +98,29 @@ export default function Navigation({ mounted }: { mounted: boolean }) {
   return (
     <>
       {/* Mobile Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t bg-background/80 backdrop-blur-md pb-4 pt-1">
-        <nav className="flex items-center justify-around p-2">
+      <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t bg-background/80 backdrop-blur-md pb-4 max-lg:landscape:pb-1 pt-1">
+        <nav className="flex items-center justify-around p-2 max-lg:landscape:p-1">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             if (navLocked) {
               return (
                 <div
                   key={item.href}
-                  className={`flex flex-col items-center gap-1 p-2 rounded-xl opacity-40 cursor-not-allowed select-none ${isActive ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
+                  className={`flex flex-col items-center gap-1 p-2 max-lg:landscape:p-1.5 rounded-xl opacity-40 cursor-not-allowed select-none ${isActive ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
                   title="Navigation locked during onboarding"
                 >
                   <item.icon className="h-5 w-5" />
-                  <span className="text-[10px]">{item.label}</span>
+                  <span className="text-[10px] max-lg:landscape:hidden">{item.label}</span>
                 </div>
               );
             }
             return (
               <Link key={item.href} href={item.href}>
                 <div
-                  className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${isActive ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
+                  className={`flex flex-col items-center gap-1 p-2 max-lg:landscape:p-1.5 rounded-xl transition-colors ${isActive ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
                 >
                   <item.icon className="h-5 w-5" />
-                  <span className="text-[10px]">{item.label}</span>
+                  <span className="text-[10px] max-lg:landscape:hidden">{item.label}</span>
                 </div>
               </Link>
             );

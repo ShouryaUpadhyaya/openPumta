@@ -17,13 +17,19 @@ export default function Home() {
   const { data: subjects = [], isLoading: subjectsLoading } = useSubjects();
 
   return (
-    <div className="flex flex-col min-h-screen lg:h-screen lg:overflow-hidden p-4 bg-background text-foreground pb-24 lg:pb-4 w-full max-w-full overflow-x-hidden min-w-0">
+    <div className="flex flex-col min-h-screen lg:h-screen lg:overflow-hidden p-4 max-lg:landscape:p-2 bg-background text-foreground pb-24 lg:pb-4 max-lg:landscape:pb-16 w-full max-w-full overflow-x-hidden min-w-0">
       {/* Header */}
-      <header className="flex justify-between items-center mb-4 shrink-0 lg:hidden">
-        <h1 className="flex text-2xl font-bold justify-center items-center tracking-tight">
-          <Image src="/icon.svg" alt="icon" width={10} height={10} className="w-8 h-8 mr-2" />
+      <header className="flex justify-between items-center mb-4 max-lg:landscape:mb-2 shrink-0 lg:hidden">
+        <h1 className="flex max-lg:landscape:text-lg text-2xl font-bold justify-center items-center tracking-tight">
+          <Image
+            src="/icon.svg"
+            alt="icon"
+            width={10}
+            height={10}
+            className="w-8 h-8 mr-2 max-lg:landscape:w-6 max-lg:landscape:h-6"
+          />
           openPumta
-          <span className="sr-only"> - The Ultimate Yelpumta & Notion Productivity System</span>
+          <span className="sr-only"> - The Ultimate Yelpumta &amp; Notion Productivity System</span>
         </h1>
         <div className="flex gap-2">
           {!loading && !user ? (
@@ -77,7 +83,7 @@ export default function Home() {
       </header>
 
       {user?.isGuest && (
-        <div className="mb-4 p-4 rounded-xl border border-primary/20 bg-primary/5 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4">
+        <div className="mb-4 max-lg:landscape:mb-2 p-4 max-lg:landscape:p-2 max-lg:landscape:flex-row rounded-xl border border-primary/20 bg-primary/5 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
               <User className="w-5 h-5 text-primary" />
@@ -95,9 +101,9 @@ export default function Home() {
         </div>
       )}
 
-      <main className="flex-1 flex flex-col lg:grid lg:grid-cols-12 lg:grid-rows-12 gap-4 min-h-0">
+      <main className="flex-1 flex flex-col max-lg:landscape:grid max-lg:landscape:grid-cols-2 max-lg:landscape:gap-2 lg:grid lg:grid-cols-12 lg:grid-rows-12 gap-4 min-h-0">
         {!subjectsLoading && subjects.length === 0 ? (
-          <div className="lg:col-span-12 lg:row-span-12 flex flex-col items-center justify-center h-full min-h-[60vh]">
+          <div className="max-lg:landscape:col-span-2 lg:col-span-12 lg:row-span-12 flex flex-col items-center justify-center h-full min-h-[60vh] max-lg:landscape:min-h-[40vh]">
             <div className="w-full max-w-2xl bg-background rounded-xl border shadow-sm overflow-hidden p-4 lg:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <Subjects />
               see how to use this website at:
@@ -106,22 +112,22 @@ export default function Home() {
         ) : (
           <>
             {/* Top Row - Clock and Subjects */}
-            <div className="lg:col-span-4 lg:row-span-5 bg-background rounded-xl border shadow-sm overflow-clip flex flex-col items-center justify-center p-4 min-h-[260px] lg:min-h-0">
+            <div className="lg:col-span-4 lg:row-span-5 bg-background rounded-xl border shadow-sm overflow-clip flex flex-col items-center justify-center p-4 min-h-[260px] max-lg:landscape:min-h-[150px] lg:min-h-0">
               <Clock />
             </div>
             {/* Middle Row - Habits and General Subjects/Stats space */}
-            <div className="lg:col-span-8 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[280px] lg:min-h-0">
+            <div className="lg:col-span-8 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[280px] max-lg:landscape:min-h-[150px] lg:min-h-0">
               <Subjects />
             </div>
-            <div className="lg:col-span-4 lg:row-span-7 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[280px] lg:min-h-0">
+            <div className="lg:col-span-4 lg:row-span-7 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[280px] max-lg:landscape:min-h-[150px] lg:min-h-0">
               <Habits />
             </div>
 
             {/* Bottom Row - Rating and Stats */}
-            <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[220px] lg:min-h-0">
+            <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[220px] max-lg:landscape:min-h-[140px] lg:min-h-0">
               <DailyRating />
             </div>
-            <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[220px] lg:min-h-0">
+            <div className="lg:col-span-4 lg:row-span-6 bg-background rounded-xl border shadow-sm overflow-hidden flex flex-col min-h-[220px] max-lg:landscape:min-h-[140px] lg:min-h-0">
               <Stats />
             </div>
           </>

@@ -49,17 +49,19 @@ export default function StatsPage() {
 
   return (
     <main
-      className="min-h-screen p-4 md:p-6 pb-28 max-w-[1400px] mx-auto"
+      className="min-h-screen p-4 md:p-6 pb-28 max-lg:landscape:p-2 max-lg:landscape:pb-16 max-w-[1400px] mx-auto"
       data-tour-highlight="stats-page"
     >
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 max-lg:landscape:mb-3 gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-primary/20 text-primary">
+          <div className="p-3 rounded-xl bg-primary/20 text-primary max-lg:landscape:hidden">
             <BarChart3 className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Stats</h1>
-            <p className="text-muted-foreground text-sm">Comprehensive performance dashboard</p>
+            <h1 className="text-3xl max-lg:landscape:text-xl font-bold tracking-tight">Stats</h1>
+            <p className="text-muted-foreground text-sm max-lg:landscape:hidden">
+              Comprehensive performance dashboard
+            </p>
           </div>
         </div>
         <div className="w-full md:w-auto flex justify-end">

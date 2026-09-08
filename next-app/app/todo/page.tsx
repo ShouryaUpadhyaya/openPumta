@@ -106,14 +106,14 @@ function WorkspaceInner() {
   return (
     <div className="flex flex-col h-full" data-tour-highlight="workspace-page">
       {/* ── Top bar ── */}
-      <div className="flex flex-col border-b border-border/30 pb-3 pt-4 gap-3">
+      <div className="flex flex-col border-b border-border/30 pb-3 pt-4 max-lg:landscape:pb-2 max-lg:landscape:pt-2 gap-3 max-lg:landscape:gap-1">
         {/* Space title row */}
         <div className="px-4 flex items-center justify-between gap-4">
           <div className="group flex items-center gap-2 min-w-0">
             {activeSpace?.icon && (
               <span className="text-2xl leading-none shrink-0">{activeSpace.icon}</span>
             )}
-            <h1 className="text-2xl font-bold tracking-tight truncate">
+            <h1 className="text-2xl max-lg:landscape:text-lg font-bold tracking-tight truncate">
               {activeSpace?.name ?? 'Workspace'}
               {activeSpace?.isArchived && (
                 <span className="ml-2 text-xs font-normal text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">

@@ -81,19 +81,24 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex flex-col h-full max-w-4xl mx-auto p-4 lg:p-8">
+    <div className="flex flex-col h-full max-w-4xl mx-auto p-4 max-lg:landscape:p-2 lg:p-8">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8">
-        <div className="bg-primary/20 p-3 rounded-xl text-primary">
+      <div className="flex items-center gap-3 mb-8 max-lg:landscape:mb-3">
+        <div className="bg-primary/20 p-3 rounded-xl text-primary max-lg:landscape:hidden">
           <SettingsIcon className="h-6 w-6" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-          <p className="text-muted-foreground">Manage your account and preferences.</p>
+          <h1 className="text-3xl max-lg:landscape:text-xl font-bold tracking-tight">Settings</h1>
+          <p className="text-muted-foreground max-lg:landscape:hidden">
+            Manage your account and preferences.
+          </p>
         </div>
       </div>
 
-      <form onSubmit={handleTimerSave} className="grid gap-6">
+      <form
+        onSubmit={handleTimerSave}
+        className="grid gap-6 max-lg:landscape:grid-cols-2 max-lg:landscape:gap-4"
+      >
         <GeneralSettings />
         <WorkspaceSettings />
         <AutomationSettings />

@@ -54,7 +54,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
         <Navigation mounted={isMounted} />
         <main
           className={cn(
-            'flex-1 pb-20 lg:pb-0 transition-all duration-300 min-w-0',
+            'flex-1 pb-20 max-lg:landscape:pb-12 lg:pb-0 transition-all duration-300 min-w-0',
             isMounted && isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64',
           )}
         >

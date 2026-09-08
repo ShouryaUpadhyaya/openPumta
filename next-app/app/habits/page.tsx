@@ -142,8 +142,8 @@ export default function HabitsPage() {
   const activeFilterLabel = FILTER_OPTIONS.find((o) => o.value === filterRange)?.label ?? '21 Days';
 
   return (
-    <div className="flex flex-col h-full max-w-5xl mx-auto p-4 pb-24 md:pb-8 lg:p-8">
-      <div className="flex flex-wrap items-center gap-3 mb-8">
+    <div className="flex flex-col h-full max-w-5xl mx-auto p-4 max-lg:landscape:p-2 pb-24 max-lg:landscape:pb-16 md:pb-8 lg:p-8">
+      <div className="flex flex-wrap items-center gap-3 mb-8 max-lg:landscape:mb-3">
         <div className="bg-primary/20 p-3 rounded-xl text-primary hidden lg:block">
           <Activity className="h-6 w-6" />
         </div>
@@ -255,7 +255,7 @@ export default function HabitsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 max-lg:landscape:grid-cols-2 lg:grid-cols-3 gap-6 max-lg:landscape:gap-3">
         {dashboardLoading ? (
           <>
             <HabitCardSkeleton />
