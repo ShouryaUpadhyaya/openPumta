@@ -153,128 +153,174 @@ function PomodoroPage() {
     }
   }
 
+  const phaseLabel =
+    getPhaseLabel().charAt(0).toUpperCase() + getPhaseLabel().slice(1).toLowerCase();
+
   return (
-    <section className="flex flex-col h-[calc(100dvh-5.5rem)] lg:h-screen w-full relative bg-background overflow-hidden">
-      {/* ── Portrait layout: stacked ── / ── Landscape: 3-zone horizontal ── */}
-      <div className="flex-1 flex flex-col max-lg:landscape:flex-row items-center max-lg:landscape:items-stretch min-h-0 overflow-hidden">
-        {/* ── Settings gear (top bar - portrait only, hidden in landscape to save space) ── */}
-        <div className="flex w-full items-center justify-between px-4 pt-3 pb-1 shrink-0 max-lg:landscape:hidden">
-          {runningSubject ? (
-            <h1 className="text-lg font-semibold tracking-tight truncate text-foreground flex-1 mr-2">
-              {runningSubject.name}
-            </h1>
-          ) : (
-            <div className="flex-1" />
+    <>
+      {/* ═══════════════════════════════════════════════════════════════
+          LANDSCAPE LAYOUT — mobile & iPad landscape ONLY
+          Breakpoint: @media (max-width: 1023px) and (orientation: landscape)
+          Completely hidden in: portrait (all sizes) + desktop (lg+)
+      ═══════════════════════════════════════════════════════════════ */}
+      <section className="hidden max-lg:landscape:flex flex-row h-[calc(100dvh-4rem)] w-full bg-background overflow-hidden">
+        {/* LEFT zone — small clock circle */}
+        <div className="flex items-center justify-center shrink-0 pl-3 py-2">
+          <ClockCircle
+            percent={cyclePercent}
+            size="lg"
+            currentColor={currentColor}
+            backgroundColor={backgroundColor}
+          >
+            <div className="flex flex-col items-center justify-center text-center select-none px-1">
+              <div
+                className="text-xl font-bold tabular-nums tracking-tight transition-colors duration-500 leading-none"
+                style={{ color: primaryColor, fontFamily: 'var(--font-timer)' }}
+              >
+                {isOverflow ? '+' : ''}
+                {pad(displayTime.hours)}:{pad(displayTime.minutes)}:{pad(displayTime.seconds)}
+              </div>
+            </div>
+          </ClockCircle>
+        </div>
+
+        {/* CENTER zone — subject name, big time, phase, stats, buttons */}
+        <div className="flex-1 flex flex-col justify-center pl-5 pr-2 gap-1 min-w-0 overflow-hidden">
+          {/* Subject / phase name */}
+          <div className="text-sm font-medium text-muted-foreground/60">
+            {runningSubject ? (
+              <span className="text-foreground font-semibold text-base truncate block">
+                {runningSubject.name}
+              </span>
+            ) : (
+              phaseLabel
+            )}
+          </div>
+
+          {/* Large timer display */}
+          <div
+            className="text-4xl font-bold tabular-nums tracking-tight leading-none transition-colors duration-500"
+            style={{ color: primaryColor, fontFamily: 'var(--font-timer)' }}
+          >
+            {isOverflow ? '+' : ''}
+            {pad(displayTime.hours)}:{pad(displayTime.minutes)}:{pad(displayTime.seconds)}
+          </div>
+
+          {/* Phase sub-label */}
+          <div className="text-[11px] text-muted-foreground/50 tracking-wide">{phaseLabel}</div>
+
+          {/* Stats row */}
+          <div className="flex gap-6 mt-1">
+            <div>
+              <div className="text-[10px] font-medium text-muted-foreground/40 mb-0.5">
+                {runningSubject?.name || 'Subject'}
+              </div>
+              <div className="text-sm tabular-nums" style={{ fontFamily: 'var(--font-timer)' }}>
+                {formatDuration(subjectWorkedSecs)}
+              </div>
+            </div>
+            <div>
+              <div className="text-[10px] font-medium text-muted-foreground/40 mb-0.5">
+                Total time today
+              </div>
+              <div className="text-sm tabular-nums" style={{ fontFamily: 'var(--font-timer)' }}>
+                {formatDuration(totalWorkedSecs)}
+              </div>
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          {runningSubject && store.showProgressBar && (
+            <div className="w-full max-w-xs mt-0.5">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Progress
+                    value={goalProgressPercent}
+                    className="h-1.5 transition-all"
+                    indicatorStyle={{ backgroundColor: getPhaseColor() }}
+                  />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="font-semibold text-xs">
+                    {formatDuration(goalWorkSecs)} / {formatDuration(subjectWorkedSecs)}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </div>
           )}
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-4 mt-2">
+            <Button
+              onClick={handleReset}
+              variant="outline"
+              className="rounded-full w-9 h-9"
+              aria-label="Reset timer"
+            >
+              <IoIosRefresh size={15} />
+            </Button>
+
+            {phase === 'work' || phase === 'idle' ? (
+              <Button
+                onClick={handleMainAction}
+                variant="secondary"
+                className="rounded-full w-12 h-12 shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
+                aria-label={phase === 'work' ? 'Stop timer' : 'Start timer'}
+              >
+                {phase === 'work' ? <IoIosSquare size={22} /> : <IoIosPlay size={26} />}
+              </Button>
+            ) : (
+              <div className="w-12 h-12" />
+            )}
+
+            {isBreak ? (
+              <Button
+                onClick={handleSkip}
+                variant="outline"
+                className="rounded-full w-9 h-9"
+                aria-label="Skip break"
+              >
+                <IoIosSkipForward size={15} />
+              </Button>
+            ) : (
+              <div className="w-9 h-9" />
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT zone — settings gear + avatar */}
+        <div className="flex flex-col items-center justify-center gap-3 pr-3 shrink-0">
           <ClockDialogBox
             child={
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full text-muted-foreground hover:text-foreground shrink-0"
+                className="rounded-full text-muted-foreground hover:text-foreground"
               >
-                <Settings2 className="h-5 w-5" />
+                <Settings2 className="h-4 w-4" />
               </Button>
             }
           />
+          {store.showAvatar && (
+            <AvatarSelectionDialog>
+              <AvatarDisplay activeAvatar={activeAvatar} focusMs={currentFocusMs} />
+            </AvatarSelectionDialog>
+          )}
         </div>
+      </section>
 
-        {/* ── LEFT / CENTER (portrait): Clock circle ── */}
-        <div className="flex-1 flex flex-col max-lg:landscape:flex-row items-center max-lg:landscape:items-center justify-center max-lg:landscape:justify-start gap-2 max-lg:landscape:gap-0 max-lg:landscape:pl-4 max-lg:landscape:py-3 min-h-0 overflow-hidden w-full">
-          {/* Clock */}
-          <div className="flex items-center justify-center max-lg:landscape:shrink-0">
-            <ClockCircle
-              percent={cyclePercent}
-              size="lg"
-              currentColor={currentColor}
-              backgroundColor={backgroundColor}
-            >
-              <div className="flex flex-col items-center justify-center p-2 text-center select-none">
-                <div
-                  className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl max-lg:landscape:text-3xl font-bold mb-1 transition-colors duration-500 tracking-tight tabular-nums"
-                  style={{ color: primaryColor, fontFamily: 'var(--font-timer)' }}
-                >
-                  {isOverflow ? '+' : ''}
-                  {pad(displayTime.hours)}:{pad(displayTime.minutes)}:{pad(displayTime.seconds)}
-                </div>
-                {/* Phase label inside clock — portrait only */}
-                <div className="text-xs font-medium text-muted-foreground/70 tracking-wide mt-0.5 max-lg:landscape:hidden">
-                  {getPhaseLabel().charAt(0).toUpperCase() + getPhaseLabel().slice(1).toLowerCase()}
-                </div>
-              </div>
-            </ClockCircle>
-          </div>
-
-          {/* ── CENTER column: phase + timer + stats (landscape only, sits beside clock) ── */}
-          <div className="hidden max-lg:landscape:flex flex-col justify-center pl-8 gap-2 flex-1 min-w-0">
-            {/* Phase label */}
-            <div className="text-sm font-medium text-muted-foreground/70 tracking-wide">
-              {runningSubject ? (
-                <span className="text-foreground font-semibold text-base">
-                  {runningSubject.name}
-                </span>
-              ) : (
-                getPhaseLabel().charAt(0).toUpperCase() + getPhaseLabel().slice(1).toLowerCase()
-              )}
-            </div>
-
-            {/* Big timer */}
-            <div
-              className="text-5xl font-bold tabular-nums tracking-tight leading-none transition-colors duration-500"
-              style={{ color: primaryColor, fontFamily: 'var(--font-timer)' }}
-            >
-              {isOverflow ? '+' : ''}
-              {pad(displayTime.hours)}:{pad(displayTime.minutes)}:{pad(displayTime.seconds)}
-            </div>
-
-            {/* Phase sub-label when running */}
-            <div className="text-xs text-muted-foreground/60">
-              {getPhaseLabel().charAt(0).toUpperCase() + getPhaseLabel().slice(1).toLowerCase()}
-            </div>
-
-            {/* Stats row */}
-            <div className="flex gap-8 mt-1">
-              <div>
-                <div className="text-[10px] font-medium text-muted-foreground/50 mb-0.5">
-                  {runningSubject?.name || 'Subject'}
-                </div>
-                <div className="text-sm tabular-nums" style={{ fontFamily: 'var(--font-timer)' }}>
-                  {formatDuration(subjectWorkedSecs)}
-                </div>
-              </div>
-              <div>
-                <div className="text-[10px] font-medium text-muted-foreground/50 mb-0.5">
-                  Total time today
-                </div>
-                <div className="text-sm tabular-nums" style={{ fontFamily: 'var(--font-timer)' }}>
-                  {formatDuration(totalWorkedSecs)}
-                </div>
-              </div>
-            </div>
-
-            {/* Progress bar (landscape) */}
-            {runningSubject && store.showProgressBar && (
-              <div className="w-full max-w-xs mt-1">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Progress
-                      value={goalProgressPercent}
-                      className="h-1.5 transition-all"
-                      indicatorStyle={{ backgroundColor: getPhaseColor() }}
-                    />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div className="font-semibold text-xs">
-                      {formatDuration(goalWorkSecs)} / {formatDuration(subjectWorkedSecs)}
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            )}
-          </div>
-
-          {/* ── RIGHT column: avatar + settings gear (landscape only) ── */}
-          <div className="hidden max-lg:landscape:flex flex-col items-center justify-center gap-3 pr-4 shrink-0">
+      {/* ═══════════════════════════════════════════════════════════════
+          PORTRAIT + DESKTOP LAYOUT — original, 100% unchanged
+          Hidden only in: max-lg landscape (mobile/iPad landscape)
+      ═══════════════════════════════════════════════════════════════ */}
+      <section className="flex flex-col justify-between items-center h-[calc(100dvh-5.5rem)] lg:h-screen w-full p-4 md:p-6 lg:p-8 relative overflow-hidden bg-background max-lg:landscape:hidden">
+        <div className="w-full max-w-md flex items-center justify-center px-4 py-2 shrink-0 relative">
+          {runningSubject && (
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-center truncate mx-2 text-foreground px-8">
+              {runningSubject.name}
+            </h1>
+          )}
+          <div className="absolute right-4 top-1/2 -translate-y-1/2">
             <ClockDialogBox
               child={
                 <Button
@@ -282,104 +328,119 @@ function PomodoroPage() {
                   size="icon"
                   className="rounded-full text-muted-foreground hover:text-foreground"
                 >
-                  <Settings2 className="h-4 w-4" />
+                  <Settings2 className="h-5 w-5" />
                 </Button>
               }
             />
-            {store.showAvatar && (
+          </div>
+        </div>
+
+        <div className="flex-1 flex flex-col justify-center items-center w-full px-4 md:px-10 gap-2 overflow-hidden">
+          <ClockCircle
+            percent={cyclePercent}
+            size="lg"
+            currentColor={currentColor}
+            backgroundColor={backgroundColor}
+          >
+            <div className="flex flex-col items-center justify-center p-2 text-center select-none">
+              <div
+                className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl font-bold mb-1 transition-colors duration-500 tracking-tight tabular-nums"
+                style={{ color: primaryColor, fontFamily: 'var(--font-timer)' }}
+              >
+                {isOverflow ? '+' : ''}
+                {pad(displayTime.hours)}:{pad(displayTime.minutes)}:{pad(displayTime.seconds)}
+              </div>
+              <div className="text-xs sm:text-sm font-medium text-muted-foreground/70 tracking-wide mt-1">
+                {phaseLabel}
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-x-8 gap-y-1 text-muted-foreground/70">
+                <div className="min-w-0">
+                  <div className="truncate text-[10px] sm:text-xs font-medium text-muted-foreground/50">
+                    {runningSubject?.name || 'Subject'}
+                  </div>
+                  <div
+                    className="text-xs sm:text-sm md:text-base tabular-nums"
+                    style={{ fontFamily: 'var(--font-timer)' }}
+                  >
+                    {formatDuration(subjectWorkedSecs)}
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <div className="truncate text-[10px] sm:text-xs font-medium text-muted-foreground/50">
+                    Total today
+                  </div>
+                  <div
+                    className="text-xs sm:text-sm md:text-base tabular-nums"
+                    style={{ fontFamily: 'var(--font-timer)' }}
+                  >
+                    {formatDuration(totalWorkedSecs)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ClockCircle>
+
+          {runningSubject && store.showProgressBar && (
+            <div className="w-full max-w-xs sm:max-w-md mt-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Progress
+                    value={goalProgressPercent}
+                    className="h-2.5 sm:h-4 transition-all"
+                    indicatorStyle={{ backgroundColor: getPhaseColor() }}
+                  />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="font-semibold text-xs sm:text-base">
+                    {formatDuration(goalWorkSecs)} / {formatDuration(subjectWorkedSecs)}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          )}
+
+          {store.showAvatar && (
+            <div className="mt-6 sm:mt-10 mb-4 sm:mb-8 z-10">
               <AvatarSelectionDialog>
                 <AvatarDisplay activeAvatar={activeAvatar} focusMs={currentFocusMs} />
               </AvatarSelectionDialog>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
-        {/* ── Portrait-only stats (inside clock on portrait, below clock as context) ── */}
-        <div className="flex gap-8 max-lg:landscape:hidden pb-1 shrink-0">
-          <div className="text-center">
-            <div className="text-[10px] font-medium text-muted-foreground/50">
-              {runningSubject?.name || 'Subject'}
-            </div>
-            <div className="text-xs tabular-nums" style={{ fontFamily: 'var(--font-timer)' }}>
-              {formatDuration(subjectWorkedSecs)}
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="text-[10px] font-medium text-muted-foreground/50">Total today</div>
-            <div className="text-xs tabular-nums" style={{ fontFamily: 'var(--font-timer)' }}>
-              {formatDuration(totalWorkedSecs)}
-            </div>
-          </div>
-        </div>
-
-        {/* Portrait progress bar */}
-        {runningSubject && store.showProgressBar && (
-          <div className="w-full max-w-xs sm:max-w-md px-4 max-lg:landscape:hidden shrink-0">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Progress
-                  value={goalProgressPercent}
-                  className="h-2.5 sm:h-4 transition-all"
-                  indicatorStyle={{ backgroundColor: getPhaseColor() }}
-                />
-              </TooltipTrigger>
-              <TooltipContent>
-                <div className="font-semibold text-xs sm:text-base">
-                  {formatDuration(goalWorkSecs)} / {formatDuration(subjectWorkedSecs)}
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        )}
-
-        {/* Portrait avatar */}
-        {store.showAvatar && (
-          <div className="mt-4 mb-2 z-10 max-lg:landscape:hidden shrink-0">
-            <AvatarSelectionDialog>
-              <AvatarDisplay activeAvatar={activeAvatar} focusMs={currentFocusMs} />
-            </AvatarSelectionDialog>
-          </div>
-        )}
-      </div>
-
-      {/* ── Action buttons — always bottom center ── */}
-      <div className="flex items-center justify-center gap-6 md:gap-8 py-4 max-lg:landscape:py-2 shrink-0">
-        <Button
-          onClick={handleReset}
-          variant="outline"
-          className="rounded-full w-11 h-11 max-lg:landscape:w-10 max-lg:landscape:h-10 sm:w-14 sm:h-14"
-          aria-label="Reset timer"
-        >
-          <IoIosRefresh size={18} />
-        </Button>
-
-        {phase === 'work' || phase === 'idle' ? (
+        <div className="flex items-center gap-6 md:gap-8 pb-6 sm:pb-8 shrink-0">
           <Button
-            onClick={handleMainAction}
-            variant="secondary"
-            className="rounded-full w-16 h-16 max-lg:landscape:w-14 max-lg:landscape:h-14 sm:w-24 sm:h-24 shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
-            aria-label={phase === 'work' ? 'Stop timer' : 'Start timer'}
-          >
-            {phase === 'work' ? <IoIosSquare size={28} /> : <IoIosPlay size={36} />}
-          </Button>
-        ) : (
-          <div className="w-16 h-16 max-lg:landscape:w-14 max-lg:landscape:h-14 sm:w-24 sm:h-24 flex items-center justify-center" />
-        )}
-
-        {isBreak ? (
-          <Button
-            onClick={handleSkip}
+            onClick={handleReset}
             variant="outline"
-            className="rounded-full w-11 h-11 max-lg:landscape:w-10 max-lg:landscape:h-10 sm:w-14 sm:h-14"
-            aria-label="Skip break"
+            className="rounded-full w-12 h-12 sm:w-14 sm:h-14"
           >
-            <IoIosSkipForward size={18} />
+            <IoIosRefresh size={20} />
           </Button>
-        ) : (
-          <div className="w-11 h-11 max-lg:landscape:w-10 max-lg:landscape:h-10 sm:w-14 sm:h-14" />
-        )}
-      </div>
-    </section>
+
+          {phase === 'work' || phase === 'idle' ? (
+            <Button
+              onClick={handleMainAction}
+              variant="secondary"
+              className="rounded-full w-20 h-20 sm:w-24 sm:h-24 shadow-lg hover:scale-105 transition-all flex items-center justify-center"
+            >
+              {phase === 'work' ? <IoIosSquare size={32} /> : <IoIosPlay size={40} />}
+            </Button>
+          ) : (
+            <div className="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center" />
+          )}
+
+          {isBreak && (
+            <Button
+              onClick={handleSkip}
+              variant="outline"
+              className="rounded-full w-12 h-12 sm:w-14 sm:h-14"
+            >
+              <IoIosSkipForward size={20} />
+            </Button>
+          )}
+        </div>
+      </section>
+    </>
   );
 }
 
