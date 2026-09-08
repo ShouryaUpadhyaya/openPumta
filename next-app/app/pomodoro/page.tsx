@@ -163,7 +163,7 @@ function PomodoroPage() {
           Breakpoint: @media (max-width: 1023px) and (orientation: landscape)
           Completely hidden in: portrait (all sizes) + desktop (lg+)
       ═══════════════════════════════════════════════════════════════ */}
-      <section className="hidden max-lg:landscape:flex flex-row h-[calc(100dvh-4rem)] w-full bg-background overflow-hidden">
+      <section className="hidden max-lg:landscape:flex flex-row h-[calc(100dvh-4rem)] items-center justify-center  w-full bg-background overflow-hidden">
         {/* LEFT zone — small clock circle */}
         <div className="flex items-center justify-center shrink-0 pl-3 py-2">
           <ClockCircle
@@ -185,7 +185,7 @@ function PomodoroPage() {
         </div>
 
         {/* CENTER zone — subject name, big time, phase, stats, buttons */}
-        <div className="flex-1 flex flex-col justify-center pl-5 pr-2 gap-1 min-w-0 overflow-hidden">
+        <div className="flex-1 flex flex-col justify-center items-center pl-5 pr-2 gap-1 min-w-0 overflow-hidden">
           {/* Subject / phase name */}
           <div className="text-sm font-medium text-muted-foreground/60">
             {runningSubject ? (
@@ -301,11 +301,11 @@ function PomodoroPage() {
               </Button>
             }
           />
-          {store.showAvatar && (
+          {/* {store.showAvatar && (
             <AvatarSelectionDialog>
               <AvatarDisplay activeAvatar={activeAvatar} focusMs={currentFocusMs} />
             </AvatarSelectionDialog>
-          )}
+          )} */}
         </div>
       </section>
 
