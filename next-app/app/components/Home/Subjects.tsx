@@ -67,14 +67,16 @@ function Subjects() {
       <div className="shrink-0">
         <div className="my-4 flex items-start justify-between ">
           <div className="space-y-1">
-            <h1 className="text-2xl mb-2 font-semibold tracking-tight text-foreground">Subjects</h1>
+            <h1 className="text-2xl max-lg:landscape:text-lg mb-2 max-lg:landscape:mb-1 font-semibold tracking-tight text-foreground">
+              Subjects
+            </h1>
           </div>
           <div>
             {activeSubjects.length > 0 && <AddSubjectDialog habits={habits} empty={false} />}
           </div>
         </div>
 
-        <div className="flex my-2 justify-between items-end gap-1.5 pt-1">
+        <div className="flex my-2 justify-between items-end gap-1.5 pt-1 max-lg:landscape:hidden">
           <p className="text-xs sm:text-sm font-medium text-muted-foreground">Total today:</p>
           <span className="font-mono text-lg sm:text-2xl font-semibold leading-none tracking-tight text-foreground">
             {totalTrackedFormatted}
@@ -93,7 +95,7 @@ function Subjects() {
           </div> */}
           </div>
         )}
-        <div className="flex-1 overflow-x-auto overflow-y-auto custom-scrollbar">
+        <div className="flex-1 overflow-hidden overflow-y-auto custom-scrollbar">
           <table className="w-full text-xs sm:text-sm lg:text-base bg-dashboard-card">
             <tbody>
               {activeSubjects.map((subject: Subject) => (

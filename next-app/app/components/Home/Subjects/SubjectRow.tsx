@@ -92,22 +92,24 @@ export function SubjectRow({ subject, onEdit }: SubjectRowProps) {
             className="w-2 h-2 rounded-full shrink-0"
             style={{ backgroundColor: subject.color || '#f97316' }}
           />
-          <span className="truncate max-w-[80px] sm:max-w-none">{subject.name}</span>
+          <span className="truncate max-w-[80px] sm:max-w-none max-lg:landscape:max-w-[80px]">
+            {subject.name}
+          </span>
         </div>
       </td>
-      <td className="px-1 py-2 hidden sm:table-cell">
+      <td className="px-1 py-2 hidden sm:table-cell max-lg:landscape:hidden">
         <span
           className={`inline-flex items-center justify-center text-left rounded-full border px-1.5 py-0.5 text-[9px] sm:text-xs tracking-tighter font-medium whitespace-nowrap ${statusClass}`}
         >
           {statusText}
         </span>
       </td>
-      <td className="px-2 py-3 sm:px-4 sm:py-4 font-mono text-[10px] sm:text-xs md:text-sm text-muted-foreground whitespace-nowrap">
+      <td className="px-2 py-3 sm:px-4 sm:py-4 font-mono text-[10px] sm:text-xs md:text-sm text-muted-foreground whitespace-nowrap max-lg:landscape:whitespace-normal">
         {`${pad(hours)}:${pad(minutes)}:${pad(seconds)} / ${
           goal > 0 ? (goal / 3600).toFixed(1).replace(/\.0$/, '') + 'h' : '0h'
         }`}
       </td>
-      <td className="px-2 py-2 sm:px-4 sm:py-2 hidden sm:table-cell">
+      <td className="px-2 py-2 sm:px-4 sm:py-2 hidden sm:table-cell max-lg:landscape:hidden">
         <div className="flex items-center gap-2 sm:gap-3 min-w-[70px] sm:min-w-40">
           <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
             <div
