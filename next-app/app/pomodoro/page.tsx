@@ -1,4 +1,5 @@
 'use client';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useTimerEngine } from '@/hooks/useTimerEngine';
@@ -15,6 +16,73 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { AvatarDisplay } from '../components/pomodoro/AvatarDisplay';
 import { AvatarSelectionDialog } from '../components/pomodoro/AvatarSelectionDialog';
 import { AvatarSet } from '@/lib/avatarConfig';
+
+function IndependentStopwatch() {
+  const [accumulatedMs, setAccumulatedMs] = useState(0);
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [now, setNow] = useState(Date.now());
+  const running = startedAt !== null;
+
+  useEffect(() => {
+    if (!running) return;
+    const interval = window.setInterval(() => setNow(Date.now()), 100);
+    return () => window.clearInterval(interval);
+  }, [running]);
+
+  const elapsedMs = accumulatedMs + (startedAt === null ? 0 : Math.max(0, now - startedAt));
+  const time = ConvertSecsToTimer({ workSecs: Math.floor(elapsedMs / 1000) });
+
+  const toggle = () => {
+    if (startedAt !== null) {
+      setAccumulatedMs(elapsedMs);
+      setStartedAt(null);
+    } else {
+      const timestamp = Date.now();
+      setNow(timestamp);
+      setStartedAt(timestamp);
+    }
+  };
+
+  const reset = () => {
+    setStartedAt(null);
+    setAccumulatedMs(0);
+    setNow(Date.now());
+  };
+
+  return (
+    <div className="flex min-w-[180px] flex-col items-center justify-center gap-3 rounded-2xl border bg-card p-5 shadow-sm sm:min-w-[210px]">
+      <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+        Stopwatch
+      </div>
+      <div
+        className="text-2xl sm:text-3xl font-bold tabular-nums"
+        style={{ fontFamily: 'var(--font-timer)' }}
+      >
+        {pad(time.hours)}:{pad(time.minutes)}:{pad(time.seconds)}
+      </div>
+      <div className="flex items-center gap-3">
+        <Button
+          onClick={toggle}
+          variant="secondary"
+          className="rounded-full"
+          aria-label={running ? 'Pause stopwatch' : 'Start stopwatch'}
+        >
+          {running ? <IoIosSquare size={18} /> : <IoIosPlay size={20} />}
+          <span className="ml-2">{running ? 'Pause' : 'Start'}</span>
+        </Button>
+        <Button
+          onClick={reset}
+          variant="outline"
+          className="rounded-full"
+          aria-label="Reset stopwatch"
+        >
+          <IoIosRefresh size={16} />
+          <span className="ml-2">Reset</span>
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 function PomodoroPage() {
   const { data: Subjects = [], isLoading } = useSubjects();
@@ -288,8 +356,9 @@ function PomodoroPage() {
           </div>
         </div>
 
-        {/* RIGHT zone — settings gear + avatar */}
+        {/* RIGHT zone — independent stopwatch and settings */}
         <div className="flex flex-col items-center justify-center gap-3 pr-3 shrink-0">
+          <IndependentStopwatch />
           <ClockDialogBox
             child={
               <Button
@@ -336,49 +405,57 @@ function PomodoroPage() {
         </div>
 
         <div className="flex-1 flex flex-col justify-center items-center w-full px-4 md:px-10 gap-2 overflow-hidden">
-          <ClockCircle
-            percent={cyclePercent}
-            size="lg"
-            currentColor={currentColor}
-            backgroundColor={backgroundColor}
-          >
-            <div className="flex flex-col items-center justify-center p-2 text-center select-none">
-              <div
-                className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl font-bold mb-1 transition-colors duration-500 tracking-tight tabular-nums"
-                style={{ color: primaryColor, fontFamily: 'var(--font-timer)' }}
-              >
-                {isOverflow ? '+' : ''}
-                {pad(displayTime.hours)}:{pad(displayTime.minutes)}:{pad(displayTime.seconds)}
-              </div>
-              <div className="text-xs sm:text-sm font-medium text-muted-foreground/70 tracking-wide mt-1">
-                {phaseLabel}
-              </div>
-              <div className="mt-3 grid grid-cols-2 gap-x-8 gap-y-1 text-muted-foreground/70">
-                <div className="min-w-0">
-                  <div className="truncate text-[10px] sm:text-xs font-medium text-muted-foreground/50">
-                    {runningSubject?.name || 'Subject'}
-                  </div>
+          <div className="flex w-full flex-col items-center justify-center gap-5 lg:flex-row lg:gap-8">
+            <ClockCircle
+              percent={cyclePercent}
+              size="lg"
+              currentColor={currentColor}
+              backgroundColor={backgroundColor}
+            >
+              <div className="flex flex-col items-center justify-center p-2 text-center select-none">
+                <div className="flex items-center justify-center gap-4">
                   <div
-                    className="text-xs sm:text-sm md:text-base tabular-nums"
-                    style={{ fontFamily: 'var(--font-timer)' }}
+                    className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl font-bold mb-1 transition-colors duration-500 tracking-tight tabular-nums"
+                    style={{
+                      color: primaryColor,
+                      fontFamily: 'var(--font-timer)',
+                    }}
                   >
-                    {formatDuration(subjectWorkedSecs)}
+                    {isOverflow ? '+' : ''}
+                    {pad(displayTime.hours)}:{pad(displayTime.minutes)}:{pad(displayTime.seconds)}
                   </div>
                 </div>
-                <div className="min-w-0">
-                  <div className="truncate text-[10px] sm:text-xs font-medium text-muted-foreground/50">
-                    Total today
+                <div className="text-xs sm:text-sm font-medium text-muted-foreground/70 tracking-wide mt-1">
+                  {phaseLabel}
+                </div>
+                <div className="mt-3 grid grid-cols-2 gap-x-8 gap-y-1 text-muted-foreground/70">
+                  <div className="min-w-0">
+                    <div className="truncate text-[10px] sm:text-xs font-medium text-muted-foreground/50">
+                      {runningSubject?.name || 'Subject'}
+                    </div>
+                    <div
+                      className="text-xs sm:text-sm md:text-base tabular-nums"
+                      style={{ fontFamily: 'var(--font-timer)' }}
+                    >
+                      {formatDuration(subjectWorkedSecs)}
+                    </div>
                   </div>
-                  <div
-                    className="text-xs sm:text-sm md:text-base tabular-nums"
-                    style={{ fontFamily: 'var(--font-timer)' }}
-                  >
-                    {formatDuration(totalWorkedSecs)}
+                  <div className="min-w-0">
+                    <div className="truncate text-[10px] sm:text-xs font-medium text-muted-foreground/50">
+                      Total today
+                    </div>
+                    <div
+                      className="text-xs sm:text-sm md:text-base tabular-nums"
+                      style={{ fontFamily: 'var(--font-timer)' }}
+                    >
+                      {formatDuration(totalWorkedSecs)}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </ClockCircle>
+            </ClockCircle>
+            <IndependentStopwatch />
+          </div>
 
           {runningSubject && store.showProgressBar && (
             <div className="w-full max-w-xs sm:max-w-md mt-2">
