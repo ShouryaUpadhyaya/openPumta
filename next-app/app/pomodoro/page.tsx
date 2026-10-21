@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useTimerEngine } from '@/hooks/useTimerEngine';
 import ClockCircle from '../components/pomodoro/ClockCircle';
+import Stopwatch from '../components/pomodoro/Stopwatch';
 import { ConvertSecsToTimer, pad } from '@/lib/utils';
 import { IoIosPlay, IoIosRefresh, IoIosSkipForward, IoIosSquare } from 'react-icons/io';
 import { Progress } from '@/components/ui/progress';
@@ -162,6 +163,7 @@ function PomodoroPage() {
           LANDSCAPE LAYOUT — mobile & iPad landscape ONLY
           Breakpoint: @media (max-width: 1023px) and (orientation: landscape)
           Completely hidden in: portrait (all sizes) + desktop (lg+)
+          Right zone includes the compact Stopwatch variant.
       ═══════════════════════════════════════════════════════════════ */}
       <section className="hidden max-lg:landscape:flex flex-row h-[calc(100dvh-4rem)] items-center justify-center  w-full bg-background overflow-hidden">
         {/* LEFT zone — small clock circle */}
@@ -288,7 +290,7 @@ function PomodoroPage() {
           </div>
         </div>
 
-        {/* RIGHT zone — settings gear + avatar */}
+        {/* RIGHT zone — settings gear + stopwatch (avatar disabled in landscape) */}
         <div className="flex flex-col items-center justify-center gap-3 pr-3 shrink-0">
           <ClockDialogBox
             child={
@@ -301,6 +303,7 @@ function PomodoroPage() {
               </Button>
             }
           />
+          <Stopwatch variant="compact" />
           {/* {store.showAvatar && (
             <AvatarSelectionDialog>
               <AvatarDisplay activeAvatar={activeAvatar} focusMs={currentFocusMs} />
@@ -310,7 +313,8 @@ function PomodoroPage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════
-          PORTRAIT + DESKTOP LAYOUT — original, 100% unchanged
+          PORTRAIT + DESKTOP LAYOUT — Pomodoro layout unchanged; adds the
+          Stopwatch pill row under the header.
           Hidden only in: max-lg landscape (mobile/iPad landscape)
       ═══════════════════════════════════════════════════════════════ */}
       <section className="flex flex-col justify-between items-center h-[calc(100dvh-5.5rem)] lg:h-screen w-full p-4 md:p-6 lg:p-8 relative overflow-hidden bg-background max-lg:landscape:hidden">
@@ -333,6 +337,11 @@ function PomodoroPage() {
               }
             />
           </div>
+        </div>
+
+        {/* Stopwatch row — shrink-0 so it is never clipped by the overflow-hidden center column */}
+        <div className="shrink-0 flex justify-center w-full pb-2">
+          <Stopwatch />
         </div>
 
         <div className="flex-1 flex flex-col justify-center items-center w-full px-4 md:px-10 gap-2 overflow-hidden">
