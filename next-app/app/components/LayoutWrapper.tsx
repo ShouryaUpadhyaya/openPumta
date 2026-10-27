@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useSyncExternalStore } from 'react';
+import { usePathname } from 'next/navigation';
 import Navigation from '@/components/Navigation';
 import { useLayoutStore } from '@/store/useLayoutStore';
 import { cn } from '@/lib/utils';
@@ -9,8 +10,12 @@ import { OnboardingModal } from '@/components/onboarding/onboarding-modal';
 
 const emptySubscribe = () => () => {};
 
+// Full-screen auth pages: no app nav (the mobile bottom bar covered the login form)
+const AUTH_ROUTES = ['/login', '/signup'];
+
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const { isSidebarCollapsed } = useLayoutStore();
+  const isAuthRoute = AUTH_ROUTES.includes(usePathname());
 
   const isMounted = useSyncExternalStore(
     emptySubscribe,
@@ -51,11 +56,12 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     <>
       <OnboardingModal />
       <div className="flex min-h-screen w-full max-w-[100vw] overflow-x-clip">
-        <Navigation mounted={isMounted} />
+        {!isAuthRoute && <Navigation mounted={isMounted} />}
         <main
           className={cn(
-            'flex-1 pb-20 max-lg:landscape:pb-12 lg:pb-0 transition-all duration-300 min-w-0',
-            isMounted && isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64',
+            'flex-1 transition-all duration-300 min-w-0',
+            !isAuthRoute && 'pb-20 max-lg:landscape:pb-12 lg:pb-0',
+            !isAuthRoute && (isMounted && isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'),
           )}
         >
           {children}

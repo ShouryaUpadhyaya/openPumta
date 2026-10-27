@@ -14,7 +14,8 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
   const router = useRouter();
 
   useEffect(() => {
-    fetchUser();
+    // Don't spawn a guest account just for visiting the auth page
+    fetchUser({ guestFallback: false });
   }, [fetchUser]);
   const queryClient = useQueryClient();
   const loginMutation = useMutation({

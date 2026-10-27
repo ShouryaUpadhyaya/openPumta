@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import api from '@/lib/api';
-import { invalidateSubjectTimerQueries, queryClient } from '@/lib/queryClient';
+import { queryClient } from '@/lib/queryClient';
 
 interface User {
   id: number;
@@ -16,27 +16,58 @@ interface AuthState {
   user: User | null;
   lifetimeFocusMs: number;
   loading: boolean;
-  fetchUser: () => Promise<void>;
+  fetchUser: (opts?: { guestFallback?: boolean }) => Promise<void>;
   fetchLifetimeFocus: () => Promise<void>;
   guestLogin: () => Promise<void>;
   logout: () => Promise<void>;
   updateUserPreferences: (prefs: { startOfDay?: string; activeAvatar?: string }) => Promise<void>;
 }
 
+const PERSISTED_CACHE_KEY = 'REACT_QUERY_OFFLINE_CACHE';
+const CACHE_OWNER_KEY = 'REACT_QUERY_CACHE_OWNER';
+
+// Query keys aren't user-scoped, so a cache filled by one account (e.g. the guest created on
+// /login) would be served to the next one as fresh data. Drop it whenever the user changes.
+const claimQueryCache = (userId: number | null) => {
+  try {
+    const owner = userId === null ? '' : String(userId);
+    if (localStorage.getItem(CACHE_OWNER_KEY) === owner) return;
+    queryClient.clear();
+    localStorage.removeItem(PERSISTED_CACHE_KEY);
+    localStorage.setItem(CACHE_OWNER_KEY, owner);
+  } catch {
+    queryClient.clear();
+  }
+};
+
+// Navigation and the auth forms all call fetchUser on mount; share one request so a
+// logged-out visit doesn't create several guest users at once.
+let inflightFetch: Promise<void> | null = null;
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   lifetimeFocusMs: 0,
   loading: true,
-  fetchUser: async () => {
-    try {
-      const { data } = await api.get('/auth/user');
-      set({ user: data, loading: false });
-      console.log('log in');
-      await get().fetchLifetimeFocus();
-    } catch {
-      console.error('login to save Progress');
-      await get().guestLogin();
-    }
+  fetchUser: ({ guestFallback = true } = {}) => {
+    if (inflightFetch) return inflightFetch;
+    inflightFetch = (async () => {
+      try {
+        const { data } = await api.get('/auth/user');
+        claimQueryCache(data.id);
+        set({ user: data, loading: false });
+        await get().fetchLifetimeFocus();
+      } catch {
+        if (guestFallback) {
+          await get().guestLogin();
+        } else {
+          claimQueryCache(null);
+          set({ user: null, loading: false });
+        }
+      }
+    })().finally(() => {
+      inflightFetch = null;
+    });
+    return inflightFetch;
   },
   fetchLifetimeFocus: async () => {
     try {
@@ -49,6 +80,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   guestLogin: async () => {
     try {
       const { data } = await api.post('/auth/guest-login');
+      claimQueryCache(data.id);
       set({ user: data, loading: false });
     } catch (error) {
       console.error('Guest login failed', error);
@@ -59,12 +91,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       await api.post('/auth/logout');
 
-      localStorage.removeItem('REACT_QUERY_OFFLINE_CACHE');
-      queryClient.clear();
-
+      claimQueryCache(null);
       set({ user: null });
       window.location.href = '/login';
-      await invalidateSubjectTimerQueries();
     } catch (error) {
       console.error('Logout failed', error);
     }

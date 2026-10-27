@@ -33,7 +33,8 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'div'>)
   };
 
   useEffect(() => {
-    fetchUser();
+    // Don't spawn a guest account just for visiting the auth page
+    fetchUser({ guestFallback: false });
   }, [fetchUser]);
 
   const handleGoogleSignup = () => {
