@@ -151,3 +151,50 @@ export function calculateAutoLayout(
 
   return dwindle(rect, boxesToPlace, viewport, isFirstBox);
 }
+
+// ── Tiling (desktop/tablet) ─────────────────────────────────────────────────────
+// Window-manager style: tiles fill the visible canvas, sizes depend only on the tile count and
+// canvas size (never on content), so typing or pasting can't move or resize anything.
+
+export const TILE_MIN_WIDTH = 320;
+export const TILE_MIN_HEIGHT = 220;
+const TILE_TARGET_ASPECT = 1.3; // prefer slightly wide tiles when choosing the column count
+
+/**
+ * Lay `count` tiles out in columns across a `width` x `height` area.
+ * Extra tiles go to the later columns, so the first column holds the fewest (largest) tiles —
+ * 3 tiles = one tall tile on the left and two stacked on the right, like a dwindle layout.
+ * If the rows would be shorter than TILE_MIN_HEIGHT the area grows taller (the canvas scrolls).
+ */
+export function computeTiles(count: number, width: number, height: number): Rect[] {
+  if (count <= 0) return [];
+
+  const innerW = Math.max(TILE_MIN_WIDTH, width - PADDING * 2);
+  const innerH = Math.max(TILE_MIN_HEIGHT, height - PADDING * 2);
+
+  const maxCols = Math.max(1, Math.floor((innerW + SPACING) / (TILE_MIN_WIDTH + SPACING)));
+  const idealCols = Math.round(Math.sqrt((count * innerW) / innerH / TILE_TARGET_ASPECT));
+  const cols = Math.min(count, maxCols, Math.max(1, idealCols));
+
+  const base = Math.floor(count / cols);
+  const extra = count % cols;
+  const rowsPerCol = Array.from({ length: cols }, (_, c) => base + (c >= cols - extra ? 1 : 0));
+
+  const maxRows = Math.max(...rowsPerCol);
+  const areaH = Math.max(innerH, maxRows * TILE_MIN_HEIGHT + (maxRows - 1) * SPACING);
+  const colW = (innerW - (cols - 1) * SPACING) / cols;
+
+  const tiles: Rect[] = [];
+  rowsPerCol.forEach((rows, c) => {
+    const rowH = (areaH - (rows - 1) * SPACING) / rows;
+    for (let r = 0; r < rows; r++) {
+      tiles.push({
+        x: Math.round(PADDING + c * (colW + SPACING)),
+        y: Math.round(PADDING + r * (rowH + SPACING)),
+        width: Math.floor(colW),
+        height: Math.floor(rowH),
+      });
+    }
+  });
+  return tiles;
+}

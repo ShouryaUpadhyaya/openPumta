@@ -104,7 +104,12 @@ function WorkspaceInner() {
   }
 
   return (
-    <div className="flex flex-col h-full" data-tour-highlight="workspace-page">
+    // Fill the viewport (minus the bottom nav below lg) so the canvas scrolls on its own and
+    // the tiling layout knows how much room it has
+    <div
+      className="flex flex-col h-[calc(100dvh-5rem)] max-lg:landscape:h-[calc(100dvh-3rem)] lg:h-dvh"
+      data-tour-highlight="workspace-page"
+    >
       {/* ── Top bar ── */}
       <div className="flex flex-col border-b border-border/30 pb-3 pt-4 max-lg:landscape:pb-2 max-lg:landscape:pt-2 gap-3 max-lg:landscape:gap-1">
         {/* Space title row */}
@@ -147,7 +152,7 @@ function WorkspaceInner() {
       </div>
 
       {/* ── Canvas ── */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
         {!activeSpaceId ? (
           <div className="flex items-center justify-center h-40 text-muted-foreground text-sm">
             Select a workspace to get started

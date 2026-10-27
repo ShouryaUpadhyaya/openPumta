@@ -42,8 +42,9 @@ function BlockEditor({
   }, [editor, debouncedSave]);
 
   return (
-    // Override BlockNote's hardcoded background — let the parent bg-card show through, and force wrapping
-    <div className="w-full max-w-full [&_.bn-editor]:!bg-transparent [&_.bn-container]:!bg-transparent [&_.bn-mantine]:!bg-transparent [&_.bn-editor]:break-words [&_.bn-block-content]:break-words overflow-hidden">
+    // Override BlockNote's hardcoded background — let the parent bg-card show through, and force wrapping.
+    // Below md, shrink BlockNote's 54px side gutters (its hover side menu isn't usable on touch).
+    <div className="w-full max-w-full [&_.bn-editor]:!bg-transparent [&_.bn-container]:!bg-transparent [&_.bn-mantine]:!bg-transparent [&_.bn-editor]:break-words [&_.bn-block-content]:break-words max-md:[&_.bn-editor]:!px-3 overflow-hidden">
       <BlockNoteView editor={editor} onChange={onChange} theme="dark" />
     </div>
   );

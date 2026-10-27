@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useMemo, useState, useEffect } from 'react';
+import React, { useRef, useMemo, useState, useEffect, useCallback } from 'react';
 import { useTextBoxes, useCreateTextBox, useUpdateTextBoxLayout } from '@/hooks/useTextBoxes';
 import TextBoxContainer from './TextBoxContainer';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
@@ -15,12 +15,28 @@ import {
   useSensors,
   DragEndEvent,
 } from '@dnd-kit/core';
-import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import {
+  SortableContext,
+  arrayMove,
+  rectSwappingStrategy,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 import { useWorkspaceSettingsStore } from '@/store/useWorkspaceSettingsStore';
-import { calculateAutoLayout, BOX_WIDTH, BOX_HEIGHT, PADDING } from '@/lib/smartLayout';
+import {
+  calculateAutoLayout,
+  computeTiles,
+  BOX_WIDTH,
+  BOX_HEIGHT,
+  PADDING,
+} from '@/lib/smartLayout';
+import { TextBox } from '@/types/space';
 import { toast } from 'sonner';
 
 const pointerSensorOptions = { activationConstraint: { distance: 5 } };
+
+// One order shared by the mobile list and the desktop tiles (stored on layout.mobile for
+// backwards compatibility); boxes without one fall back to creation order.
+const boxOrder = (box: TextBox) => box.layout?.mobile?.order ?? 0;
 
 export default function WorkspaceCanvas() {
   const { activeSpaceId } = useWorkspaceStore();
@@ -38,7 +54,24 @@ export default function WorkspaceCanvas() {
   const createTextBox = useCreateTextBox();
   const updateLayout = useUpdateTextBoxLayout();
   const viewport = useViewport();
-  const canvasRef = useRef<HTMLDivElement>(null);
+  const tilingEnabled = useWorkspaceSettingsStore((s) => s.tilingLayout);
+  const isTiling = tilingEnabled && viewport !== 'mobile';
+
+  // The canvas element changes between the empty and filled states, so track it with a
+  // callback ref and re-tile whenever its size changes (window resize, sidebar toggle).
+  const canvasRef = useRef<HTMLDivElement | null>(null);
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+  const roRef = useRef<ResizeObserver | null>(null);
+  const setCanvasEl = useCallback((el: HTMLDivElement | null) => {
+    canvasRef.current = el;
+    roRef.current?.disconnect();
+    if (!el) return;
+    const measure = () => setCanvasSize({ width: el.clientWidth, height: el.clientHeight });
+    measure();
+    roRef.current = new ResizeObserver(measure);
+    roRef.current.observe(el);
+  }, []);
+  useEffect(() => () => roRef.current?.disconnect(), []);
 
   const [showAutoLayout, setShowAutoLayout] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -56,14 +89,17 @@ export default function WorkspaceCanvas() {
 
   const sortedTextBoxes = useMemo(() => {
     if (!textBoxes) return [];
-    if (viewport !== 'mobile') return textBoxes;
+    return [...textBoxes].sort((a, b) => boxOrder(a) - boxOrder(b) || a.id - b.id);
+  }, [textBoxes]);
 
-    return [...textBoxes].sort((a, b) => {
-      const orderA = a.layout?.mobile?.order ?? 0;
-      const orderB = b.layout?.mobile?.order ?? 0;
-      return orderA - orderB;
-    });
-  }, [textBoxes, viewport]);
+  const tiles = useMemo(
+    () =>
+      isTiling && canvasSize.width > 0
+        ? computeTiles(sortedTextBoxes.length, canvasSize.width, canvasSize.height)
+        : [],
+    [isTiling, sortedTextBoxes.length, canvasSize.width, canvasSize.height],
+  );
+  const tilesHeight = tiles.length ? Math.max(...tiles.map((t) => t.y + t.height)) + PADDING : 0;
 
   const sensors = useSensors(useSensor(PointerSensor, pointerSensorOptions));
 
@@ -74,7 +110,16 @@ export default function WorkspaceCanvas() {
     const oldIndex = sortedTextBoxes.findIndex((t) => t.id === active.id);
     const newIndex = sortedTextBoxes.findIndex((t) => t.id === over.id);
 
-    const reordered = arrayMove(sortedTextBoxes, oldIndex, newIndex);
+    // Tiles swap places (like a tiling WM); the mobile list shifts items
+    const reordered = isTiling
+      ? sortedTextBoxes.map((box, i) =>
+          i === oldIndex
+            ? sortedTextBoxes[newIndex]
+            : i === newIndex
+              ? sortedTextBoxes[oldIndex]
+              : box,
+        )
+      : arrayMove(sortedTextBoxes, oldIndex, newIndex);
 
     reordered.forEach((box, index) => {
       if (box.layout?.mobile?.order !== index) {
@@ -117,7 +162,7 @@ export default function WorkspaceCanvas() {
     let height: number | string = BOX_HEIGHT;
     let positionSource: 'auto' | 'user' = 'user';
 
-    if (autoArrange && viewport !== 'mobile') {
+    if (autoArrange && viewport !== 'mobile' && !isTiling) {
       const dummyBox = { id: -1, layout: {} } as any;
       const autoBoxes = (textBoxes || []).filter((b) => {
         const l = (b.layout?.[viewport] || b.layout?.desktop) as any;
@@ -165,7 +210,13 @@ export default function WorkspaceCanvas() {
       layout: {
         desktop: { x, y, width, height, positionSource },
         tablet: { x: Math.min(x, 20), y, width: 350, height, positionSource },
-        mobile: { x: 0, y, width: '100%', height, order: textBoxes?.length ?? 0 },
+        mobile: {
+          x: 0,
+          y,
+          width: '100%',
+          height,
+          order: sortedTextBoxes.length ? boxOrder(sortedTextBoxes.at(-1)!) + 1 : 0,
+        },
       },
     });
   };
@@ -216,7 +267,7 @@ export default function WorkspaceCanvas() {
   if (sortedTextBoxes.length === 0) {
     return (
       <div
-        ref={canvasRef}
+        ref={setCanvasEl}
         className="relative flex-1 overflow-y-auto overflow-x-hidden bg-dot-pattern bg-size-[24px_24px]"
       >
         <div className="flex flex-col items-center justify-center h-full min-h-[60vh] gap-5 text-center px-4">
@@ -253,14 +304,20 @@ export default function WorkspaceCanvas() {
   }
 
   // ── Canvas with text boxes ───────────────────────────────────────────────────
+  const isSortable = viewport === 'mobile' || isTiling;
+
   return (
     <div
-      ref={canvasRef}
+      ref={setCanvasEl}
       className="relative flex-1 overflow-y-auto overflow-x-hidden bg-dot-pattern bg-size-[24px_24px]"
     >
       <div
         style={
-          viewport === 'mobile' ? undefined : { minHeight: `calc(max(100vh, ${maxY}px) + 600px)` }
+          viewport === 'mobile'
+            ? undefined
+            : isTiling
+              ? { height: tilesHeight }
+              : { minHeight: `calc(max(100vh, ${maxY}px) + 600px)` }
         }
         className={
           viewport === 'mobile'
@@ -268,7 +325,7 @@ export default function WorkspaceCanvas() {
             : 'relative w-full'
         }
       >
-        {viewport === 'mobile' ? (
+        {isSortable ? (
           <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
@@ -276,16 +333,18 @@ export default function WorkspaceCanvas() {
           >
             <SortableContext
               items={sortedTextBoxes.map((t) => t.id)}
-              strategy={verticalListSortingStrategy}
+              strategy={isTiling ? rectSwappingStrategy : verticalListSortingStrategy}
             >
-              {sortedTextBoxes.map((box) => (
-                <TextBoxContainer
-                  key={box.id}
-                  textBox={box}
-                  spaceId={activeSpaceId as number}
-                  viewport={viewport}
-                />
-              ))}
+              {(viewport === 'mobile' || tiles.length === sortedTextBoxes.length) &&
+                sortedTextBoxes.map((box, i) => (
+                  <TextBoxContainer
+                    key={box.id}
+                    textBox={box}
+                    spaceId={activeSpaceId as number}
+                    viewport={viewport}
+                    tile={isTiling ? tiles[i] : undefined}
+                  />
+                ))}
             </SortableContext>
           </DndContext>
         ) : (
@@ -308,7 +367,7 @@ export default function WorkspaceCanvas() {
       >
         <Button
           onClick={() => handleReflowAutoBoxes(true)}
-          className={`h-11 w-11 rounded-full shadow-lg transition-all duration-300 ${showAutoLayout ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
+          className={`h-11 w-11 rounded-full shadow-lg transition-all duration-300 ${isTiling ? 'hidden' : ''} ${showAutoLayout ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}
           size="icon"
           variant="secondary"
           title="Auto-arrange text boxes"

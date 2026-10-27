@@ -6,7 +6,8 @@ import { LayoutGrid } from 'lucide-react';
 import { useWorkspaceSettingsStore } from '@/store/useWorkspaceSettingsStore';
 
 export function WorkspaceSettings() {
-  const { autoArrangeNewTextBoxes, setAutoArrangeNewTextBoxes } = useWorkspaceSettingsStore();
+  const { tilingLayout, setTilingLayout, autoArrangeNewTextBoxes, setAutoArrangeNewTextBoxes } =
+    useWorkspaceSettingsStore();
 
   return (
     <Card className="bg-background border-border/40 shadow-sm">
@@ -20,18 +21,34 @@ export function WorkspaceSettings() {
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between gap-4">
           <div className="space-y-0.5">
+            <Label htmlFor="tiling-toggle" className="text-sm font-medium">
+              Tiling layout
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              On desktop, text boxes fill the screen like a tiling window manager and keep their
+              size while you type. Drag a box by its handle to swap it with another. Turn off for a
+              free-form canvas.
+            </p>
+          </div>
+          <Switch id="tiling-toggle" checked={tilingLayout} onCheckedChange={setTilingLayout} />
+        </div>
+        <div
+          className={`flex items-center justify-between gap-4 ${tilingLayout ? 'opacity-50' : ''}`}
+        >
+          <div className="space-y-0.5">
             <Label htmlFor="auto-arrange-toggle" className="text-sm font-medium">
               Auto-arrange new text boxes
             </Label>
             <p className="text-xs text-muted-foreground">
-              Automatically position newly created text boxes in an organized layout without
-              affecting manually arranged items.
+              Free-form canvas only: automatically position newly created text boxes in an organized
+              layout without affecting manually arranged items.
             </p>
           </div>
           <Switch
             id="auto-arrange-toggle"
             checked={autoArrangeNewTextBoxes}
             onCheckedChange={setAutoArrangeNewTextBoxes}
+            disabled={tilingLayout}
           />
         </div>
       </CardContent>
