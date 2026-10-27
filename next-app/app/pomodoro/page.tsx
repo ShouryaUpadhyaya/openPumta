@@ -16,6 +16,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { AvatarDisplay } from '../components/pomodoro/AvatarDisplay';
 import { AvatarSelectionDialog } from '../components/pomodoro/AvatarSelectionDialog';
 import { AvatarSet } from '@/lib/avatarConfig';
+import { TimerModeToggle } from '../components/pomodoro/TimerModeToggle';
 
 function PomodoroPage() {
   const { data: Subjects = [], isLoading } = useSubjects();
@@ -292,6 +293,7 @@ function PomodoroPage() {
 
         {/* RIGHT zone — settings gear + stopwatch (avatar disabled in landscape) */}
         <div className="flex flex-col items-center justify-center gap-3 pr-3 shrink-0">
+          <TimerModeToggle compact />
           <ClockDialogBox
             child={
               <Button
@@ -318,6 +320,9 @@ function PomodoroPage() {
           Hidden only in: max-lg landscape (mobile/iPad landscape)
       ═══════════════════════════════════════════════════════════════ */}
       <section className="flex flex-col justify-between items-center h-[calc(100dvh-5.5rem)] lg:h-screen w-full p-4 md:p-6 lg:p-8 relative overflow-hidden bg-background max-lg:landscape:hidden">
+        <div className="w-full max-w-md flex justify-center shrink-0">
+          <TimerModeToggle />
+        </div>
         <div className="w-full max-w-md flex items-center justify-center px-4 py-2 shrink-0 relative">
           {runningSubject && (
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-center truncate mx-2 text-foreground px-8">

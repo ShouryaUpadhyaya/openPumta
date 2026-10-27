@@ -88,7 +88,14 @@ export const useTimerStore = create<TimerState>()(
       shortBreakColor: '#22c55e',
       longBreakColor: '#3b82f6',
 
-      setMode: (mode) => set({ mode }),
+      // A running focus session carries over (only the display changes). Breaks only exist in
+      // pomodoro mode, so switching to the stopwatch ends the current one.
+      setMode: (mode) =>
+        set((state) =>
+          mode === 'stopwatch' && (state.phase === 'shortBreak' || state.phase === 'longBreak')
+            ? { mode, phase: 'idle', running: false, phaseStartedAt: null, durationMs: 0 }
+            : { mode },
+        ),
       setShowProgressBar: (showProgressBar) => set({ showProgressBar }),
       setShowAvatar: (showAvatar) => set({ showAvatar }),
       setSettings: (newSettings) =>
