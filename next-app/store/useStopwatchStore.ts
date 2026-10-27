@@ -6,9 +6,15 @@ interface StopwatchState {
   startedAt: number | null;
   /** Ms accumulated across previous runs (before the current one). */
   accumulatedMs: number;
+  /**
+   * Where the user dragged it on the timer page, as fractions (0–1) of the free space
+   * horizontally/vertically; null = its default spot under the header.
+   */
+  position: { x: number; y: number } | null;
   start: () => void;
   pause: () => void;
   reset: () => void;
+  setPosition: (position: { x: number; y: number } | null) => void;
 }
 
 export const useStopwatchStore = create<StopwatchState>()(
@@ -16,6 +22,7 @@ export const useStopwatchStore = create<StopwatchState>()(
     (set, get) => ({
       startedAt: null,
       accumulatedMs: 0,
+      position: null,
 
       start: () => {
         if (get().startedAt !== null) return; // already running
@@ -32,10 +39,16 @@ export const useStopwatchStore = create<StopwatchState>()(
       },
 
       reset: () => set({ startedAt: null, accumulatedMs: 0 }),
+
+      setPosition: (position) => set({ position }),
     }),
     {
       name: 'stopwatch-store',
-      partialize: (s) => ({ startedAt: s.startedAt, accumulatedMs: s.accumulatedMs }),
+      partialize: (s) => ({
+        startedAt: s.startedAt,
+        accumulatedMs: s.accumulatedMs,
+        position: s.position,
+      }),
     },
   ),
 );

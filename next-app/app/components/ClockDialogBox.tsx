@@ -241,7 +241,7 @@ const ClockDialogBox = ({ child }: Props) => {
                 <div className="flex items-center justify-between gap-4">
                   <div className="space-y-0.5">
                     <Label htmlFor="stopwatch-toggle" className="text-sm font-medium">
-                      Show Stopwatch
+                      Separate Stopwatch
                     </Label>
                     <p className="text-xs text-muted-foreground">
                       A separate stopwatch to time anything, independent of subjects.

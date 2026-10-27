@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { useTimerStore } from '@/store/useTimerStore';
 import { useTimerEngine } from '@/hooks/useTimerEngine';
 import ClockCircle from '../components/pomodoro/ClockCircle';
-import Stopwatch from '../components/pomodoro/Stopwatch';
+import { MovableStopwatch } from '../components/pomodoro/MovableStopwatch';
 import { ConvertSecsToTimer, pad } from '@/lib/utils';
 import { IoIosPlay, IoIosRefresh, IoIosSkipForward, IoIosSquare } from 'react-icons/io';
 import { Progress } from '@/components/ui/progress';
@@ -166,7 +166,10 @@ function PomodoroPage() {
           Completely hidden in: portrait (all sizes) + desktop (lg+)
           Right zone includes the compact Stopwatch variant.
       ═══════════════════════════════════════════════════════════════ */}
-      <section className="hidden max-lg:landscape:flex flex-row h-[calc(100dvh-4rem)] items-center justify-center  w-full bg-background overflow-hidden">
+      <section
+        data-stopwatch-area
+        className="hidden max-lg:landscape:flex flex-row h-[calc(100dvh-4rem)] items-center justify-center w-full bg-background overflow-hidden relative"
+      >
         {/* LEFT zone — small clock circle */}
         <div className="flex items-center justify-center shrink-0 pl-3 py-2">
           <ClockCircle
@@ -305,7 +308,7 @@ function PomodoroPage() {
               </Button>
             }
           />
-          {store.showStopwatch && <Stopwatch variant="compact" />}
+          {store.showStopwatch && <MovableStopwatch variant="compact" />}
           {/* {store.showAvatar && (
             <AvatarSelectionDialog>
               <AvatarDisplay activeAvatar={activeAvatar} focusMs={currentFocusMs} />
@@ -319,7 +322,10 @@ function PomodoroPage() {
           Stopwatch pill row under the header.
           Hidden only in: max-lg landscape (mobile/iPad landscape)
       ═══════════════════════════════════════════════════════════════ */}
-      <section className="flex flex-col justify-between items-center h-[calc(100dvh-5.5rem)] lg:h-screen w-full p-4 md:p-6 lg:p-8 relative overflow-hidden bg-background max-lg:landscape:hidden">
+      <section
+        data-stopwatch-area
+        className="flex flex-col justify-between items-center h-[calc(100dvh-5.5rem)] lg:h-screen w-full p-4 md:p-6 lg:p-8 relative overflow-hidden bg-background max-lg:landscape:hidden"
+      >
         <div className="w-full max-w-md flex justify-center shrink-0">
           <TimerModeToggle />
         </div>
@@ -347,7 +353,7 @@ function PomodoroPage() {
         {/* Stopwatch row — shrink-0 so it is never clipped by the overflow-hidden center column */}
         {store.showStopwatch && (
           <div className="shrink-0 flex justify-center w-full pb-2">
-            <Stopwatch />
+            <MovableStopwatch />
           </div>
         )}
 

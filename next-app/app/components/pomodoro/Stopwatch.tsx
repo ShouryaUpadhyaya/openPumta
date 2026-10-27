@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IoIosPause, IoIosPlay, IoIosRefresh } from 'react-icons/io';
 import { Button } from '@/components/ui/button';
 import { cn, pad } from '@/lib/utils';
@@ -9,9 +9,11 @@ interface StopwatchProps {
   /** `compact` is for the tight mobile-landscape column. */
   variant?: 'default' | 'compact';
   className?: string;
+  /** Rendered before the label, e.g. a drag handle */
+  handle?: React.ReactNode;
 }
 
-export default function Stopwatch({ variant = 'default', className }: StopwatchProps) {
+export default function Stopwatch({ variant = 'default', className, handle }: StopwatchProps) {
   const startedAt = useStopwatchStore((s) => s.startedAt);
   const accumulatedMs = useStopwatchStore((s) => s.accumulatedMs);
   const { start, pause, reset } = useStopwatchStore.getState();
@@ -45,9 +47,10 @@ export default function Stopwatch({ variant = 'default', className }: StopwatchP
         className,
       )}
     >
+      {handle}
       {!compact && (
         <span className="text-[10px] font-medium tracking-wide text-muted-foreground/60">
-          STOPWATCH
+          SEPARATE STOPWATCH
         </span>
       )}
       <div

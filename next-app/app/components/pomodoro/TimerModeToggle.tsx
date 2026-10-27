@@ -13,7 +13,6 @@ const MODES: { value: TimerMode; label: string; icon: typeof Timer; hint: string
 export function TimerModeToggle({ compact = false }: { compact?: boolean }) {
   const mode = useTimerStore((s) => s.mode);
   const setMode = useTimerStore((s) => s.setMode);
-  const running = useTimerStore((s) => s.running);
 
   return (
     <div
@@ -22,8 +21,8 @@ export function TimerModeToggle({ compact = false }: { compact?: boolean }) {
       className={cn(
         'inline-flex items-center rounded-full border border-border/50 bg-muted/30 p-1 transition-opacity duration-300',
         compact && 'flex-col rounded-2xl',
-        // Stay out of the way while a session runs; full opacity on hover/keyboard focus
-        running && 'opacity-20 hover:opacity-100 focus-within:opacity-100',
+        // Kept faint so it doesn't compete with the timer; full opacity on hover/keyboard focus
+        'opacity-20 hover:opacity-100 focus-within:opacity-100',
       )}
     >
       {MODES.map(({ value, label, icon: Icon, hint }) => {

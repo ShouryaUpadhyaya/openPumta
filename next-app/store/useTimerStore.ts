@@ -47,7 +47,7 @@ interface TimerState {
   settings: TimerSettings;
   showProgressBar: boolean;
   showAvatar: boolean;
-  /** The separate free-running stopwatch on the timer page */
+  /** The separate free-running stopwatch on the timer page (off by default) */
   showStopwatch: boolean;
   workColor: string;
   shortBreakColor: string;
@@ -89,7 +89,7 @@ export const useTimerStore = create<TimerState>()(
       },
       showProgressBar: true,
       showAvatar: false,
-      showStopwatch: true,
+      showStopwatch: false,
       workColor: '#f97316',
       shortBreakColor: '#22c55e',
       longBreakColor: '#3b82f6',

@@ -11,7 +11,7 @@ beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(0);
   localStorage.clear();
-  useStopwatchStore.setState({ startedAt: null, accumulatedMs: 0 });
+  useStopwatchStore.setState({ startedAt: null, accumulatedMs: 0, position: null });
 });
 afterEach(() => vi.useRealTimers());
 
@@ -64,10 +64,19 @@ describe('useStopwatchStore', () => {
     expect(useTimerStore.getState()).toBe(before); // same reference => never set()
   });
 
-  it('persists only startedAt and accumulatedMs', () => {
+  it('persists only startedAt, accumulatedMs and position', () => {
     useStopwatchStore.getState().start();
     const saved = JSON.parse(localStorage.getItem('stopwatch-store')!);
-    expect(Object.keys(saved.state).sort()).toEqual(['accumulatedMs', 'startedAt']);
+    expect(Object.keys(saved.state).sort()).toEqual(['accumulatedMs', 'position', 'startedAt']);
+  });
+
+  it('remembers where it was dragged and can be reset to the default spot', () => {
+    useStopwatchStore.getState().setPosition({ x: 0.9, y: 0.25 });
+    const saved = JSON.parse(localStorage.getItem('stopwatch-store')!);
+    expect(saved.state.position).toEqual({ x: 0.9, y: 0.25 });
+
+    useStopwatchStore.getState().setPosition(null);
+    expect(useStopwatchStore.getState().position).toBeNull();
   });
 });
 
