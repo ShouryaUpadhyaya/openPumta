@@ -37,6 +37,8 @@ interface TimerState {
   running: boolean;
   mode: TimerMode;
   activeSubjectId: number | null;
+  /** User the session belongs to — timer state is persisted per browser, not per account */
+  ownerId?: number;
   phaseStartedAt: number | null;
   durationMs: number;
   completedPomodoros: number;
@@ -157,6 +159,7 @@ export const useTimerStore = create<TimerState>()(
         // 4. Update local state
         set({
           activeSubjectId: subjectId,
+          ownerId: useAuthStore.getState().user?.id,
           phase: 'work',
           running: true,
           phaseStartedAt: Date.now(),
@@ -249,3 +252,24 @@ export const useTimerStore = create<TimerState>()(
     },
   ),
 );
+
+const IDLE_SESSION = {
+  phase: 'idle',
+  running: false,
+  activeSubjectId: null,
+  phaseStartedAt: null,
+  durationMs: 0,
+  completedPomodoros: 0,
+} as const;
+
+// When a different account signs in on this browser, drop the previous account's session
+// instead of showing it as running (and closing someone else's subject log on stop).
+// State saved before ownerId existed is adopted by whoever is signed in.
+useAuthStore.subscribe(({ user }) => {
+  if (!user) return;
+  const { ownerId } = useTimerStore.getState();
+  if (ownerId === user.id) return;
+  useTimerStore.setState(
+    ownerId === undefined ? { ownerId: user.id } : { ...IDLE_SESSION, ownerId: user.id },
+  );
+});
