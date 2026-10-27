@@ -237,6 +237,22 @@ const ClockDialogBox = ({ child }: Props) => {
                     onCheckedChange={store.setShowProgressBar}
                   />
                 </div>
+                <Separator className="bg-muted-foreground/5" />
+                <div className="flex items-center justify-between gap-4">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="stopwatch-toggle" className="text-sm font-medium">
+                      Show Stopwatch
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      A separate stopwatch to time anything, independent of subjects.
+                    </p>
+                  </div>
+                  <Switch
+                    id="stopwatch-toggle"
+                    checked={store.showStopwatch}
+                    onCheckedChange={store.setShowStopwatch}
+                  />
+                </div>
               </Card>
             </section>
 

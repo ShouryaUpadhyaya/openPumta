@@ -47,6 +47,8 @@ interface TimerState {
   settings: TimerSettings;
   showProgressBar: boolean;
   showAvatar: boolean;
+  /** The separate free-running stopwatch on the timer page */
+  showStopwatch: boolean;
   workColor: string;
   shortBreakColor: string;
   longBreakColor: string;
@@ -55,6 +57,7 @@ interface TimerState {
   setMode: (mode: TimerMode) => void;
   setShowProgressBar: (show: boolean) => void;
   setShowAvatar: (show: boolean) => void;
+  setShowStopwatch: (show: boolean) => void;
   setSettings: (settings: Partial<TimerSettings>) => void;
   setColors: (work: string, short: string, long: string) => void;
 
@@ -86,6 +89,7 @@ export const useTimerStore = create<TimerState>()(
       },
       showProgressBar: true,
       showAvatar: false,
+      showStopwatch: true,
       workColor: '#f97316',
       shortBreakColor: '#22c55e',
       longBreakColor: '#3b82f6',
@@ -100,6 +104,7 @@ export const useTimerStore = create<TimerState>()(
         ),
       setShowProgressBar: (showProgressBar) => set({ showProgressBar }),
       setShowAvatar: (showAvatar) => set({ showAvatar }),
+      setShowStopwatch: (showStopwatch) => set({ showStopwatch }),
       setSettings: (newSettings) =>
         set((state) => ({ settings: { ...state.settings, ...newSettings } })),
       setColors: (work, short, long) =>

@@ -305,7 +305,7 @@ function PomodoroPage() {
               </Button>
             }
           />
-          <Stopwatch variant="compact" />
+          {store.showStopwatch && <Stopwatch variant="compact" />}
           {/* {store.showAvatar && (
             <AvatarSelectionDialog>
               <AvatarDisplay activeAvatar={activeAvatar} focusMs={currentFocusMs} />
@@ -345,9 +345,11 @@ function PomodoroPage() {
         </div>
 
         {/* Stopwatch row — shrink-0 so it is never clipped by the overflow-hidden center column */}
-        <div className="shrink-0 flex justify-center w-full pb-2">
-          <Stopwatch />
-        </div>
+        {store.showStopwatch && (
+          <div className="shrink-0 flex justify-center w-full pb-2">
+            <Stopwatch />
+          </div>
+        )}
 
         <div className="flex-1 flex flex-col justify-center items-center w-full px-4 md:px-10 gap-2 overflow-hidden">
           <ClockCircle
